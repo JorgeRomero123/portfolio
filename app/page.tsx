@@ -3,32 +3,46 @@ import Link from 'next/link';
 export default function Home() {
   return (
     <div className="bg-gradient-to-b from-blue-50 to-white">
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-        <div className="text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-            Jorge Romero Romanis
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Software Engineer | Creative Explorer | 360° Storyteller
-          </p>
-          <p className="text-lg text-gray-600 mb-12 max-w-2xl mx-auto">
-            Welcome to my creative portfolio! Explore my photography, immersive 360° tours,
-            videos, and interactive projects. This is where engineering meets creativity.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link
-              href="/gallery"
-              className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-            >
-              View Gallery
-            </Link>
-            <Link
-              href="/tours"
-              className="px-8 py-3 bg-white text-blue-600 border-2 border-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
-            >
-              Explore 360° Tours
-            </Link>
+      {/* Hero Section with Background Image */}
+      <section
+        className="relative min-h-screen flex items-center justify-center"
+        style={{
+          backgroundImage: 'url(https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/4fd284a0-6e88-422c-a565-9068f5a7e546.webp)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/40"></div>
+
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
+          <div className="text-center">
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-lg">
+              Jorge Romero Romanis
+            </h1>
+            <p className="text-xl md:text-2xl text-white mb-8 max-w-3xl mx-auto drop-shadow-lg">
+              Software Engineer | Creative Explorer | 360° Storyteller
+            </p>
+            <p className="text-lg text-white/90 mb-12 max-w-2xl mx-auto drop-shadow-lg">
+              Welcome to my creative portfolio! Explore my photography, immersive 360° tours,
+              videos, and interactive projects. This is where engineering meets creativity.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link
+                href="/gallery"
+                className="px-8 py-3 bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-100 transition-colors shadow-lg"
+              >
+                View Gallery
+              </Link>
+              <Link
+                href="/tours"
+                className="px-8 py-3 bg-white/10 backdrop-blur-sm text-white border-2 border-white rounded-lg font-semibold hover:bg-white/20 transition-colors shadow-lg"
+              >
+                Explore 360° Tours
+              </Link>
+            </div>
           </div>
         </div>
       </section>

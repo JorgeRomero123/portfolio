@@ -1,39 +1,94 @@
 {
   "photos": [
     {
-      "id": "1",
-      "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4",
-      "title": "Mountain View",
-      "description": "Beautiful mountain at sunrise",
-      "category": "Sweden"
+      "id": "75171a62-c661-4dfc-9e43-2f1db754a8f4",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/75171a62-c661-4dfc-9e43-2f1db754a8f4.webp",
+      "title": "Granada",
+      "category": "Uncategorized"
     },
     {
-      "id": "2",
-      "url": "https://images.unsplash.com/photo-1469474968028-56623f02e42e",
-      "title": "Forest Trail",
-      "description": "Peaceful forest path",
-      "category": "Sweden"
+      "id": "bf80e20c-59e7-4a53-9d51-c5ece9f2019a",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/bf80e20c-59e7-4a53-9d51-c5ece9f2019a.webp",
+      "title": "Suiza",
+      "category": "Uncategorized"
     },
     {
-      "id": "3",
-      "url": "https://images.unsplash.com/photo-1426604966848-d7adac402bff",
-      "title": "Ocean Sunset",
-      "description": "Waves at golden hour",
-      "category": "Night with the Boys"
+      "id": "44db60ec-64fa-46e4-8f24-766320dde12a",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/44db60ec-64fa-46e4-8f24-766320dde12a.webp",
+      "title": "DJI_0523",
+      "category": "Suiza"
     },
     {
-      "id": "4",
-      "url": "https://images.unsplash.com/photo-1472214103451-9374bd1c798e",
-      "title": "Desert Adventure",
-      "description": "Road trip memories",
-      "category": "Night with the Boys"
+      "id": "7bb9f643-ff59-48c0-9b39-3a7268e4ebee",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/7bb9f643-ff59-48c0-9b39-3a7268e4ebee.webp",
+      "title": "DJI_0504",
+      "category": "Suiza"
     },
     {
-      "id": "5",
-      "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4",
-      "title": "City Lights",
-      "description": "Urban exploration",
-      "category": "Travel"
+      "id": "3aba838a-3127-4d33-9789-cc31b3570e26",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/3aba838a-3127-4d33-9789-cc31b3570e26.webp",
+      "title": "DJI_0544",
+      "category": "Suiza"
+    },
+    {
+      "id": "71933a45-53a2-4e8e-9051-64490057060d",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/71933a45-53a2-4e8e-9051-64490057060d.webp",
+      "title": "DJI_0539",
+      "category": "Suiza"
+    },
+    {
+      "id": "cd7fa9ad-a8eb-4fb7-9723-696620345c3d",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/cd7fa9ad-a8eb-4fb7-9723-696620345c3d.webp",
+      "title": "DJI_0538",
+      "category": "Suiza"
+    },
+    {
+      "id": "9f162655-2325-4859-9eeb-03104e6f077a",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/9f162655-2325-4859-9eeb-03104e6f077a.webp",
+      "title": "DJI_0527",
+      "category": "Suiza"
+    },
+    {
+      "id": "0cd57431-7f34-4910-9611-ae66d67a2967",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/0cd57431-7f34-4910-9611-ae66d67a2967.webp",
+      "title": "DJI_0507",
+      "category": "Suiza"
+    },
+    {
+      "id": "4fd284a0-6e88-422c-a565-9068f5a7e546",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/4fd284a0-6e88-422c-a565-9068f5a7e546.webp",
+      "title": "DJI_0537",
+      "category": "Suiza"
+    },
+    {
+      "id": "6b2474dd-13b0-426b-8727-8e18ace74ce4",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/6b2474dd-13b0-426b-8727-8e18ace74ce4.webp",
+      "title": "DJI_0540",
+      "category": "Suiza"
+    },
+    {
+      "id": "b14e27e6-b416-48bd-a64f-82870dd27fdf",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/b14e27e6-b416-48bd-a64f-82870dd27fdf.webp",
+      "title": "DJI_0522",
+      "category": "Suiza"
+    },
+    {
+      "id": "e16b20e3-12b5-437e-8696-b4bd4011d710",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/e16b20e3-12b5-437e-8696-b4bd4011d710.webp",
+      "title": "DJI_0510",
+      "category": "Suiza"
+    },
+    {
+      "id": "7b8e3492-75ab-4f29-b32d-ae070919d72b",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/7b8e3492-75ab-4f29-b32d-ae070919d72b.webp",
+      "title": "DJI_0506",
+      "category": "Suiza"
+    },
+    {
+      "id": "f82e3475-fac4-4d0b-90cd-b5eeeeb9d1ae",
+      "url": "https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/f82e3475-fac4-4d0b-90cd-b5eeeeb9d1ae.webp",
+      "title": "DJI_0521",
+      "category": "Suiza"
     }
   ]
 }
