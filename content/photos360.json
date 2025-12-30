@@ -1,0 +1,24 @@
+{
+  "photos": [
+    {
+      "id": "1",
+      "url": "https://pub-c6faca8f6749486e847757ed977f50fe.r2.dev/scenes/cmj61l6so0002l104jf9guykg/1b38c498-482d-4775-87ac-e9f5853d23f1.webp",
+      "title": "360° Photo 1",
+      "description": "First panoramic view",
+      "category": "Samples",
+      "initialYaw": 0,
+      "initialPitch": 0,
+      "initialHfov": 100
+    },
+    {
+      "id": "2",
+      "url": "https://pub-c6faca8f6749486e847757ed977f50fe.r2.dev/scenes/cmj61l6so0002l104jf9guykg/43a9f3f4-a2f3-45aa-a52f-e52cc916dc7d.webp",
+      "title": "360° Photo 2",
+      "description": "Second panoramic view",
+      "category": "Samples",
+      "initialYaw": 0,
+      "initialPitch": 0,
+      "initialHfov": 100
+    }
+  ]
+}

@@ -39,3 +39,18 @@ export interface Tour {
 export interface ToursData {
   tours: Tour[];
 }
+
+export interface Photo360 {
+  id: string;
+  url: string;
+  title: string;
+  description?: string;
+  category?: string;
+  initialYaw?: number;
+  initialPitch?: number;
+  initialHfov?: number;
+}
+
+export interface Photo360Data {
+  photos: Photo360[];
+}

@@ -11,6 +11,7 @@ export default function Navigation() {
   const links = [
     { href: '/', label: 'Home' },
     { href: '/gallery', label: 'Gallery' },
+    { href: '/gallery360', label: '360° Photos' },
     { href: '/videos', label: 'Videos' },
     { href: '/tours', label: '360 Tours' },
     { href: '/tools', label: 'Tools' },
