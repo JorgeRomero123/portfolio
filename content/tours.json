@@ -1,0 +1,11 @@
+{
+  "tours": [
+    {
+      "id": "1",
+      "slug": "paseo-burgos-9999",
+      "title": "Paseo Burgos 9999",
+      "description": "Virtual tour of Paseo Burgos 9999",
+      "iframeUrl": "https://recorrido360.mx/tours/paseo-burgos-9999"
+    }
+  ]
+}

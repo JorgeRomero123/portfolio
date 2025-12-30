@@ -1,0 +1,16 @@
+{
+  "videos": [
+    {
+      "id": "1",
+      "youtubeId": "dQw4w9WgXcQ",
+      "title": "Sample Video 1",
+      "description": "Replace this with your actual YouTube video ID"
+    },
+    {
+      "id": "2",
+      "youtubeId": "dQw4w9WgXcQ",
+      "title": "Sample Video 2",
+      "description": "Add your YouTube videos here by updating the youtubeId"
+    }
+  ]
+}

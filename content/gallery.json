@@ -1,0 +1,39 @@
+{
+  "photos": [
+    {
+      "id": "1",
+      "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4",
+      "title": "Mountain View",
+      "description": "Beautiful mountain at sunrise",
+      "category": "Sweden"
+    },
+    {
+      "id": "2",
+      "url": "https://images.unsplash.com/photo-1469474968028-56623f02e42e",
+      "title": "Forest Trail",
+      "description": "Peaceful forest path",
+      "category": "Sweden"
+    },
+    {
+      "id": "3",
+      "url": "https://images.unsplash.com/photo-1426604966848-d7adac402bff",
+      "title": "Ocean Sunset",
+      "description": "Waves at golden hour",
+      "category": "Night with the Boys"
+    },
+    {
+      "id": "4",
+      "url": "https://images.unsplash.com/photo-1472214103451-9374bd1c798e",
+      "title": "Desert Adventure",
+      "description": "Road trip memories",
+      "category": "Night with the Boys"
+    },
+    {
+      "id": "5",
+      "url": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4",
+      "title": "City Lights",
+      "description": "Urban exploration",
+      "category": "Travel"
+    }
+  ]
+}
