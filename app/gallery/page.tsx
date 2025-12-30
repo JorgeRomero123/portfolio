@@ -6,6 +6,9 @@ export const metadata = {
   description: 'Browse my collection of photography',
 };
 
+// Revalidate every time the page is requested to show new uploads immediately
+export const revalidate = 0;
+
 export default async function GalleryPage() {
   const data = await getGalleryData();
 

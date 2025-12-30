@@ -17,16 +17,18 @@ import r2Client, { R2_BUCKET_NAME } from './r2';
  *
  * @param contentType - MIME type of the file (e.g., 'image/png')
  * @param fileExtension - File extension (e.g., 'png', 'jpg')
+ * @param basePath - Base path for the upload (e.g., 'photos360/uploads', 'gallery/uploads')
  * @returns Object with uploadUrl and key
  */
 export async function generatePresignedUploadUrl(
   contentType: string,
-  fileExtension: string
+  fileExtension: string,
+  basePath: string = 'photos360/uploads'
 ): Promise<{ uploadUrl: string; key: string }> {
   // Generate unique key for the file
-  // Format: photos360/uploads/{uuid}.{ext}
+  // Format: {basePath}/{uuid}.{ext}
   const uniqueId = uuidv4();
-  const key = `photos360/uploads/${uniqueId}.${fileExtension}`;
+  const key = `${basePath}/${uniqueId}.${fileExtension}`;
 
   // Create PUT command for S3/R2
   const command = new PutObjectCommand({

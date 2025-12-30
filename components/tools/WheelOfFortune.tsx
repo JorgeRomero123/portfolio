@@ -255,7 +255,7 @@ export default function WheelOfFortune({ initialOptions = ['Option 1', 'Option 2
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ percentage }) => `${percentage}%`}
+                    label={(props: any) => `${props.percent ? (props.percent * 100).toFixed(0) : 0}%`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
@@ -266,7 +266,7 @@ export default function WheelOfFortune({ initialOptions = ['Option 1', 'Option 2
                       return <Cell key={`cell-${index}`} fill={color} />;
                     })}
                   </Pie>
-                  <Tooltip formatter={(value: number) => `${value} spins`} />
+                  <Tooltip formatter={(value: number | undefined) => `${value || 0} spins`} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>

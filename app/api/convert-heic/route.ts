@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+// @ts-ignore - heic-convert doesn't have TypeScript types
 import convert from 'heic-convert';
 
 export async function POST(request: NextRequest) {

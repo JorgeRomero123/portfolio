@@ -31,6 +31,16 @@ export default function AdminHeader() {
                 Dashboard
               </Link>
               <Link
+                href="/admin/gallery"
+                className={`px-3 py-2 rounded ${
+                  pathname?.startsWith('/admin/gallery')
+                    ? 'bg-gray-800 text-white'
+                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                }`}
+              >
+                Gallery
+              </Link>
+              <Link
                 href="/admin/photos360"
                 className={`px-3 py-2 rounded ${
                   pathname?.startsWith('/admin/photos360')
