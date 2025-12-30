@@ -14,6 +14,13 @@ const tools = [
     color: 'from-purple-500 to-pink-500',
   },
   {
+    name: 'The Puzzle',
+    description: 'A mystery challenge for curious minds',
+    href: '/tools/puzzle',
+    icon: '🧩',
+    color: 'from-indigo-500 to-purple-500',
+  },
+  {
     name: 'HEIC to PNG Converter',
     description: 'Convert iPhone photos to PNG format',
     href: '/tools/heic-converter',
