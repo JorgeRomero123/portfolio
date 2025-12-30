@@ -13,6 +13,20 @@ const tools = [
     icon: '🎡',
     color: 'from-purple-500 to-pink-500',
   },
+  {
+    name: 'HEIC to PNG Converter',
+    description: 'Convert iPhone photos to PNG format',
+    href: '/tools/heic-converter',
+    icon: '📱',
+    color: 'from-blue-500 to-cyan-500',
+  },
+  {
+    name: 'Image to WebP Converter',
+    description: 'Optimize images with WebP compression',
+    href: '/tools/webp-converter',
+    icon: '🖼️',
+    color: 'from-green-500 to-emerald-500',
+  },
 ];
 
 export default function ToolsPage() {

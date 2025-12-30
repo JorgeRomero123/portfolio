@@ -27,6 +27,3 @@ I believe in learning by doing and building things for fun. This portfolio repre
 
 Feel free to explore my work and reach out if you'd like to connect!
 
----
-
-*This is a placeholder about page. Update this file at `content/about.md` with your own story!*

@@ -19,6 +19,18 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'recorrido360.mx',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.onedrive.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.onedrive.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '1drv.ms',
+      },
     ],
   },
 };

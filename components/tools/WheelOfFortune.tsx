@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 interface WheelOfFortuneProps {
@@ -36,6 +36,21 @@ export default function WheelOfFortune({ initialOptions = ['Option 1', 'Option 2
     '#6366f1',
     '#f97316',
   ];
+
+  // Initialize with proper offset on mount to show items centered
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth < 640;
+      const itemWidth = isMobile ? 150 : 200;
+      const container = document.querySelector('.overflow-hidden.bg-gray-200') as HTMLElement;
+      const containerWidth = container?.offsetWidth || (isMobile ? 375 : 1152);
+      const centerOffset = containerWidth / 2;
+
+      // Start with a few items to the left of center so there's context
+      const initialOffset = centerOffset + (itemWidth * 3);
+      setOffset(initialOffset);
+    }
+  }, []);
 
   // Calculate statistics for pie chart
   const chartData = useMemo(() => {
@@ -78,9 +93,17 @@ export default function WheelOfFortune({ initialOptions = ['Option 1', 'Option 2
     const itemWidth = isMobile ? 150 : 200;
     const extraSpins = 10;
 
-    // Calculate the final position: center the selected item
-    // We need to account for the initial centering offset
-    const finalPosition = -(randomIndex * itemWidth + (options.length * itemWidth * extraSpins)) + (itemWidth / 2);
+    // The container takes full width but is constrained by max-w-6xl (1152px)
+    // We need to get the actual container width
+    const container = document.querySelector('.overflow-hidden.bg-gray-200') as HTMLElement;
+    const containerWidth = container?.offsetWidth || (isMobile ? 375 : 1152);
+    const centerOffset = containerWidth / 2;
+
+    // To center an item: we need to move it so its center aligns with the container's center
+    // Position of item's left edge: randomIndex * itemWidth
+    // To center the item: centerOffset - (randomIndex * itemWidth) - (itemWidth / 2)
+    // Add extra spins: subtract (options.length * itemWidth * extraSpins)
+    const finalPosition = centerOffset - (randomIndex * itemWidth) - (itemWidth / 2) - (options.length * itemWidth * extraSpins);
 
     setOffset(finalPosition);
 
@@ -89,8 +112,8 @@ export default function WheelOfFortune({ initialOptions = ['Option 1', 'Option 2
       setSelectedOption(options[randomIndex]);
       // Add to history
       setHistory(prev => [options[randomIndex], ...prev].slice(0, 300)); // Keep last 300 results
-      // Reset position for next spin
-      const resetPosition = -(randomIndex * itemWidth) + (itemWidth / 2);
+      // Reset to the same position but without the extra spins (to keep items visible)
+      const resetPosition = centerOffset - (randomIndex * itemWidth) - (itemWidth / 2);
       setOffset(resetPosition);
     }, 4000);
   };
