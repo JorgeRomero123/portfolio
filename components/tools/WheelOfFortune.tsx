@@ -14,6 +14,8 @@ export default function WheelOfFortune({ initialOptions = ['Option 1', 'Option 2
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [offset, setOffset] = useState(0);
   const [history, setHistory] = useState<string[]>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingValue, setEditingValue] = useState('');
 
   const colors = [
     'bg-red-500',
@@ -79,6 +81,26 @@ export default function WheelOfFortune({ initialOptions = ['Option 1', 'Option 2
     if (options.length > 2) {
       setOptions(options.filter((_, i) => i !== index));
     }
+  };
+
+  const startEditing = (index: number) => {
+    setEditingIndex(index);
+    setEditingValue(options[index]);
+  };
+
+  const saveEdit = () => {
+    if (editingIndex !== null && editingValue.trim()) {
+      const newOptions = [...options];
+      newOptions[editingIndex] = editingValue.trim();
+      setOptions(newOptions);
+      setEditingIndex(null);
+      setEditingValue('');
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingIndex(null);
+    setEditingValue('');
   };
 
   const spinWheel = () => {
@@ -207,6 +229,8 @@ export default function WheelOfFortune({ initialOptions = ['Option 1', 'Option 2
         <div className="space-y-2">
           {options.map((option, index) => {
             const color = colors[index % colors.length];
+            const isEditing = editingIndex === index;
+
             return (
               <div
                 key={index}
@@ -214,15 +238,64 @@ export default function WheelOfFortune({ initialOptions = ['Option 1', 'Option 2
               >
                 <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                   <div className={`w-3 sm:w-4 h-3 sm:h-4 rounded-full ${color} flex-shrink-0`} />
-                  <span className="text-sm sm:text-base text-gray-900 truncate">{option}</span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editingValue}
+                      onChange={(e) => setEditingValue(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') saveEdit();
+                        if (e.key === 'Escape') cancelEdit();
+                      }}
+                      onBlur={saveEdit}
+                      autoFocus
+                      maxLength={30}
+                      className="flex-1 px-2 py-1 border border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                    />
+                  ) : (
+                    <span
+                      className="text-sm sm:text-base text-gray-900 truncate cursor-pointer hover:text-blue-600"
+                      onClick={() => startEditing(index)}
+                      title="Click to edit"
+                    >
+                      {option}
+                    </span>
+                  )}
                 </div>
-                <button
-                  onClick={() => removeOption(index)}
-                  disabled={options.length <= 2}
-                  className="text-xs sm:text-sm text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed ml-2 flex-shrink-0"
-                >
-                  Remove
-                </button>
+                <div className="flex gap-2 ml-2 flex-shrink-0">
+                  {isEditing ? (
+                    <>
+                      <button
+                        onClick={saveEdit}
+                        className="text-xs sm:text-sm text-green-600 hover:text-green-700"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={cancelEdit}
+                        className="text-xs sm:text-sm text-gray-600 hover:text-gray-700"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => startEditing(index)}
+                        className="text-xs sm:text-sm text-blue-600 hover:text-blue-700"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => removeOption(index)}
+                        disabled={options.length <= 2}
+                        className="text-xs sm:text-sm text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed"
+                      >
+                        Remove
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             );
           })}
