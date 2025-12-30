@@ -4,12 +4,11 @@ import sharp from 'sharp';
  * Image Processing Configuration
  */
 const CONFIG = {
-  // WebP quality (0-100, lower = smaller file, 80 is good balance)
+  // WebP quality (0-100, lower = smaller file, 85 is good balance)
   webpQuality: 85,
 
-  // Thumbnail dimensions
-  thumbnailWidth: 400,
-  thumbnailHeight: 400,
+  // Thumbnail dimensions (width-only, maintains aspect ratio)
+  thumbnailWidth: 300,
 
   // Maximum image dimensions (to prevent extremely large uploads)
   maxWidth: 8192,
@@ -78,11 +77,11 @@ export async function processImage(
     })
     .toBuffer({ resolveWithObject: true });
 
-  // Generate thumbnail
+  // Generate thumbnail (maintains aspect ratio, width-based)
   const thumbnailBuffer = await sharp(buffer)
-    .resize(CONFIG.thumbnailWidth, CONFIG.thumbnailHeight, {
-      fit: 'cover', // Crop to exact dimensions
-      position: 'center',
+    .resize(CONFIG.thumbnailWidth, null, {
+      fit: 'inside', // Maintain aspect ratio
+      withoutEnlargement: true,
     })
     .webp({ quality: 75 }) // Lower quality for thumbnails
     .toBuffer({ resolveWithObject: true });

@@ -8,6 +8,9 @@ export const metadata = {
   description: 'Explore immersive 360° panoramic photographs',
 };
 
+// Revalidate every time the page is requested to show new uploads immediately
+export const revalidate = 0;
+
 async function get360Photos(): Promise<Photo360Data> {
   const filePath = path.join(process.cwd(), 'content', 'photos360.json');
   const fileContents = await fs.readFile(filePath, 'utf8');

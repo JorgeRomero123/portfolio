@@ -16,7 +16,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Validate URL is from your R2 bucket
-    if (!imageUrl.startsWith('https://pub-c6faca8f6749486e847757ed977f50fe.r2.dev/')) {
+    const allowedDomains = [
+      'https://pub-c6faca8f6749486e847757ed977f50fe.r2.dev/',
+      'https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/',
+    ];
+
+    if (!allowedDomains.some(domain => imageUrl.startsWith(domain))) {
       return NextResponse.json({ error: 'Invalid URL domain' }, { status: 400 });
     }
 
