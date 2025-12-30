@@ -2,15 +2,33 @@
   "videos": [
     {
       "id": "1",
-      "youtubeId": "dQw4w9WgXcQ",
-      "title": "Sample Video 1",
-      "description": "Replace this with your actual YouTube video ID"
+      "youtubeId": "7CZYebi6jMI",
+      "title": "Sagrada Familia in Barcelona",
+      "description": "Exploring the iconic Sagrada Familia basilica in Barcelona"
     },
     {
       "id": "2",
-      "youtubeId": "dQw4w9WgXcQ",
-      "title": "Sample Video 2",
-      "description": "Add your YouTube videos here by updating the youtubeId"
+      "youtubeId": "1lVdU_9EiHE",
+      "title": "La Alhambra in Granada",
+      "description": "A tour of the stunning Alhambra palace in Granada"
+    },
+    {
+      "id": "3",
+      "youtubeId": "9F8k0_WhlzQ",
+      "title": "Drone Footage - Dia de Muertos",
+      "description": "Aerial view of Dia de Muertos celebrations"
+    },
+    {
+      "id": "4",
+      "youtubeId": "IrAHFU9Mpfg",
+      "title": "Drone Footage - House",
+      "description": "Aerial drone footage of a house"
+    },
+    {
+      "id": "5",
+      "youtubeId": "1KOCIMlis2k",
+      "title": "Drone Footage - House 2",
+      "description": "Another aerial drone footage of a house"
     }
   ]
 }
