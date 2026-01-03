@@ -7,7 +7,7 @@ export default function Home() {
       <section
         className="relative min-h-screen flex items-center justify-center"
         style={{
-          backgroundImage: 'url(https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/gallery/4fd284a0-6e88-422c-a565-9068f5a7e546.webp)',
+          backgroundImage: 'url(https://cdn.jorgeromeroromanis.com/gallery/4fd284a0-6e88-422c-a565-9068f5a7e546.webp)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'

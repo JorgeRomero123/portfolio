@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     // Validate URL is from your R2 bucket
     const allowedDomains = [
       'https://pub-c6faca8f6749486e847757ed977f50fe.r2.dev/',
-      'https://pub-8941cb3c8d5c4798896512cbbbce9015.r2.dev/',
+      'https://cdn.jorgeromeroromanis.com/',
     ];
 
     if (!allowedDomains.some(domain => imageUrl.startsWith(domain))) {
