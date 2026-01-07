@@ -34,6 +34,20 @@ const tools = [
     icon: '🖼️',
     color: 'from-green-500 to-emerald-500',
   },
+  {
+    name: 'Exercise Routine',
+    description: 'Track your daily workout plan with automatic day highlighting',
+    href: '/tools/exercise-routine',
+    icon: '💪',
+    color: 'from-orange-500 to-red-500',
+  },
+  {
+    name: '3D Model Viewer',
+    description: 'View and interact with 3D models from R2',
+    href: '/tools/3d-models',
+    icon: '🎨',
+    color: 'from-purple-500 to-indigo-500',
+  },
 ];
 
 export default function ToolsPage() {
