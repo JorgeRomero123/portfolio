@@ -48,6 +48,13 @@ const tools = [
     icon: '🎨',
     color: 'from-purple-500 to-indigo-500',
   },
+  {
+    name: 'CFDI XML Grouper',
+    description: 'Group Mexican electronic invoices by RFC and download as ZIP',
+    href: '/tools/cfdi-xml-grouper',
+    icon: '📄',
+    color: 'from-teal-500 to-cyan-500',
+  },
 ];
 
 export default function ToolsPage() {
