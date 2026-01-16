@@ -297,12 +297,48 @@ export default function CfdiExcelProcessor() {
 
   /**
    * Downloads the processed Excel file for a specific tab
+   *
+   * OUTPUT STRUCTURE:
+   * 1. Headers
+   * 2. Regular data rows (excluding CP01 - Pagos)
+   * 3. Empty row
+   * 4. TOTALES row
+   * 5. Empty row
+   * 6. 5 empty rows separator
+   * 7. CP01 - Pagos rows (if any)
    */
   const downloadProcessedExcel = useCallback((fileData: ProcessedFile) => {
     const wsData: (string | number | null)[][] = [];
 
+    // Find the "Uso CFDI" column index
+    const usoCfdiColumnIndex = fileData.headers.findIndex(
+      h => normalizeColumnName(h) === normalizeColumnName('Uso CFDI')
+    );
+
+    // Separate regular rows from "CP01 - Pagos" rows
+    const regularRows: (string | number | null)[][] = [];
+    const pagosRows: (string | number | null)[][] = [];
+
+    for (const row of fileData.rows) {
+      if (usoCfdiColumnIndex >= 0) {
+        const usoCfdiValue = String(row[usoCfdiColumnIndex] ?? '').trim();
+        if (usoCfdiValue === 'CP01 - Pagos') {
+          pagosRows.push(row);
+          continue;
+        }
+      }
+      regularRows.push(row);
+    }
+
+    // Add headers
     wsData.push(fileData.headers);
-    wsData.push(...fileData.rows);
+
+    // Add regular rows (excluding CP01 - Pagos)
+    wsData.push(...regularRows);
+
+    // Add empty row before totals
+    const emptyRow: (string | number | null)[] = fileData.headers.map(() => null);
+    wsData.push(emptyRow);
 
     // Add totals row
     const totalsRow: (string | number | null)[] = fileData.headers.map((header, index) => {
@@ -316,6 +352,19 @@ export default function CfdiExcelProcessor() {
       return null;
     });
     wsData.push(totalsRow);
+
+    // Add empty row after totals
+    wsData.push(emptyRow);
+
+    // If there are CP01 - Pagos rows, add them after 5 empty rows
+    if (pagosRows.length > 0) {
+      // Add 5 empty rows as separator
+      for (let i = 0; i < 5; i++) {
+        wsData.push(emptyRow);
+      }
+      // Add the CP01 - Pagos rows
+      wsData.push(...pagosRows);
+    }
 
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(wsData);
