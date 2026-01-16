@@ -55,6 +55,13 @@ const tools = [
     icon: '📄',
     color: 'from-teal-500 to-cyan-500',
   },
+  {
+    name: 'CFDI Excel Processor',
+    description: 'Clean CFDI Excel files, remove columns, and calculate totals',
+    href: '/tools/cfdi-excel-processor',
+    icon: '📊',
+    color: 'from-emerald-500 to-teal-500',
+  },
 ];
 
 export default function ToolsPage() {
