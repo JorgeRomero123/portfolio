@@ -34,9 +34,9 @@ export default function CfdiExcelProcessorPage() {
           Procesador de Excel CFDI
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Sube un archivo Excel con datos de facturas CFDI. El sistema eliminará
-          columnas innecesarias, calculará los totales y generará un archivo
-          Excel limpio para descargar.
+          Sube múltiples archivos Excel con datos de facturas CFDI. Cada archivo
+          se mostrará en pestañas organizadas por RFC Receptor, con totales
+          calculados y opción de descarga individual.
         </p>
       </div>
 
