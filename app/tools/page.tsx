@@ -35,6 +35,13 @@ const tools = [
     color: 'from-green-500 to-emerald-500',
   },
   {
+    name: 'Image Opacity',
+    description: 'Adjust image opacity and download as transparent PNG',
+    href: '/tools/image-opacity',
+    icon: '👻',
+    color: 'from-gray-500 to-slate-500',
+  },
+  {
     name: 'Exercise Routine',
     description: 'Track your daily workout plan with automatic day highlighting',
     href: '/tools/exercise-routine',
