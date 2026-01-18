@@ -42,6 +42,13 @@ const tools = [
     color: 'from-gray-500 to-slate-500',
   },
   {
+    name: 'Background Remover',
+    description: 'Remove image backgrounds with AI + manual refinement tools',
+    href: '/tools/background-remover',
+    icon: '✂️',
+    color: 'from-pink-500 to-rose-500',
+  },
+  {
     name: 'Exercise Routine',
     description: 'Track your daily workout plan with automatic day highlighting',
     href: '/tools/exercise-routine',
