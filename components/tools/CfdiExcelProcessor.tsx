@@ -425,8 +425,36 @@ export default function CfdiExcelProcessor() {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(wsData);
 
+    // Find which column indices need number formatting (the COLUMNS_TO_SUM)
+    const numericColumnIndices: number[] = [];
+    fileData.headers.forEach((header, index) => {
+      if (getSumColumnKey(header)) {
+        numericColumnIndices.push(index);
+      }
+    });
+
+    // Apply number format with comma separators to all numeric columns
+    // Format: #,##0.00 displays 1234567.89 as 1,234,567.89
+    const NUMBER_FORMAT = '#,##0.00';
+
+    // Get the range of the worksheet
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+
+    // Iterate through all rows (starting from row 1 to skip headers)
+    for (let rowIdx = 1; rowIdx <= range.e.r; rowIdx++) {
+      for (const colIdx of numericColumnIndices) {
+        const cellAddress = XLSX.utils.encode_cell({ r: rowIdx, c: colIdx });
+        const cell = ws[cellAddress];
+
+        // Only format cells that exist and have numeric values
+        if (cell && typeof cell.v === 'number') {
+          cell.z = NUMBER_FORMAT;
+        }
+      }
+    }
+
     const colWidths = fileData.headers.map(header => ({
-      wch: Math.max(header.length + 2, 12),
+      wch: Math.max(header.length + 2, 20), // Comfortable width for formatted numbers
     }));
     ws['!cols'] = colWidths;
 
