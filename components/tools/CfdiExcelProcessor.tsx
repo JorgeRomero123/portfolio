@@ -62,6 +62,13 @@ const RFC_RECEPTOR_COLUMN = 'RFC Receptor';
 const RAZON_RECEPTOR_COLUMN = 'Razon Receptor';
 
 /**
+ * Special "Uso CFDI" values that require separate handling
+ */
+const USO_CFDI_COLUMN = 'Uso CFDI';
+const USO_CFDI_PAGOS = 'CP01 - Pagos';
+const USO_CFDI_NOMINA = 'CN01 - Nómina';
+
+/**
  * Represents the calculated sums for display
  */
 interface ColumnSums {
@@ -70,6 +77,7 @@ interface ColumnSums {
 
 /**
  * Represents a processed Excel file with receptor info
+ * Rows are separated into: regular, nómina (with totals), and pagos (no totals)
  */
 interface ProcessedFile {
   id: string;
@@ -77,8 +85,14 @@ interface ProcessedFile {
   rfcReceptor: string;
   razonReceptor: string;
   headers: string[];
+  // Regular rows (excluding Nómina and Pagos)
   rows: (string | number | null)[][];
   sums: ColumnSums;
+  // Nómina rows (CN01 - Nómina) with their own totals
+  nominaRows: (string | number | null)[][];
+  nominaSums: ColumnSums;
+  // Pagos rows (CP01 - Pagos) - no totals needed
+  pagosRows: (string | number | null)[][];
   originalRowCount: number;
   removedColumns: string[];
 }
@@ -255,14 +269,23 @@ export default function CfdiExcelProcessor() {
 
     const newHeaders = columnMapping.map(col => col.header);
 
-    // Initialize sums
+    // Find the "Uso CFDI" column index in the NEW headers (after column removal)
+    const usoCfdiIndex = newHeaders.findIndex(
+      h => normalizeColumnName(h) === normalizeColumnName(USO_CFDI_COLUMN)
+    );
+
+    // Initialize sums for regular and nómina rows
     const sums: ColumnSums = {};
+    const nominaSums: ColumnSums = {};
     COLUMNS_TO_SUM.forEach(col => {
       sums[col] = 0;
+      nominaSums[col] = 0;
     });
 
-    // Process rows
+    // Separate rows into: regular, nómina, and pagos
     const newRows: (string | number | null)[][] = [];
+    const nominaRows: (string | number | null)[][] = [];
+    const pagosRows: (string | number | null)[][] = [];
 
     for (const row of dataRows) {
       const hasData = row.some(cell => cell !== null && cell !== undefined && cell !== '');
@@ -273,13 +296,33 @@ export default function CfdiExcelProcessor() {
       for (const colInfo of columnMapping) {
         const value = row[colInfo.originalIndex];
         newRow.push(value);
-
-        if (colInfo.sumKey) {
-          sums[colInfo.sumKey] += parseNumericValue(value);
-        }
       }
 
-      newRows.push(newRow);
+      // Check the "Uso CFDI" value to categorize the row
+      const usoCfdiValue = usoCfdiIndex >= 0 ? String(newRow[usoCfdiIndex] ?? '').trim() : '';
+
+      if (usoCfdiValue === USO_CFDI_PAGOS) {
+        // Pagos rows - no totals calculation
+        pagosRows.push(newRow);
+      } else if (usoCfdiValue === USO_CFDI_NOMINA) {
+        // Nómina rows - calculate separate totals
+        nominaRows.push(newRow);
+        for (const colInfo of columnMapping) {
+          if (colInfo.sumKey) {
+            const colIndex = columnMapping.indexOf(colInfo);
+            nominaSums[colInfo.sumKey] += parseNumericValue(newRow[colIndex]);
+          }
+        }
+      } else {
+        // Regular rows - calculate regular totals
+        newRows.push(newRow);
+        for (const colInfo of columnMapping) {
+          if (colInfo.sumKey) {
+            const colIndex = columnMapping.indexOf(colInfo);
+            sums[colInfo.sumKey] += parseNumericValue(newRow[colIndex]);
+          }
+        }
+      }
     }
 
     return {
@@ -290,6 +333,9 @@ export default function CfdiExcelProcessor() {
       headers: newHeaders,
       rows: newRows,
       sums,
+      nominaRows,
+      nominaSums,
+      pagosRows,
       originalRowCount: dataRows.length,
       removedColumns,
     };
@@ -300,70 +346,80 @@ export default function CfdiExcelProcessor() {
    *
    * OUTPUT STRUCTURE:
    * 1. Headers
-   * 2. Regular data rows (excluding CP01 - Pagos)
+   * 2. Regular data rows
    * 3. Empty row
-   * 4. TOTALES row
+   * 4. TOTALES row (regular)
    * 5. Empty row
    * 6. 5 empty rows separator
-   * 7. CP01 - Pagos rows (if any)
+   * 7. Nómina rows (if any)
+   * 8. Empty row
+   * 9. TOTALES NÓMINA row
+   * 10. Empty row
+   * 11. 5 empty rows separator
+   * 12. Pagos rows (if any) - no totals
    */
   const downloadProcessedExcel = useCallback((fileData: ProcessedFile) => {
     const wsData: (string | number | null)[][] = [];
+    const emptyRow: (string | number | null)[] = fileData.headers.map(() => null);
 
-    // Find the "Uso CFDI" column index
-    const usoCfdiColumnIndex = fileData.headers.findIndex(
-      h => normalizeColumnName(h) === normalizeColumnName('Uso CFDI')
-    );
-
-    // Separate regular rows from "CP01 - Pagos" rows
-    const regularRows: (string | number | null)[][] = [];
-    const pagosRows: (string | number | null)[][] = [];
-
-    for (const row of fileData.rows) {
-      if (usoCfdiColumnIndex >= 0) {
-        const usoCfdiValue = String(row[usoCfdiColumnIndex] ?? '').trim();
-        if (usoCfdiValue === 'CP01 - Pagos') {
-          pagosRows.push(row);
-          continue;
+    // Helper function to create a totals row
+    const createTotalsRow = (label: string, sums: ColumnSums): (string | number | null)[] => {
+      return fileData.headers.map((header, index) => {
+        if (index === 0) {
+          return label;
         }
-      }
-      regularRows.push(row);
-    }
+        const sumKey = getSumColumnKey(header);
+        if (sumKey && sums[sumKey] !== undefined) {
+          return sums[sumKey];
+        }
+        return null;
+      });
+    };
 
     // Add headers
     wsData.push(fileData.headers);
 
-    // Add regular rows (excluding CP01 - Pagos)
-    wsData.push(...regularRows);
+    // Add regular rows
+    wsData.push(...fileData.rows);
 
     // Add empty row before totals
-    const emptyRow: (string | number | null)[] = fileData.headers.map(() => null);
     wsData.push(emptyRow);
 
-    // Add totals row
-    const totalsRow: (string | number | null)[] = fileData.headers.map((header, index) => {
-      if (index === 0) {
-        return 'TOTALES';
-      }
-      const sumKey = getSumColumnKey(header);
-      if (sumKey && fileData.sums[sumKey] !== undefined) {
-        return fileData.sums[sumKey];
-      }
-      return null;
-    });
-    wsData.push(totalsRow);
+    // Add regular totals row
+    wsData.push(createTotalsRow('TOTALES', fileData.sums));
 
     // Add empty row after totals
     wsData.push(emptyRow);
 
-    // If there are CP01 - Pagos rows, add them after 5 empty rows
-    if (pagosRows.length > 0) {
+    // If there are Nómina rows, add them with their totals
+    if (fileData.nominaRows.length > 0) {
       // Add 5 empty rows as separator
       for (let i = 0; i < 5; i++) {
         wsData.push(emptyRow);
       }
-      // Add the CP01 - Pagos rows
-      wsData.push(...pagosRows);
+
+      // Add Nómina rows
+      wsData.push(...fileData.nominaRows);
+
+      // Add empty row before nómina totals
+      wsData.push(emptyRow);
+
+      // Add Nómina totals row
+      wsData.push(createTotalsRow('TOTALES NÓMINA', fileData.nominaSums));
+
+      // Add empty row after nómina totals
+      wsData.push(emptyRow);
+    }
+
+    // If there are Pagos rows, add them (no totals)
+    if (fileData.pagosRows.length > 0) {
+      // Add 5 empty rows as separator
+      for (let i = 0; i < 5; i++) {
+        wsData.push(emptyRow);
+      }
+
+      // Add Pagos rows (no totals for these)
+      wsData.push(...fileData.pagosRows);
     }
 
     const wb = XLSX.utils.book_new();
@@ -795,7 +851,10 @@ export default function CfdiExcelProcessor() {
                     Resumen de Totales
                   </h4>
                   <p className="text-gray-600 text-sm">
-                    {activeFile.rows.length} filas procesadas • {activeFile.removedColumns.length} columnas eliminadas
+                    {activeFile.rows.length} filas regulares
+                    {activeFile.nominaRows.length > 0 && ` • ${activeFile.nominaRows.length} filas nómina`}
+                    {activeFile.pagosRows.length > 0 && ` • ${activeFile.pagosRows.length} filas pagos`}
+                    {' '}• {activeFile.removedColumns.length} columnas eliminadas
                   </p>
                 </div>
                 <button
@@ -819,20 +878,59 @@ export default function CfdiExcelProcessor() {
                 </button>
               </div>
 
-              {/* Totals Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-                {COLUMNS_TO_SUM.map((col) => (
-                  <div
-                    key={col}
-                    className="bg-gray-50 rounded-lg p-4 border border-gray-200"
-                  >
-                    <p className="text-sm text-gray-500 mb-1">{col}</p>
-                    <p className="text-lg font-bold text-gray-900">
-                      {formatCurrency(activeFile.sums[col] || 0)}
-                    </p>
-                  </div>
-                ))}
+              {/* Regular Totals Grid */}
+              <div className="mb-6">
+                <h5 className="text-md font-semibold text-gray-700 mb-3">
+                  Totales Regulares ({activeFile.rows.length} filas)
+                </h5>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {COLUMNS_TO_SUM.map((col) => (
+                    <div
+                      key={col}
+                      className="bg-gray-50 rounded-lg p-4 border border-gray-200"
+                    >
+                      <p className="text-sm text-gray-500 mb-1">{col}</p>
+                      <p className="text-lg font-bold text-gray-900">
+                        {formatCurrency(activeFile.sums[col] || 0)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
+
+              {/* Nómina Totals Grid (only if there are nómina rows) */}
+              {activeFile.nominaRows.length > 0 && (
+                <div className="mb-6">
+                  <h5 className="text-md font-semibold text-gray-700 mb-3">
+                    Totales Nómina ({activeFile.nominaRows.length} filas)
+                  </h5>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {COLUMNS_TO_SUM.map((col) => (
+                      <div
+                        key={`nomina-${col}`}
+                        className="bg-blue-50 rounded-lg p-4 border border-blue-200"
+                      >
+                        <p className="text-sm text-blue-600 mb-1">{col}</p>
+                        <p className="text-lg font-bold text-blue-900">
+                          {formatCurrency(activeFile.nominaSums[col] || 0)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Pagos Info (no totals, just count) */}
+              {activeFile.pagosRows.length > 0 && (
+                <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                  <p className="text-sm font-semibold text-purple-800">
+                    Pagos (CP01 - Pagos): {activeFile.pagosRows.length} filas
+                  </p>
+                  <p className="text-sm text-purple-600 mt-1">
+                    Las filas de pagos se incluyen en el Excel descargado sin cálculo de totales.
+                  </p>
+                </div>
+              )}
 
               {/* Removed Columns Info */}
               {activeFile.removedColumns.length > 0 && (
