@@ -30,6 +30,7 @@ export default function BackgroundRemover() {
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
+  const lastDrawPointRef = useRef<{ x: number; y: number } | null>(null);
 
   // Canvas refs
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -256,36 +257,35 @@ export default function BackgroundRemover() {
    * Get canvas coordinates accounting for zoom and pan
    */
   const getCanvasCoordinates = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!previewCanvasRef.current) return { x: 0, y: 0 };
+    if (!previewCanvasRef.current || !canvasContainerRef.current) return { x: 0, y: 0 };
 
     const canvas = previewCanvasRef.current;
-    const rect = canvas.getBoundingClientRect();
+    const container = canvasContainerRef.current;
+    const containerRect = container.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
 
-    // Calculate the actual displayed size of the canvas (after CSS scaling)
-    const displayWidth = rect.width;
-    const displayHeight = rect.height;
+    // Mouse position relative to container
+    const mouseX = e.clientX - containerRect.left;
+    const mouseY = e.clientY - containerRect.top;
 
-    // Get mouse position relative to the canvas element
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    // Canvas position within container (accounting for centering)
+    const canvasLeft = canvasRect.left - containerRect.left;
+    const canvasTop = canvasRect.top - containerRect.top;
 
-    // Account for zoom: the canvas is scaled, so we need to reverse the transform
-    // The canvas center stays fixed during zoom
-    const centerX = displayWidth / 2;
-    const centerY = displayHeight / 2;
+    // Mouse position relative to the scaled canvas
+    const relativeX = mouseX - canvasLeft;
+    const relativeY = mouseY - canvasTop;
 
-    // Reverse the zoom transform
-    const unzoomedX = (mouseX - centerX - panOffset.x) / zoom + centerX;
-    const unzoomedY = (mouseY - centerY - panOffset.y) / zoom + centerY;
+    // The displayed size of the canvas (after zoom)
+    const displayedWidth = canvasRect.width;
+    const displayedHeight = canvasRect.height;
 
     // Convert to canvas pixel coordinates
-    const scaleX = canvas.width / displayWidth;
-    const scaleY = canvas.height / displayHeight;
+    // canvasRect already accounts for the CSS transform, so we just need to scale
+    const x = (relativeX / displayedWidth) * canvas.width;
+    const y = (relativeY / displayedHeight) * canvas.height;
 
-    return {
-      x: unzoomedX * scaleX,
-      y: unzoomedY * scaleY,
-    };
+    return { x, y };
   };
 
   /**
@@ -330,11 +330,13 @@ export default function BackgroundRemover() {
   const handleCanvasMouseUp = () => {
     setIsDrawing(false);
     setIsPanning(false);
+    lastDrawPointRef.current = null;
   };
 
   const handleCanvasMouseLeave = () => {
     setIsDrawing(false);
     setIsPanning(false);
+    lastDrawPointRef.current = null;
   };
 
   /**
@@ -357,24 +359,40 @@ export default function BackgroundRemover() {
 
     const { x, y } = getCanvasCoordinates(e);
 
-    // Adjust brush size for zoom level so it feels consistent
-    const adjustedBrushSize = brushSize / zoom;
-
-    maskCtx.beginPath();
-    maskCtx.arc(x, y, adjustedBrushSize, 0, Math.PI * 2);
-
+    // Set up the composite operation
     if (activeTool === 'erase') {
-      // Erase: make transparent (clear the mask)
       maskCtx.globalCompositeOperation = 'destination-out';
-      maskCtx.fillStyle = 'black';
     } else {
-      // Restore: make visible (add to mask)
       maskCtx.globalCompositeOperation = 'source-over';
-      maskCtx.fillStyle = 'white';
     }
 
-    maskCtx.fill();
+    maskCtx.fillStyle = 'white';
+
+    // If we have a previous point, fill circles along the path for smooth strokes
+    if (lastDrawPointRef.current) {
+      const lastX = lastDrawPointRef.current.x;
+      const lastY = lastDrawPointRef.current.y;
+      const dist = Math.sqrt((x - lastX) ** 2 + (y - lastY) ** 2);
+      const steps = Math.max(1, Math.ceil(dist / (brushSize / 4)));
+
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const interpX = lastX + (x - lastX) * t;
+        const interpY = lastY + (y - lastY) * t;
+
+        maskCtx.beginPath();
+        maskCtx.arc(interpX, interpY, brushSize, 0, Math.PI * 2);
+        maskCtx.fill();
+      }
+    } else {
+      // First point - draw a single circle
+      maskCtx.beginPath();
+      maskCtx.arc(x, y, brushSize, 0, Math.PI * 2);
+      maskCtx.fill();
+    }
+
     maskCtx.globalCompositeOperation = 'source-over';
+    lastDrawPointRef.current = { x, y };
 
     updatePreview();
   };
