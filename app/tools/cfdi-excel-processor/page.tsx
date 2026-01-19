@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import CfdiExcelProcessor from '@/components/tools/CfdiExcelProcessor';
+import PasswordGate from '@/components/PasswordGate';
 
 export const metadata = {
   title: 'Procesador de Excel CFDI | Jorge Romero Romanis',
@@ -29,18 +30,20 @@ export default function CfdiExcelProcessorPage() {
         Volver a Herramientas
       </Link>
 
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Procesador de Excel CFDI
-        </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Sube múltiples archivos Excel con datos de facturas CFDI. Cada archivo
-          se mostrará en pestañas organizadas por RFC Receptor, con totales
-          calculados y opción de descarga individual.
-        </p>
-      </div>
+      <PasswordGate password="1234" storageKey="cfdi-excel-processor-access">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Procesador de Excel CFDI
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Sube múltiples archivos Excel con datos de facturas CFDI. Cada archivo
+            se mostrará en pestañas organizadas por RFC Receptor, con totales
+            calculados y opción de descarga individual.
+          </p>
+        </div>
 
-      <CfdiExcelProcessor />
+        <CfdiExcelProcessor />
+      </PasswordGate>
     </div>
   );
 }

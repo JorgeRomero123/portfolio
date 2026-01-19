@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import CfdiXmlGrouper from '@/components/tools/CfdiXmlGrouper';
+import PasswordGate from '@/components/PasswordGate';
 
 export const metadata = {
   title: 'CFDI XML Grouper | Jorge Romero Romanis',
@@ -29,18 +30,20 @@ export default function CfdiXmlGrouperPage() {
         Volver a Herramientas
       </Link>
 
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Agrupador de CFDI por RFC
-        </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Sube múltiples archivos XML de facturas electrónicas CFDI y agrúpalos
-          automáticamente por el RFC del emisor. Descarga cada grupo como un
-          archivo ZIP.
-        </p>
-      </div>
+      <PasswordGate password="1234" storageKey="cfdi-xml-grouper-access">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Agrupador de CFDI por RFC
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Sube múltiples archivos XML de facturas electrónicas CFDI y agrúpalos
+            automáticamente por el RFC del emisor. Descarga cada grupo como un
+            archivo ZIP.
+          </p>
+        </div>
 
-      <CfdiXmlGrouper />
+        <CfdiXmlGrouper />
+      </PasswordGate>
     </div>
   );
 }
