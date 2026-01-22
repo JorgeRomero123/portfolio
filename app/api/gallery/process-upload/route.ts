@@ -116,6 +116,9 @@ export async function POST(request: NextRequest) {
     const fileContents = await fs.readFile(contentPath, 'utf8');
     const data = JSON.parse(fileContents);
 
+    // Detect portrait orientation (height > width)
+    const isPortrait = processed.metadata.height > processed.metadata.width;
+
     // Generate new photo entry
     const newPhoto = {
       id: uniqueId,
@@ -123,6 +126,7 @@ export async function POST(request: NextRequest) {
       title: title.trim(),
       description: description?.trim() || undefined,
       category: category?.trim() || 'Uncategorized',
+      ...(isPortrait && { isPortrait: true }), // Only add if portrait
     };
 
     // Add to photos array

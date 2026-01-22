@@ -4,6 +4,8 @@ export interface Photo {
   title: string;
   description?: string;
   category: string;
+  /** true if height > width (portrait orientation) */
+  isPortrait?: boolean;
 }
 
 export interface PhotoSection {

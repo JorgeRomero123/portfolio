@@ -106,7 +106,9 @@ export default function ImageGallery({ photos }: ImageGalleryProps) {
                 {categoryPhotos.map((photo, index) => (
                 <div
                   key={photo.id}
-                  className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg bg-gray-200"
+                  className={`group relative cursor-pointer overflow-hidden rounded-lg bg-gray-200 ${
+                    photo.isPortrait ? 'aspect-[3/4]' : 'aspect-square'
+                  }`}
                   onClick={() => setSelectedPhoto(photo)}
                 >
                   {!loadedImages.has(photo.id) && (
@@ -146,7 +148,9 @@ export default function ImageGallery({ photos }: ImageGalleryProps) {
               {filteredPhotos.map((photo, index) => (
                 <div
                   key={photo.id}
-                  className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg bg-gray-200"
+                  className={`group relative cursor-pointer overflow-hidden rounded-lg bg-gray-200 ${
+                    photo.isPortrait ? 'aspect-[3/4]' : 'aspect-square'
+                  }`}
                   onClick={() => setSelectedPhoto(photo)}
                 >
                   {!loadedImages.has(photo.id) && (
