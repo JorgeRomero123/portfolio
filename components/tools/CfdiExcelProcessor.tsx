@@ -38,6 +38,7 @@ const COLUMNS_TO_REMOVE = [
   'Local retenido',
   'Local trasladado',
   'SubTotalCombustibles',
+  'TotalCombustibles',
 ];
 
 /**
