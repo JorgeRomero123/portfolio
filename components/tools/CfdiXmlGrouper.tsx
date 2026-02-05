@@ -73,6 +73,7 @@ interface RfcGroup {
   nombre: string;
   files: ParsedFile[];
   isDownloading: boolean;
+  isSavingToFolder: boolean;
 }
 
 /**
@@ -298,6 +299,7 @@ export default function CfdiXmlGrouper() {
         nombre: files[0]?.nombre || 'Sin nombre',
         files,
         isDownloading: false,
+        isSavingToFolder: false,
       }))
       .sort((a, b) => a.rfc.localeCompare(b.rfc));
 
@@ -417,6 +419,52 @@ export default function CfdiXmlGrouper() {
       await downloadZip(group.rfc);
       // Small delay between downloads to avoid browser blocking
       await new Promise(resolve => setTimeout(resolve, 300));
+    }
+  };
+
+  /**
+   * Checks if the File System Access API is available
+   */
+  const supportsFileSystemAccess = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
+
+  /**
+   * Saves XML files for a specific RFC directly to a user-selected folder
+   * Uses the File System Access API (Chromium browsers only)
+   */
+  const downloadToFolder = async (rfc: string) => {
+    const groupIndex = rfcGroups.findIndex(g => g.rfc === rfc);
+    if (groupIndex === -1) return;
+
+    setRfcGroups(prev => prev.map((g, i) =>
+      i === groupIndex ? { ...g, isSavingToFolder: true } : g
+    ));
+
+    try {
+      const group = rfcGroups[groupIndex];
+
+      // Prompt user to select a directory
+      const dirHandle = await (window as any).showDirectoryPicker({ mode: 'readwrite' });
+
+      // Create a subdirectory for this RFC
+      const subDirHandle = await dirHandle.getDirectoryHandle(`CFDI_${rfc}`, { create: true });
+
+      // Write each XML file into the subdirectory
+      for (const parsedFile of group.files) {
+        const fileHandle = await subDirHandle.getFileHandle(parsedFile.fileName, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(parsedFile.content);
+        await writable.close();
+      }
+
+    } catch (error: any) {
+      // User cancelled the picker — not an error
+      if (error?.name === 'AbortError') return;
+      console.error('Error saving to folder:', error);
+      alert('Error al guardar los archivos en la carpeta. Por favor intente de nuevo.');
+    } finally {
+      setRfcGroups(prev => prev.map((g, i) =>
+        i === groupIndex ? { ...g, isSavingToFolder: false } : g
+      ));
     }
   };
 
@@ -687,54 +735,109 @@ export default function CfdiXmlGrouper() {
                       {group.files.length} archivo{group.files.length !== 1 ? 's' : ''} • {formatFileSize(group.files.reduce((s, f) => s + f.file.size, 0))}
                     </p>
                   </div>
-                  <button
-                    onClick={() => downloadZip(group.rfc)}
-                    disabled={group.isDownloading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors text-sm flex items-center justify-center min-w-[140px]"
-                  >
-                    {group.isDownloading ? (
-                      <>
-                        <svg
-                          className="animate-spin h-4 w-4 mr-2"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => downloadZip(group.rfc)}
+                      disabled={group.isDownloading}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors text-sm flex items-center justify-center min-w-[140px]"
+                    >
+                      {group.isDownloading ? (
+                        <>
+                          <svg
+                            className="animate-spin h-4 w-4 mr-2"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                          </svg>
+                          Generando...
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4 mr-2"
+                            fill="none"
                             stroke="currentColor"
-                            strokeWidth="4"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                        Generando...
-                      </>
-                    ) : (
-                      <>
-                        <svg
-                          className="w-4 h-4 mr-2"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                          />
-                        </svg>
-                        Descargar ZIP
-                      </>
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                            />
+                          </svg>
+                          Descargar ZIP
+                        </>
+                      )}
+                    </button>
+                    {supportsFileSystemAccess && (
+                      <button
+                        onClick={() => downloadToFolder(group.rfc)}
+                        disabled={group.isSavingToFolder}
+                        className="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 disabled:bg-purple-400 disabled:cursor-not-allowed transition-colors text-sm flex items-center justify-center min-w-[160px]"
+                      >
+                        {group.isSavingToFolder ? (
+                          <>
+                            <svg
+                              className="animate-spin h-4 w-4 mr-2"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Guardando...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              className="w-4 h-4 mr-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                              />
+                            </svg>
+                            Guardar en carpeta
+                            <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-bold bg-purple-300 text-purple-900 rounded-full leading-none">
+                              BETA
+                            </span>
+                          </>
+                        )}
+                      </button>
                     )}
-                  </button>
+                  </div>
                 </div>
 
                 {/* File List (collapsed by default for large groups) */}
