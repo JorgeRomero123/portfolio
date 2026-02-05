@@ -427,6 +427,21 @@ export default function CfdiXmlGrouper() {
    */
   const supportsFileSystemAccess = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
 
+  const [isSavingAllToFolder, setIsSavingAllToFolder] = useState(false);
+
+  /**
+   * Writes all files for a given group into a directory handle
+   */
+  const writeGroupToFolder = async (dirHandle: any, group: RfcGroup) => {
+    const subDirHandle = await dirHandle.getDirectoryHandle(`CFDI_${group.rfc}`, { create: true });
+    for (const parsedFile of group.files) {
+      const fileHandle = await subDirHandle.getFileHandle(parsedFile.fileName, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(parsedFile.content);
+      await writable.close();
+    }
+  };
+
   /**
    * Saves XML files for a specific RFC directly to a user-selected folder
    * Uses the File System Access API (Chromium browsers only)
@@ -441,23 +456,9 @@ export default function CfdiXmlGrouper() {
 
     try {
       const group = rfcGroups[groupIndex];
-
-      // Prompt user to select a directory
       const dirHandle = await (window as any).showDirectoryPicker({ mode: 'readwrite' });
-
-      // Create a subdirectory for this RFC
-      const subDirHandle = await dirHandle.getDirectoryHandle(`CFDI_${rfc}`, { create: true });
-
-      // Write each XML file into the subdirectory
-      for (const parsedFile of group.files) {
-        const fileHandle = await subDirHandle.getFileHandle(parsedFile.fileName, { create: true });
-        const writable = await fileHandle.createWritable();
-        await writable.write(parsedFile.content);
-        await writable.close();
-      }
-
+      await writeGroupToFolder(dirHandle, group);
     } catch (error: any) {
-      // User cancelled the picker — not an error
       if (error?.name === 'AbortError') return;
       console.error('Error saving to folder:', error);
       alert('Error al guardar los archivos en la carpeta. Por favor intente de nuevo.');
@@ -465,6 +466,25 @@ export default function CfdiXmlGrouper() {
       setRfcGroups(prev => prev.map((g, i) =>
         i === groupIndex ? { ...g, isSavingToFolder: false } : g
       ));
+    }
+  };
+
+  /**
+   * Saves all RFC groups as subdirectories in a user-selected folder
+   */
+  const downloadAllToFolder = async () => {
+    setIsSavingAllToFolder(true);
+    try {
+      const dirHandle = await (window as any).showDirectoryPicker({ mode: 'readwrite' });
+      for (const group of rfcGroups) {
+        await writeGroupToFolder(dirHandle, group);
+      }
+    } catch (error: any) {
+      if (error?.name === 'AbortError') return;
+      console.error('Error saving to folder:', error);
+      alert('Error al guardar los archivos en la carpeta. Por favor intente de nuevo.');
+    } finally {
+      setIsSavingAllToFolder(false);
     }
   };
 
@@ -707,12 +727,43 @@ export default function CfdiXmlGrouper() {
               </p>
             </div>
             {rfcGroups.length > 1 && (
-              <button
-                onClick={downloadAllZips}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm whitespace-nowrap"
-              >
-                Descargar todos los ZIP
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={downloadAllZips}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors text-sm whitespace-nowrap"
+                >
+                  Descargar todos los ZIP
+                </button>
+                {supportsFileSystemAccess && (
+                  <button
+                    onClick={downloadAllToFolder}
+                    disabled={isSavingAllToFolder}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 disabled:bg-purple-400 disabled:cursor-not-allowed transition-colors text-sm whitespace-nowrap flex items-center"
+                  >
+                    {isSavingAllToFolder ? (
+                      <>
+                        <svg
+                          className="animate-spin h-4 w-4 mr-2"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Guardando...
+                      </>
+                    ) : (
+                      <>
+                        Guardar todos en carpeta
+                        <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-bold bg-purple-300 text-purple-900 rounded-full leading-none">
+                          BETA
+                        </span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
