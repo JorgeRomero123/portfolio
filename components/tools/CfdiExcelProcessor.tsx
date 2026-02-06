@@ -326,6 +326,21 @@ export default function CfdiExcelProcessor() {
       }
     }
 
+    // Sort rows alphabetically by "RFC Emisor" column
+    const rfcEmisorIndex = newHeaders.findIndex(
+      h => normalizeColumnName(h) === normalizeColumnName('RFC Emisor')
+    );
+    if (rfcEmisorIndex >= 0) {
+      const sortByRfcEmisor = (a: (string | number | null)[], b: (string | number | null)[]) => {
+        const valA = String(a[rfcEmisorIndex] ?? '').toUpperCase();
+        const valB = String(b[rfcEmisorIndex] ?? '').toUpperCase();
+        return valA.localeCompare(valB);
+      };
+      newRows.sort(sortByRfcEmisor);
+      nominaRows.sort(sortByRfcEmisor);
+      pagosRows.sort(sortByRfcEmisor);
+    }
+
     return {
       id: generateId(),
       fileName,
