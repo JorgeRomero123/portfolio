@@ -326,19 +326,31 @@ export default function CfdiExcelProcessor() {
       }
     }
 
-    // Sort rows alphabetically by "RFC Emisor" column
+    // Detect if file is "emitidos" or "recibidos" and sort accordingly.
+    // Emitidos: RFC Emisor is the same in all rows → sort by RFC Receptor.
+    // Recibidos: RFC Receptor is the same in all rows → sort by RFC Emisor.
     const rfcEmisorIndex = newHeaders.findIndex(
       h => normalizeColumnName(h) === normalizeColumnName('RFC Emisor')
     );
-    if (rfcEmisorIndex >= 0) {
-      const sortByRfcEmisor = (a: (string | number | null)[], b: (string | number | null)[]) => {
-        const valA = String(a[rfcEmisorIndex] ?? '').toUpperCase();
-        const valB = String(b[rfcEmisorIndex] ?? '').toUpperCase();
+    const rfcReceptorIndex = newHeaders.findIndex(
+      h => normalizeColumnName(h) === normalizeColumnName(RFC_RECEPTOR_COLUMN)
+    );
+
+    const allRows = [...newRows, ...nominaRows, ...pagosRows];
+    const isEmitidos = rfcEmisorIndex >= 0 && allRows.length > 0 &&
+      allRows.every(row => String(row[rfcEmisorIndex] ?? '') === String(allRows[0][rfcEmisorIndex] ?? ''));
+
+    const sortColumnIndex = isEmitidos ? rfcReceptorIndex : rfcEmisorIndex;
+
+    if (sortColumnIndex >= 0) {
+      const sortByRfc = (a: (string | number | null)[], b: (string | number | null)[]) => {
+        const valA = String(a[sortColumnIndex] ?? '').toUpperCase();
+        const valB = String(b[sortColumnIndex] ?? '').toUpperCase();
         return valA.localeCompare(valB);
       };
-      newRows.sort(sortByRfcEmisor);
-      nominaRows.sort(sortByRfcEmisor);
-      pagosRows.sort(sortByRfcEmisor);
+      newRows.sort(sortByRfc);
+      nominaRows.sort(sortByRfc);
+      pagosRows.sort(sortByRfc);
     }
 
     return {
