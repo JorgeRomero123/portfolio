@@ -38,6 +38,7 @@ export default function PhotoGridAligner() {
 
   const [crop, setCrop] = useState<CropRect | null>(null);
   const [cropMode, setCropMode] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(false);
 
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -119,13 +120,17 @@ export default function PhotoGridAligner() {
 
     ctx.clearRect(0, 0, cw, ch);
     drawCheckerboard(ctx, cw, ch);
-    drawTransformedImage(ctx, originalImage, cw, ch, transform);
-    drawGrid(ctx, cw, ch, grid);
 
-    if (crop) {
-      drawCropOverlay(ctx, cw, ch, crop);
+    if (showOriginal) {
+      drawTransformedImage(ctx, originalImage, cw, ch, DEFAULT_TRANSFORM);
+    } else {
+      drawTransformedImage(ctx, originalImage, cw, ch, transform);
+      drawGrid(ctx, cw, ch, grid);
+      if (crop) {
+        drawCropOverlay(ctx, cw, ch, crop);
+      }
     }
-  }, [originalImage, transform, grid, canvasDisplaySize, crop]);
+  }, [originalImage, transform, grid, canvasDisplaySize, crop, showOriginal]);
 
   // ---------- Canvas pointer helpers ----------
   const getCanvasCoords = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -335,6 +340,7 @@ export default function PhotoGridAligner() {
     setAutoAlignResult(null);
     setCrop(null);
     setCropMode(false);
+    setShowOriginal(false);
   };
 
   // ---------- Render ----------
@@ -648,9 +654,23 @@ export default function PhotoGridAligner() {
 
           {/* Canvas preview */}
           <div ref={containerRef} className="bg-white rounded-lg shadow-md p-4">
-            <p className="text-xs text-gray-500 mb-2">
-              {cropMode ? 'Draw / drag crop rect' : 'Drag to pan'} &middot; Scroll to zoom
-            </p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-gray-500">
+                {cropMode ? 'Draw / drag crop rect' : 'Drag to pan'} &middot; Scroll to zoom
+              </p>
+              <button
+                onPointerDown={() => setShowOriginal(true)}
+                onPointerUp={() => setShowOriginal(false)}
+                onPointerLeave={() => setShowOriginal(false)}
+                className={`px-3 py-1 text-xs rounded-md transition-colors font-medium select-none ${
+                  showOriginal
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {showOriginal ? 'Original' : 'Hold to compare'}
+              </button>
+            </div>
             <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
               <canvas
                 ref={previewCanvasRef}
