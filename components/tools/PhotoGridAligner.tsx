@@ -488,6 +488,30 @@ export default function PhotoGridAligner() {
                 </button>
               </div>
 
+              {/* Flip buttons */}
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => setTransform((t) => ({ ...t, flipH: !t.flipH }))}
+                  className={`flex-1 px-3 py-2 text-xs rounded-md transition-colors font-medium ${
+                    transform.flipH
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Flip H
+                </button>
+                <button
+                  onClick={() => setTransform((t) => ({ ...t, flipV: !t.flipV }))}
+                  className={`flex-1 px-3 py-2 text-xs rounded-md transition-colors font-medium ${
+                    transform.flipV
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Flip V
+                </button>
+              </div>
+
               {autoAlignResult && (
                 <p className="mt-2 text-xs text-center text-gray-600 bg-gray-50 rounded p-1.5">
                   {autoAlignResult}

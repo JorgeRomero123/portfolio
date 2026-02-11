@@ -5,6 +5,8 @@ export interface Transform {
   scale: number;
   translateX: number;
   translateY: number;
+  flipH: boolean;
+  flipV: boolean;
 }
 
 export interface GridSettings {
@@ -27,6 +29,8 @@ export const DEFAULT_TRANSFORM: Transform = {
   scale: 1,
   translateX: 0,
   translateY: 0,
+  flipH: false,
+  flipV: false,
 };
 
 export const DEFAULT_GRID: GridSettings = {
@@ -213,7 +217,10 @@ export function drawTransformedImage(
   ctx.save();
   ctx.translate(cw / 2 + transform.translateX, ch / 2 + transform.translateY);
   ctx.rotate((transform.rotation * Math.PI) / 180);
-  ctx.scale(transform.scale, transform.scale);
+  ctx.scale(
+    transform.scale * (transform.flipH ? -1 : 1),
+    transform.scale * (transform.flipV ? -1 : 1),
+  );
 
   const fitScale = Math.min(cw / image.width, ch / image.height);
   const drawW = image.width * fitScale;
@@ -357,7 +364,7 @@ export function renderForExport(
     // Draw transformed image at full res
     tmpCtx.translate(fullW / 2 + transform.translateX * fullResScale, fullH / 2 + transform.translateY * fullResScale);
     tmpCtx.rotate(rad);
-    tmpCtx.scale(s, s);
+    tmpCtx.scale(s * (transform.flipH ? -1 : 1), s * (transform.flipV ? -1 : 1));
     tmpCtx.drawImage(image, -ow / 2, -oh / 2, ow, oh);
 
     // Extract crop region (scale crop coords from display → full-res)
@@ -383,7 +390,7 @@ export function renderForExport(
 
   ctx.translate(ow / 2, oh / 2);
   ctx.rotate(rad);
-  ctx.scale(s, s);
+  ctx.scale(s * (transform.flipH ? -1 : 1), s * (transform.flipV ? -1 : 1));
   ctx.drawImage(image, -ow / 2, -oh / 2, ow, oh);
 
   return outCanvas;
