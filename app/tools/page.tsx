@@ -76,6 +76,13 @@ const tools = [
     icon: '📊',
     color: 'from-emerald-500 to-teal-500',
   },
+  {
+    name: 'Photo Grid Aligner',
+    description: 'Overlay a grid on photos and align with manual transforms or auto edge detection',
+    href: '/tools/photo-grid-aligner',
+    icon: '📐',
+    color: 'from-sky-500 to-blue-500',
+  },
 ];
 
 export default function ToolsPage() {
