@@ -1,12 +1,12 @@
 import Link from 'next/link';
-import PhotoGridAligner from '@/components/tools/PhotoGridAligner';
+import PhotoEditor from '@/components/tools/PhotoEditor';
 
 export const metadata = {
-  title: 'Photo Grid Aligner | Jorge Romero Romanis',
-  description: 'Upload a photo, overlay a configurable grid, and align it using manual transforms or automatic edge detection. 100% local processing.',
+  title: 'Photo Editor | Jorge Romero Romanis',
+  description: 'Align photos to a grid with manual transforms or auto edge detection, and enhance colors with auto-levels, white balance, and manual adjustments. 100% local processing.',
 };
 
-export default function PhotoGridAlignerPage() {
+export default function PhotoEditorPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <Link
@@ -31,15 +31,15 @@ export default function PhotoGridAlignerPage() {
 
       <div className="text-center mb-12">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Photo Grid Aligner
+          Photo Editor
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Upload a photo, overlay a configurable grid, and manually rotate/scale/pan
-          to align it — or let auto-align detect and correct the skew for you.
+          Align photos to a grid with rotation, scale, pan, and auto-align — then enhance
+          colors with auto-levels, white balance, and manual adjustments.
         </p>
       </div>
 
-      <PhotoGridAligner />
+      <PhotoEditor />
     </div>
   );
 }

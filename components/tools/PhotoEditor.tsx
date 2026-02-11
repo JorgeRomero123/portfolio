@@ -18,13 +18,29 @@ import {
   isInsideCrop,
   renderForExport,
 } from '@/lib/photo-grid-aligner';
+import {
+  type ColorAdjustments,
+  DEFAULT_ADJUSTMENTS,
+  isDefaultAdjustments,
+  applyAllAdjustments,
+  downsampleImage,
+} from '@/lib/photo-color-enhancer';
+import {
+  TransformPanel,
+  GridPanel,
+  CropPanel,
+  AutoColorPanel,
+  ManualColorPanel,
+  PresetsPanel,
+} from './photo-editor/EditorPanels';
 
 type CropAction =
   | { type: 'resize'; handle: HandleName; originCrop: CropRect }
   | { type: 'move'; startX: number; startY: number; originCrop: CropRect }
   | { type: 'draw'; startX: number; startY: number };
 
-export default function PhotoGridAligner() {
+export default function PhotoEditor() {
+  // --- State ---
   const [originalImage, setOriginalImage] = useState<HTMLImageElement | null>(null);
   const [fileName, setFileName] = useState('');
   const [dragActive, setDragActive] = useState(false);
@@ -40,16 +56,20 @@ export default function PhotoGridAligner() {
   const [cropMode, setCropMode] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
 
+  const [canvasDisplaySize, setCanvasDisplaySize] = useState({ width: 800, height: 600 });
+  const [adjustments, setAdjustments] = useState<ColorAdjustments>(DEFAULT_ADJUSTMENTS);
+  const [activeTab, setActiveTab] = useState<'transform' | 'color'>('transform');
+
+  // --- Refs ---
+  const originalImageDataRef = useRef<ImageData | null>(null);
+  const previewImageDataRef = useRef<ImageData | null>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
   const isPanningRef = useRef(false);
   const lastPointerRef = useRef({ x: 0, y: 0 });
   const cropActionRef = useRef<CropAction | null>(null);
 
-  const [canvasDisplaySize, setCanvasDisplaySize] = useState({ width: 800, height: 600 });
-
-  // Compute display size when image loads or container resizes
+  // Compute display size when image loads
   useEffect(() => {
     if (!originalImage || !containerRef.current) return;
     const maxW = containerRef.current.clientWidth;
@@ -72,12 +92,21 @@ export default function PhotoGridAligner() {
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
+        const fullCanvas = document.createElement('canvas');
+        fullCanvas.width = img.width;
+        fullCanvas.height = img.height;
+        const fullCtx = fullCanvas.getContext('2d')!;
+        fullCtx.drawImage(img, 0, 0);
+        originalImageDataRef.current = fullCtx.getImageData(0, 0, img.width, img.height);
+        previewImageDataRef.current = downsampleImage(img, 1000);
+
         setOriginalImage(img);
         setFileName(file.name.replace(/\.[^/.]+$/, ''));
         setTransform(DEFAULT_TRANSFORM);
         setAutoAlignResult(null);
         setCrop(null);
         setCropMode(false);
+        setAdjustments(DEFAULT_ADJUSTMENTS);
         setIsProcessing(false);
       };
       img.onerror = () => setIsProcessing(false);
@@ -124,32 +153,38 @@ export default function PhotoGridAligner() {
     if (showOriginal) {
       drawTransformedImage(ctx, originalImage, cw, ch, DEFAULT_TRANSFORM);
     } else {
-      drawTransformedImage(ctx, originalImage, cw, ch, transform);
+      const defaultAdj = isDefaultAdjustments(adjustments);
+      if (!defaultAdj && previewImageDataRef.current) {
+        const processed = applyAllAdjustments(previewImageDataRef.current, adjustments);
+        const tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width = processed.width;
+        tmpCanvas.height = processed.height;
+        const tmpCtx = tmpCanvas.getContext('2d')!;
+        tmpCtx.putImageData(processed, 0, 0);
+        drawTransformedImage(ctx, tmpCanvas, cw, ch, transform);
+      } else {
+        drawTransformedImage(ctx, originalImage, cw, ch, transform);
+      }
       drawGrid(ctx, cw, ch, grid);
       if (crop) {
         drawCropOverlay(ctx, cw, ch, crop);
       }
     }
-  }, [originalImage, transform, grid, canvasDisplaySize, crop, showOriginal]);
+  }, [originalImage, transform, grid, canvasDisplaySize, crop, showOriginal, adjustments]);
 
-  // ---------- Canvas pointer helpers ----------
+  // ---------- Pointer events ----------
   const getCanvasCoords = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = previewCanvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }, []);
 
-  // ---------- Pointer events ----------
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     (e.target as HTMLCanvasElement).setPointerCapture(e.pointerId);
 
     if (cropMode) {
       const { x, y } = getCanvasCoords(e);
-
       if (crop) {
         const handle = hitTestHandle(crop, x, y);
         if (handle) {
@@ -161,13 +196,11 @@ export default function PhotoGridAligner() {
           return;
         }
       }
-      // Draw new crop
       cropActionRef.current = { type: 'draw', startX: x, startY: y };
       setCrop({ x, y, width: 0, height: 0 });
       return;
     }
 
-    // Pan mode
     isPanningRef.current = true;
     lastPointerRef.current = { x: e.clientX, y: e.clientY };
   }, [cropMode, crop, getCanvasCoords]);
@@ -194,9 +227,12 @@ export default function PhotoGridAligner() {
         const dx = x - action.startX;
         const dy = y - action.startY;
         const oc = action.originCrop;
-        const nx = Math.max(0, Math.min(oc.x + dx, cw - oc.width));
-        const ny = Math.max(0, Math.min(oc.y + dy, ch - oc.height));
-        setCrop({ x: nx, y: ny, width: oc.width, height: oc.height });
+        setCrop({
+          x: Math.max(0, Math.min(oc.x + dx, cw - oc.width)),
+          y: Math.max(0, Math.min(oc.y + dy, ch - oc.height)),
+          width: oc.width,
+          height: oc.height,
+        });
         return;
       }
 
@@ -205,7 +241,6 @@ export default function PhotoGridAligner() {
         let { x: cx, y: cy, width: cWidth, height: cHeight } = oc;
         const handle = action.handle;
 
-        // Adjust edges based on which handle is dragged
         if (handle.includes('Left')) {
           const newX = Math.max(0, Math.min(x, cx + cWidth - 1));
           cWidth = cx + cWidth - newX;
@@ -222,8 +257,6 @@ export default function PhotoGridAligner() {
         if (handle.includes('bottom') || handle === 'bottomMid') {
           cHeight = Math.max(1, Math.min(y - cy, ch - cy));
         }
-
-        // Edge midpoints only move one axis
         if (handle === 'leftMid' || handle === 'rightMid') {
           cy = oc.y;
           cHeight = oc.height;
@@ -234,7 +267,6 @@ export default function PhotoGridAligner() {
         }
 
         setCrop({ x: cx, y: cy, width: cWidth, height: cHeight });
-        return;
       }
       return;
     }
@@ -292,24 +324,16 @@ export default function PhotoGridAligner() {
     if (!originalImage) return;
     const { width: cw, height: ch } = canvasDisplaySize;
     const fitScale = Math.min(cw / originalImage.width, ch / originalImage.height);
-
     const inscribed = computeInscribedCrop(originalImage.width, originalImage.height, transform.rotation);
 
-    // Scale inscribed dimensions to canvas-display space
     const cropW = inscribed.width * fitScale * transform.scale;
     const cropH = inscribed.height * fitScale * transform.scale;
-
-    // Center in canvas (offset by translate)
     const cx = cw / 2 + transform.translateX - cropW / 2;
     const cy = ch / 2 + transform.translateY - cropH / 2;
 
-    // Clamp to canvas bounds
     const clampedX = Math.max(0, cx);
     const clampedY = Math.max(0, cy);
-    const clampedW = Math.min(cropW, cw - clampedX);
-    const clampedH = Math.min(cropH, ch - clampedY);
-
-    setCrop({ x: clampedX, y: clampedY, width: clampedW, height: clampedH });
+    setCrop({ x: clampedX, y: clampedY, width: Math.min(cropW, cw - clampedX), height: Math.min(cropH, ch - clampedY) });
     setCropMode(true);
   }, [originalImage, canvasDisplaySize, transform]);
 
@@ -317,19 +341,25 @@ export default function PhotoGridAligner() {
   const downloadImage = useCallback(() => {
     if (!originalImage) return;
 
-    const outCanvas = renderForExport(
-      originalImage,
-      transform,
-      canvasDisplaySize.width,
-      canvasDisplaySize.height,
-      crop,
-    );
+    const defaultAdj = isDefaultAdjustments(adjustments);
+    let source: HTMLImageElement | HTMLCanvasElement = originalImage;
 
+    if (!defaultAdj && originalImageDataRef.current) {
+      const processed = applyAllAdjustments(originalImageDataRef.current, adjustments);
+      const tmpCanvas = document.createElement('canvas');
+      tmpCanvas.width = processed.width;
+      tmpCanvas.height = processed.height;
+      const tmpCtx = tmpCanvas.getContext('2d')!;
+      tmpCtx.putImageData(processed, 0, 0);
+      source = tmpCanvas;
+    }
+
+    const outCanvas = renderForExport(source, transform, canvasDisplaySize.width, canvasDisplaySize.height, crop);
     const link = document.createElement('a');
-    link.download = `${fileName}_aligned.png`;
+    link.download = `${fileName}_edited.png`;
     link.href = outCanvas.toDataURL('image/png');
     link.click();
-  }, [originalImage, transform, fileName, crop, canvasDisplaySize]);
+  }, [originalImage, transform, fileName, crop, canvasDisplaySize, adjustments]);
 
   // ---------- Reset ----------
   const reset = () => {
@@ -341,6 +371,9 @@ export default function PhotoGridAligner() {
     setCrop(null);
     setCropMode(false);
     setShowOriginal(false);
+    setAdjustments(DEFAULT_ADJUSTMENTS);
+    originalImageDataRef.current = null;
+    previewImageDataRef.current = null;
   };
 
   // ---------- Render ----------
@@ -350,7 +383,7 @@ export default function PhotoGridAligner() {
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Upload Image</h2>
           <p className="text-gray-600 mb-6">
-            Upload a photo to align it to a grid. Supports PNG, JPG, WebP, and other formats.
+            Upload a photo to align and enhance. Supports PNG, JPG, WebP, and other formats.
           </p>
 
           <div
@@ -361,7 +394,7 @@ export default function PhotoGridAligner() {
             onDrop={handleDrop}
           >
             <label
-              htmlFor="grid-image-upload"
+              htmlFor="photo-editor-upload"
               className={`flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
                 dragActive
                   ? 'border-blue-500 bg-blue-50'
@@ -388,7 +421,7 @@ export default function PhotoGridAligner() {
                 <p className="text-xs text-gray-500">PNG, JPG, WebP, GIF</p>
               </div>
               <input
-                id="grid-image-upload"
+                id="photo-editor-upload"
                 type="file"
                 className="hidden"
                 accept="image/*"
@@ -412,7 +445,7 @@ export default function PhotoGridAligner() {
         <div className="space-y-4">
           {/* Header */}
           <div className="bg-white rounded-lg shadow-md p-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900">Grid Aligner</h2>
+            <h2 className="text-xl font-bold text-gray-900">Photo Editor</h2>
             <button onClick={reset} className="text-gray-500 hover:text-gray-700 transition-colors">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -420,237 +453,60 @@ export default function PhotoGridAligner() {
             </button>
           </div>
 
-          {/* Controls row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Transform controls */}
-            <div className="bg-white rounded-lg shadow-md p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Transform</h3>
-
-              {/* Rotation */}
-              <div className="mb-3">
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-gray-600">Rotation</label>
-                  <span className="text-xs font-bold text-blue-600">{transform.rotation.toFixed(1)}°</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setTransform((t) => ({ ...t, rotation: Math.max(-180, t.rotation - 0.1) }))}
-                    className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors"
-                  >
-                    -0.1
-                  </button>
-                  <input
-                    type="range"
-                    min="-180"
-                    max="180"
-                    step="0.1"
-                    value={transform.rotation}
-                    onChange={(e) => setTransform((t) => ({ ...t, rotation: Number(e.target.value) }))}
-                    className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                  />
-                  <button
-                    onClick={() => setTransform((t) => ({ ...t, rotation: Math.min(180, t.rotation + 0.1) }))}
-                    className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors"
-                  >
-                    +0.1
-                  </button>
-                </div>
-              </div>
-
-              {/* Scale */}
-              <div className="mb-3">
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-gray-600">Scale</label>
-                  <span className="text-xs font-bold text-blue-600">{transform.scale.toFixed(2)}x</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="5"
-                  step="0.01"
-                  value={transform.scale}
-                  onChange={(e) => setTransform((t) => ({ ...t, scale: Number(e.target.value) }))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                />
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setTransform(DEFAULT_TRANSFORM);
-                    setAutoAlignResult(null);
-                  }}
-                  className="flex-1 px-3 py-2 text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-colors font-medium"
-                >
-                  Reset
-                </button>
-                <button
-                  onClick={autoAlign}
-                  disabled={isAutoAligning}
-                  className="flex-1 px-3 py-2 text-xs bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 rounded-md transition-colors font-medium"
-                >
-                  {isAutoAligning ? 'Detecting...' : 'Auto-Align'}
-                </button>
-              </div>
-
-              {/* Flip buttons */}
-              <div className="flex gap-2 mt-2">
-                <button
-                  onClick={() => setTransform((t) => ({ ...t, flipH: !t.flipH }))}
-                  className={`flex-1 px-3 py-2 text-xs rounded-md transition-colors font-medium ${
-                    transform.flipH
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Flip H
-                </button>
-                <button
-                  onClick={() => setTransform((t) => ({ ...t, flipV: !t.flipV }))}
-                  className={`flex-1 px-3 py-2 text-xs rounded-md transition-colors font-medium ${
-                    transform.flipV
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Flip V
-                </button>
-              </div>
-
-              {autoAlignResult && (
-                <p className="mt-2 text-xs text-center text-gray-600 bg-gray-50 rounded p-1.5">
-                  {autoAlignResult}
-                </p>
-              )}
-            </div>
-
-            {/* Grid settings */}
-            <div className="bg-white rounded-lg shadow-md p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-700">Grid</h3>
-                <button
-                  onClick={() => setGrid((g) => ({ ...g, visible: !g.visible }))}
-                  className={`px-2 py-1 text-xs rounded transition-colors ${
-                    grid.visible ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
-                  }`}
-                >
-                  {grid.visible ? 'ON' : 'OFF'}
-                </button>
-              </div>
-
-              {/* Cell size */}
-              <div className="mb-3">
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-gray-600">Cell Size</label>
-                  <span className="text-xs font-bold text-blue-600">{grid.cellSize}px</span>
-                </div>
-                <input
-                  type="range"
-                  min="10"
-                  max="200"
-                  value={grid.cellSize}
-                  onChange={(e) => setGrid((g) => ({ ...g, cellSize: Number(e.target.value) }))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                />
-              </div>
-
-              {/* Color + opacity row */}
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                <div>
-                  <label className="text-xs font-medium text-gray-600 block mb-1">Color</label>
-                  <input
-                    type="color"
-                    value={grid.color}
-                    onChange={(e) => setGrid((g) => ({ ...g, color: e.target.value }))}
-                    className="w-full h-8 rounded cursor-pointer border border-gray-200"
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-medium text-gray-600">Opacity</label>
-                    <span className="text-xs font-bold text-blue-600">{grid.opacity}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="5"
-                    max="100"
-                    value={grid.opacity}
-                    onChange={(e) => setGrid((g) => ({ ...g, opacity: Number(e.target.value) }))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                  />
-                </div>
-              </div>
-
-              {/* Line width */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-gray-600">Line Width</label>
-                  <span className="text-xs font-bold text-blue-600">{grid.lineWidth}px</span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="5"
-                  value={grid.lineWidth}
-                  onChange={(e) => setGrid((g) => ({ ...g, lineWidth: Number(e.target.value) }))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                />
-              </div>
-            </div>
-
-            {/* Crop settings */}
-            <div className="bg-white rounded-lg shadow-md p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-700">Crop</h3>
-                <button
-                  onClick={() => {
-                    setCropMode((m) => !m);
-                    if (cropMode) setCrop(null);
-                  }}
-                  className={`px-2 py-1 text-xs rounded transition-colors ${
-                    cropMode ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
-                  }`}
-                >
-                  {cropMode ? 'ON' : 'OFF'}
-                </button>
-              </div>
-
-              <button
-                onClick={autoFitCrop}
-                className="w-full px-3 py-2 text-xs bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors font-medium mb-3"
-              >
-                Auto-fit (inscribed rect)
-              </button>
-
-              {crop && (
-                <>
-                  <div className="text-xs text-gray-600 space-y-1 mb-3">
-                    <p>
-                      <span className="font-medium">Position:</span>{' '}
-                      {Math.round(crop.x)}, {Math.round(crop.y)}
-                    </p>
-                    <p>
-                      <span className="font-medium">Size:</span>{' '}
-                      {Math.round(crop.width)} &times; {Math.round(crop.height)} px
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setCrop(null)}
-                    className="w-full px-3 py-2 text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-colors font-medium"
-                  >
-                    Clear Crop
-                  </button>
-                </>
-              )}
-
-              {!crop && cropMode && (
-                <p className="text-xs text-gray-500">
-                  Draw a crop rectangle on the canvas, or use Auto-fit.
-                </p>
-              )}
-            </div>
+          {/* Tab switcher */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab('transform')}
+              className={`flex-1 px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                activeTab === 'transform'
+                  ? 'bg-white text-gray-900 shadow-md'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              }`}
+            >
+              Transform & Grid
+            </button>
+            <button
+              onClick={() => setActiveTab('color')}
+              className={`flex-1 px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                activeTab === 'color'
+                  ? 'bg-white text-gray-900 shadow-md'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              }`}
+            >
+              Color
+            </button>
           </div>
+
+          {/* Transform / Grid / Crop tab */}
+          {activeTab === 'transform' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <TransformPanel
+                transform={transform}
+                setTransform={setTransform}
+                isAutoAligning={isAutoAligning}
+                autoAlignResult={autoAlignResult}
+                setAutoAlignResult={setAutoAlignResult}
+                onAutoAlign={autoAlign}
+              />
+              <GridPanel grid={grid} setGrid={setGrid} />
+              <CropPanel
+                crop={crop}
+                setCrop={setCrop}
+                cropMode={cropMode}
+                setCropMode={setCropMode}
+                onAutoFitCrop={autoFitCrop}
+              />
+            </div>
+          )}
+
+          {/* Color tab */}
+          {activeTab === 'color' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <AutoColorPanel adjustments={adjustments} setAdjustments={setAdjustments} />
+              <ManualColorPanel adjustments={adjustments} setAdjustments={setAdjustments} />
+              <PresetsPanel setAdjustments={setAdjustments} />
+            </div>
+          )}
 
           {/* Canvas preview */}
           <div ref={containerRef} className="bg-white rounded-lg shadow-md p-4">
@@ -694,7 +550,7 @@ export default function PhotoGridAligner() {
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            {crop ? 'Download Cropped PNG' : 'Download Aligned PNG'} (no grid)
+            {crop ? 'Download Cropped PNG' : 'Download PNG'} (no grid)
           </button>
         </div>
       )}
@@ -709,7 +565,8 @@ export default function PhotoGridAligner() {
             <p className="font-semibold text-gray-700 mb-1">100% Local Processing</p>
             <p>
               Your images are processed entirely in your browser using the Canvas API. Nothing is uploaded to any server.
-              Auto-align uses Sobel edge detection to find and correct dominant skew angles.
+              Grid alignment uses Sobel edge detection for auto-align. Color adjustments include auto-levels,
+              white balance, brightness, contrast, saturation, and temperature.
             </p>
           </div>
         </div>

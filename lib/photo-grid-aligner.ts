@@ -209,7 +209,7 @@ export function drawGrid(
 /** Draw the image centered in canvas with rotate/scale/translate. */
 export function drawTransformedImage(
   ctx: CanvasRenderingContext2D,
-  image: HTMLImageElement,
+  image: HTMLImageElement | HTMLCanvasElement,
   cw: number,
   ch: number,
   transform: Transform,
@@ -336,7 +336,7 @@ export function isInsideCrop(crop: CropRect, px: number, py: number): boolean {
  * - Without crop: renders at original image W×H centered (clips to original dimensions, no expanded bounding box)
  */
 export function renderForExport(
-  image: HTMLImageElement,
+  image: HTMLImageElement | HTMLCanvasElement,
   transform: Transform,
   canvasDisplayW: number,
   canvasDisplayH: number,
