@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { removeBackground } from '@imgly/background-removal';
 
-type Tool = 'erase' | 'restore';
+type Tool = 'erase' | 'restore' | 'restore-original';
 
 /**
  * Background Remover Tool
@@ -31,6 +31,7 @@ export default function BackgroundRemover() {
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
   const lastDrawPointRef = useRef<{ x: number; y: number } | null>(null);
+  const originalImageDataRef = useRef<ImageData | null>(null);
 
   // Canvas refs
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -83,17 +84,28 @@ export default function BackgroundRemover() {
     // Create composite image
     const compositeData = ctx.createImageData(processedImageData.width, processedImageData.height);
 
+    const origData = originalImageDataRef.current;
+
     for (let i = 0; i < processedImageData.data.length; i += 4) {
-      // Use mask alpha to determine visibility
       const maskAlpha = maskData.data[i + 3];
 
       if (maskAlpha > 0) {
-        compositeData.data[i] = processedImageData.data[i];     // R
-        compositeData.data[i + 1] = processedImageData.data[i + 1]; // G
-        compositeData.data[i + 2] = processedImageData.data[i + 2]; // B
-        compositeData.data[i + 3] = processedImageData.data[i + 3]; // A from processed
+        // Green channel distinguishes source: white (G=255) = processed, red (G=0) = original
+        if (maskData.data[i + 1] < 128 && origData) {
+          // Restore original: use original image RGB at full opacity
+          compositeData.data[i] = origData.data[i];
+          compositeData.data[i + 1] = origData.data[i + 1];
+          compositeData.data[i + 2] = origData.data[i + 2];
+          compositeData.data[i + 3] = 255;
+        } else {
+          // Normal: use processed image RGB + A
+          compositeData.data[i] = processedImageData.data[i];
+          compositeData.data[i + 1] = processedImageData.data[i + 1];
+          compositeData.data[i + 2] = processedImageData.data[i + 2];
+          compositeData.data[i + 3] = processedImageData.data[i + 3];
+        }
       } else {
-        compositeData.data[i + 3] = 0; // Fully transparent
+        compositeData.data[i + 3] = 0;
       }
     }
 
@@ -233,6 +245,14 @@ export default function BackgroundRemover() {
       resultCtx.drawImage(resultImg, 0, 0);
       const imageData = resultCtx.getImageData(0, 0, resultCanvas.width, resultCanvas.height);
 
+      // Extract original image pixel data at the same dimensions
+      const origCanvas = document.createElement('canvas');
+      origCanvas.width = imageData.width;
+      origCanvas.height = imageData.height;
+      const origCtx = origCanvas.getContext('2d')!;
+      origCtx.drawImage(originalImage, 0, 0, imageData.width, imageData.height);
+      originalImageDataRef.current = origCtx.getImageData(0, 0, imageData.width, imageData.height);
+
       setProcessedImageData(imageData);
       initializeMask(imageData);
 
@@ -362,11 +382,12 @@ export default function BackgroundRemover() {
     // Set up the composite operation
     if (activeTool === 'erase') {
       maskCtx.globalCompositeOperation = 'destination-out';
+      maskCtx.fillStyle = 'white';
     } else {
       maskCtx.globalCompositeOperation = 'source-over';
+      // White (G=255) = show processed, Red (G=0) = show original
+      maskCtx.fillStyle = activeTool === 'restore-original' ? 'red' : 'white';
     }
-
-    maskCtx.fillStyle = 'white';
 
     // If we have a previous point, fill circles along the path for smooth strokes
     if (lastDrawPointRef.current) {
@@ -418,14 +439,23 @@ export default function BackgroundRemover() {
     // Create final image
     const finalData = ctx.createImageData(processedImageData.width, processedImageData.height);
 
+    const origData = originalImageDataRef.current;
+
     for (let i = 0; i < processedImageData.data.length; i += 4) {
       const maskAlpha = maskData.data[i + 3];
 
       if (maskAlpha > 0) {
-        finalData.data[i] = processedImageData.data[i];
-        finalData.data[i + 1] = processedImageData.data[i + 1];
-        finalData.data[i + 2] = processedImageData.data[i + 2];
-        finalData.data[i + 3] = processedImageData.data[i + 3];
+        if (maskData.data[i + 1] < 128 && origData) {
+          finalData.data[i] = origData.data[i];
+          finalData.data[i + 1] = origData.data[i + 1];
+          finalData.data[i + 2] = origData.data[i + 2];
+          finalData.data[i + 3] = 255;
+        } else {
+          finalData.data[i] = processedImageData.data[i];
+          finalData.data[i + 1] = processedImageData.data[i + 1];
+          finalData.data[i + 2] = processedImageData.data[i + 2];
+          finalData.data[i + 3] = processedImageData.data[i + 3];
+        }
       } else {
         finalData.data[i + 3] = 0;
       }
@@ -451,6 +481,7 @@ export default function BackgroundRemover() {
     setProcessingStatus('');
     setZoom(1);
     setPanOffset({ x: 0, y: 0 });
+    originalImageDataRef.current = null;
   };
 
   /**
@@ -604,6 +635,16 @@ export default function BackgroundRemover() {
                   >
                     Restore
                   </button>
+                  <button
+                    onClick={() => setActiveTool('restore-original')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      activeTool === 'restore-original'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    Restore Original
+                  </button>
                 </div>
 
                 <div className="flex items-center gap-2 flex-1 min-w-[200px]">
@@ -620,7 +661,11 @@ export default function BackgroundRemover() {
                 </div>
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                {activeTool === 'erase' ? 'Click and drag to remove more areas' : 'Click and drag to restore removed areas'}
+                {activeTool === 'erase'
+                  ? 'Click and drag to remove more areas'
+                  : activeTool === 'restore'
+                    ? 'Click and drag to restore removed areas'
+                    : 'Click and drag to restore original image (with background)'}
               </p>
             </div>
           )}
@@ -681,7 +726,7 @@ export default function BackgroundRemover() {
                   cursor: isPanning
                     ? 'grabbing'
                     : processedImageData
-                      ? `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="${Math.max(8, brushSize * 2)}" height="${Math.max(8, brushSize * 2)}" viewBox="0 0 ${Math.max(8, brushSize * 2)} ${Math.max(8, brushSize * 2)}"><circle cx="${Math.max(4, brushSize)}" cy="${Math.max(4, brushSize)}" r="${Math.max(3, brushSize - 1)}" fill="none" stroke="${activeTool === 'erase' ? '%23ef4444' : '%2322c55e'}" stroke-width="2"/></svg>') ${Math.max(4, brushSize)} ${Math.max(4, brushSize)}, crosshair`
+                      ? `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="${Math.max(8, brushSize * 2)}" height="${Math.max(8, brushSize * 2)}" viewBox="0 0 ${Math.max(8, brushSize * 2)} ${Math.max(8, brushSize * 2)}"><circle cx="${Math.max(4, brushSize)}" cy="${Math.max(4, brushSize)}" r="${Math.max(3, brushSize - 1)}" fill="none" stroke="${activeTool === 'erase' ? '%23ef4444' : activeTool === 'restore-original' ? '%233b82f6' : '%2322c55e'}" stroke-width="2"/></svg>') ${Math.max(4, brushSize)} ${Math.max(4, brushSize)}, crosshair`
                       : 'default',
                 }}
                 onMouseDown={handleCanvasMouseDown}
