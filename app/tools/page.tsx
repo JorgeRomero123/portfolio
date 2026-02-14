@@ -83,6 +83,13 @@ const tools = [
     icon: '🎨',
     color: 'from-yellow-500 to-orange-500',
   },
+  {
+    name: 'Video to GIF',
+    description: 'Upload a video and create an animated GIF from a selected time range',
+    href: '/tools/video-to-gif',
+    icon: '🎬',
+    color: 'from-violet-500 to-purple-500',
+  },
 ];
 
 export default function ToolsPage() {
