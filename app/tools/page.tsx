@@ -97,6 +97,13 @@ const tools = [
     icon: '🔲',
     color: 'from-cyan-500 to-blue-500',
   },
+  {
+    name: 'Ficha Técnica',
+    description: 'Generate professional real estate property listing PDFs',
+    href: '/tools/ficha-tecnica',
+    icon: '🏠',
+    color: 'from-amber-500 to-orange-500',
+  },
 ];
 
 export default function ToolsPage() {
