@@ -11,12 +11,14 @@ interface Gallery360ClientProps {
 export default function Gallery360Client({ photos }: Gallery360ClientProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo360>(photos[0]);
 
-  // Convert photo URLs to use proxy if they're from R2
+  // Convert photo URLs to use proxy for CORS-safe loading
+  const proxyUrl = (url: string) => `/api/proxy-360?url=${encodeURIComponent(url)}`;
+
   const proxiedPhoto = useMemo(() => {
-    if (selectedPhoto.url.includes('r2.dev')) {
+    if (selectedPhoto.url.includes('r2.dev') || selectedPhoto.url.includes('cdn.jorgeromeroromanis.com')) {
       return {
         ...selectedPhoto,
-        url: `/api/proxy-360?url=${encodeURIComponent(selectedPhoto.url)}`,
+        url: proxyUrl(selectedPhoto.url),
       };
     }
     return selectedPhoto;
@@ -66,7 +68,7 @@ export default function Gallery360Client({ photos }: Gallery360ClientProps) {
                 {/* Thumbnail preview (using a scaled down version of the 360 image) */}
                 <div
                   className="w-full h-full bg-cover bg-center"
-                  style={{ backgroundImage: `url(${photo.url})` }}
+                  style={{ backgroundImage: `url(${proxyUrl(photo.url)})` }}
                 />
 
                 {/* Overlay with title */}
