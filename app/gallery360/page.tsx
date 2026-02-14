@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import Gallery360Client from '@/components/Gallery360Client';
+import Link from 'next/link';
 import type { Photo360Data } from '@/lib/types';
 
 export const metadata = {
@@ -8,7 +8,6 @@ export const metadata = {
   description: 'Explore immersive 360° panoramic photographs',
 };
 
-// Revalidate every time the page is requested to show new uploads immediately
 export const revalidate = 0;
 
 async function get360Photos(): Promise<Photo360Data> {
@@ -28,11 +27,42 @@ export default async function Gallery360Page() {
             360° Photo Gallery
           </h1>
           <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-            Immersive panoramic photographs. Click and drag to look around, scroll to zoom.
+            Immersive panoramic photographs. Tap on a photo to explore it in full 360°.
           </p>
         </div>
 
-        <Gallery360Client photos={data.photos} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {data.photos.map((photo) => (
+            <Link key={photo.id} href={`/gallery360/${photo.id}`}>
+              <div className="group relative aspect-video rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all cursor-pointer">
+                {/* Thumbnail — uses a low-res proxy preview */}
+                <div
+                  className="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+                  style={{
+                    backgroundImage: `url(/api/proxy-360?url=${encodeURIComponent(photo.url)})`,
+                  }}
+                />
+
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-4">
+                  <div>
+                    <p className="text-white font-semibold text-lg">{photo.title}</p>
+                    {photo.category && photo.category !== 'Uncategorized' && (
+                      <span className="inline-block mt-1 px-2 py-0.5 bg-blue-600/80 text-white text-xs rounded-full">
+                        {photo.category}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* 360° badge */}
+                <div className="absolute top-3 right-3 bg-blue-600 text-white text-xs px-2.5 py-1 rounded-full font-semibold shadow-lg">
+                  360°
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
 
         <div className="mt-12 bg-blue-50 border border-blue-200 rounded-lg p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-3">How to Navigate</h2>
@@ -50,9 +80,6 @@ export default async function Gallery360Page() {
               <p className="text-sm">Swipe to pan, pinch to zoom</p>
             </div>
           </div>
-          <p className="text-sm text-gray-600 mt-4">
-            💡 Tip: The photo will auto-rotate after a few seconds of inactivity. Click the fullscreen button for an immersive experience!
-          </p>
         </div>
       </div>
     </div>
