@@ -90,6 +90,13 @@ const tools = [
     icon: '🎬',
     color: 'from-violet-500 to-purple-500',
   },
+  {
+    name: 'Image Splitter',
+    description: 'Split a large image into a grid of smaller images',
+    href: '/tools/image-splitter',
+    icon: '🔲',
+    color: 'from-cyan-500 to-blue-500',
+  },
 ];
 
 export default function ToolsPage() {
