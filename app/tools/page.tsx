@@ -104,6 +104,13 @@ const tools = [
     icon: '🏠',
     color: 'from-amber-500 to-orange-500',
   },
+  {
+    name: 'Card Games',
+    description: 'Play poker with friends in real-time',
+    href: '/tools/card-games',
+    icon: '♠️',
+    color: 'from-emerald-600 to-green-700',
+  },
 ];
 
 export default function ToolsPage() {
