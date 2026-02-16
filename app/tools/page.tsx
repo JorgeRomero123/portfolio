@@ -111,6 +111,13 @@ const tools = [
     icon: '♠️',
     color: 'from-emerald-600 to-green-700',
   },
+  {
+    name: 'YouTube Transcript',
+    description: 'Extract transcripts and captions from any YouTube video',
+    href: '/tools/youtube-transcript',
+    icon: '📝',
+    color: 'from-red-500 to-rose-600',
+  },
 ];
 
 export default function ToolsPage() {
