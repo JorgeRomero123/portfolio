@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { RoomConfig, FilteredGameState, PokerActionType } from '@/lib/card-games/types';
-import { DEFAULT_CONFIG, MIN_PLAYERS_TO_START } from '@/lib/card-games/constants';
+import { RoomConfig, FilteredGameState, FilteredAnyGameState, FilteredBlackjackState, PokerActionType, BlackjackActionType } from '@/lib/card-games/types';
+import { DEFAULT_CONFIG, MIN_PLAYERS_TO_START, MIN_BLACKJACK_PLAYERS } from '@/lib/card-games/constants';
 import Lobby, { generateRoomCode } from './Lobby';
 import RoomWaiting from './RoomWaiting';
 import PokerTable from './PokerTable';
+import BlackjackTable from './BlackjackTable';
 import { usePusher } from './usePusher';
 import { usePokerGame } from './usePokerGame';
+import { useBlackjackGame } from './useBlackjackGame';
 
 type View = 'lobby' | 'waiting' | 'playing';
 
@@ -22,7 +24,7 @@ export default function CardGames({ initialRoomCode }: CardGamesProps) {
   const [playerName, setPlayerName] = useState('');
   const [isHost, setIsHost] = useState(false);
   const [config, setConfig] = useState<RoomConfig>(DEFAULT_CONFIG);
-  const [hostGameState, setHostGameState] = useState<FilteredGameState | null>(null);
+  const [hostGameState, setHostGameState] = useState<FilteredAnyGameState | null>(null);
 
   const pusher = usePusher({
     roomCode,
@@ -38,10 +40,10 @@ export default function CardGames({ initialRoomCode }: CardGamesProps) {
   // The displayed game state: host uses locally computed state; non-host uses Pusher state
   const gameState = isHost ? hostGameState : pusherGameState;
 
-  const pendingBroadcast = useRef<Record<string, FilteredGameState> | null>(null);
+  const pendingBroadcast = useRef<Record<string, FilteredAnyGameState> | null>(null);
   const broadcastInFlight = useRef(false);
 
-  const flushBroadcast = useCallback(async (playerStates: Record<string, FilteredGameState>) => {
+  const flushBroadcast = useCallback(async (playerStates: Record<string, FilteredAnyGameState>) => {
     try {
       await fetch('/api/card-games/broadcast', {
         method: 'POST',
@@ -56,7 +58,7 @@ export default function CardGames({ initialRoomCode }: CardGamesProps) {
     }
   }, [roomCode]);
 
-  const handleBroadcast = useCallback(async (playerStates: Record<string, FilteredGameState>) => {
+  const handleBroadcast = useCallback(async (playerStates: Record<string, FilteredAnyGameState>) => {
     // Host updates its own local state immediately
     if (playerStates[playerId]) {
       setHostGameState(playerStates[playerId]);
@@ -81,7 +83,20 @@ export default function CardGames({ initialRoomCode }: CardGamesProps) {
     broadcastInFlight.current = false;
   }, [playerId, flushBroadcast]);
 
+  // Poker-compatible broadcast wrapper
+  const handlePokerBroadcast = useCallback((playerStates: Record<string, FilteredGameState>) => {
+    handleBroadcast(playerStates);
+  }, [handleBroadcast]);
+
   const poker = usePokerGame({
+    isHost,
+    roomCode,
+    config,
+    players: members.map(m => ({ id: m.id, name: m.info.name })),
+    onBroadcast: handlePokerBroadcast,
+  });
+
+  const blackjack = useBlackjackGame({
     isHost,
     roomCode,
     config,
@@ -89,22 +104,38 @@ export default function CardGames({ initialRoomCode }: CardGamesProps) {
     onBroadcast: handleBroadcast,
   });
 
+  // Determine effective game type
+  const effectiveGameType = isHost
+    ? config.gameType
+    : (gameState?.gameType ?? config.gameType);
+
   // Host listens to client events via Pusher
   useEffect(() => {
     if (!isHost || !setOnAction) return;
 
     setOnAction((event: string, data: Record<string, unknown>) => {
       if (event === 'client-start-game') {
-        poker.startGame();
+        if (config.gameType === 'blackjack') {
+          blackjack.startGame();
+        } else {
+          poker.startGame();
+        }
       } else if (event === 'client-action') {
-        poker.handleAction({
-          playerId: data.playerId as string,
-          type: data.type as PokerActionType,
-          amount: data.amount as number | undefined,
-        });
+        if (config.gameType === 'blackjack') {
+          blackjack.handleAction({
+            playerId: data.playerId as string,
+            type: data.type as BlackjackActionType,
+          });
+        } else {
+          poker.handleAction({
+            playerId: data.playerId as string,
+            type: data.type as PokerActionType,
+            amount: data.amount as number | undefined,
+          });
+        }
       }
     });
-  }, [isHost, setOnAction, poker]);
+  }, [isHost, setOnAction, poker, blackjack, config.gameType]);
 
   const handleCreateRoom = useCallback((name: string, roomConfig: RoomConfig) => {
     const code = generateRoomCode();
@@ -124,16 +155,17 @@ export default function CardGames({ initialRoomCode }: CardGamesProps) {
 
   const handleStartGame = useCallback(() => {
     if (isHost) {
-      // Host starts directly
-      poker.startGame();
+      if (config.gameType === 'blackjack') {
+        blackjack.startGame();
+      } else {
+        poker.startGame();
+      }
       setView('playing');
-      // Also notify others via client event
       sendAction('client-start-game', { playerId });
     } else {
-      // Non-host sends request to host
       sendAction('client-start-game', { playerId });
     }
-  }, [isHost, poker, sendAction, playerId]);
+  }, [isHost, config.gameType, poker, blackjack, sendAction, playerId]);
 
   // Non-host transitions to playing when they receive game state
   useEffect(() => {
@@ -142,15 +174,21 @@ export default function CardGames({ initialRoomCode }: CardGamesProps) {
     }
   }, [isHost, pusherGameState, view]);
 
-  const handleAction = useCallback((type: PokerActionType, amount?: number) => {
+  const handlePokerAction = useCallback((type: PokerActionType, amount?: number) => {
     if (isHost) {
-      // Host processes directly
       poker.handleAction({ playerId, type, amount });
     } else {
-      // Send action to host via Pusher client event
       sendAction('client-action', { playerId, type, amount: amount ?? 0 });
     }
   }, [isHost, poker, sendAction, playerId]);
+
+  const handleBlackjackAction = useCallback((type: BlackjackActionType) => {
+    if (isHost) {
+      blackjack.handleAction({ playerId, type });
+    } else {
+      sendAction('client-action', { playerId, type });
+    }
+  }, [isHost, blackjack, sendAction, playerId]);
 
   if (view === 'lobby') {
     return (
@@ -161,6 +199,8 @@ export default function CardGames({ initialRoomCode }: CardGamesProps) {
       />
     );
   }
+
+  const minPlayers = effectiveGameType === 'blackjack' ? MIN_BLACKJACK_PLAYERS : MIN_PLAYERS_TO_START;
 
   if (view === 'waiting') {
     return (
@@ -177,18 +217,28 @@ export default function CardGames({ initialRoomCode }: CardGamesProps) {
           members={members}
           isHost={isHost}
           onStartGame={handleStartGame}
-          minPlayers={MIN_PLAYERS_TO_START}
+          minPlayers={minPlayers}
         />
       </div>
     );
   }
 
   if (view === 'playing' && gameState) {
+    if (gameState.gameType === 'blackjack') {
+      return (
+        <BlackjackTable
+          gameState={gameState as FilteredBlackjackState}
+          playerId={playerId}
+          onAction={handleBlackjackAction}
+        />
+      );
+    }
+
     return (
       <PokerTable
-        gameState={gameState}
+        gameState={gameState as FilteredGameState}
         playerId={playerId}
-        onAction={handleAction}
+        onAction={handlePokerAction}
       />
     );
   }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { DEFAULT_CONFIG, ROOM_CODE_LENGTH } from '@/lib/card-games/constants';
-import { RoomConfig } from '@/lib/card-games/types';
+import { RoomConfig, GameType } from '@/lib/card-games/types';
 
 interface LobbyProps {
   initialRoomCode?: string;
@@ -42,7 +42,7 @@ export default function Lobby({ initialRoomCode, onCreateRoom, onJoinRoom }: Lob
           <div className="text-center mb-6">
             <div className="text-6xl mb-3">♠️</div>
             <h2 className="text-2xl font-bold text-gray-900">Card Games</h2>
-            <p className="text-gray-500 mt-1">Play poker with friends in real-time</p>
+            <p className="text-gray-500 mt-1">Play cards with friends in real-time</p>
           </div>
           <div className="space-y-3">
             <button
@@ -110,6 +110,28 @@ export default function Lobby({ initialRoomCode, onCreateRoom, onJoinRoom }: Lob
           {mode === 'create' && (
             <div className="bg-gray-50 rounded-lg p-4 space-y-3">
               <h3 className="text-sm font-semibold text-gray-700">Game Settings</h3>
+
+              {/* Game type toggle */}
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Game Type</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {([['poker', "Texas Hold'em"], ['blackjack', 'Blackjack 21']] as [GameType, string][]).map(([type, label]) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setConfig({ ...config, gameType: type })}
+                      className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                        config.gameType === type
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">Starting Chips</label>
@@ -124,22 +146,39 @@ export default function Lobby({ initialRoomCode, onCreateRoom, onJoinRoom }: Lob
                     <option value={5000}>5,000</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Blinds</label>
-                  <select
-                    value={config.smallBlind}
-                    onChange={e => {
-                      const sb = Number(e.target.value);
-                      setConfig({ ...config, smallBlind: sb, bigBlind: sb * 2 });
-                    }}
-                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
-                  >
-                    <option value={5}>5 / 10</option>
-                    <option value={10}>10 / 20</option>
-                    <option value={25}>25 / 50</option>
-                    <option value={50}>50 / 100</option>
-                  </select>
-                </div>
+
+                {config.gameType === 'poker' ? (
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Blinds</label>
+                    <select
+                      value={config.smallBlind}
+                      onChange={e => {
+                        const sb = Number(e.target.value);
+                        setConfig({ ...config, smallBlind: sb, bigBlind: sb * 2 });
+                      }}
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
+                    >
+                      <option value={5}>5 / 10</option>
+                      <option value={10}>10 / 20</option>
+                      <option value={25}>25 / 50</option>
+                      <option value={50}>50 / 100</option>
+                    </select>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Bet per Hand</label>
+                    <select
+                      value={config.betAmount}
+                      onChange={e => setConfig({ ...config, betAmount: Number(e.target.value) })}
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
+                    >
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
           )}

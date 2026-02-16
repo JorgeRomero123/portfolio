@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import PusherClient from 'pusher-js';
-import { FilteredGameState } from '@/lib/card-games/types';
+import { FilteredAnyGameState } from '@/lib/card-games/types';
 
 interface PusherMember {
   id: string;
@@ -18,14 +18,14 @@ interface UsePusherOptions {
 
 interface UsePusherReturn {
   members: PusherMember[];
-  gameState: FilteredGameState | null;
+  gameState: FilteredAnyGameState | null;
   sendAction: (event: string, data: Record<string, unknown>) => void;
   isConnected: boolean;
 }
 
 export function usePusher({ roomCode, playerId, playerName, enabled }: UsePusherOptions): UsePusherReturn {
   const [members, setMembers] = useState<PusherMember[]>([]);
-  const [gameState, setGameState] = useState<FilteredGameState | null>(null);
+  const [gameState, setGameState] = useState<FilteredAnyGameState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const pusherRef = useRef<PusherClient | null>(null);
   const channelRef = useRef<ReturnType<PusherClient['subscribe']> | null>(null);
@@ -74,7 +74,7 @@ export function usePusher({ roomCode, playerId, playerName, enabled }: UsePusher
     });
 
     // Listen for game state updates for this player
-    channel.bind(`state-update-${playerId}`, (data: FilteredGameState) => {
+    channel.bind(`state-update-${playerId}`, (data: FilteredAnyGameState) => {
       setGameState(data);
     });
 

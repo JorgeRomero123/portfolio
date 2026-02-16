@@ -1,5 +1,6 @@
-import { GameState, FilteredGameState, FilteredPlayer } from './types';
+import { GameState, FilteredGameState, FilteredPlayer, BlackjackGameState, FilteredBlackjackState, FilteredBlackjackPlayer, FilteredAnyGameState, Card } from './types';
 import { getValidActions } from './poker-engine';
+import { getValidBlackjackActions, handTotal } from './blackjack-engine';
 
 export function filterStateForPlayer(state: GameState, playerId: string): FilteredGameState {
   const isShowdown = state.round === 'showdown' || !state.handInProgress;
@@ -27,6 +28,7 @@ export function filterStateForPlayer(state: GameState, playerId: string): Filter
     : { actions: [], callAmount: 0, minRaiseTotal: 0, maxRaiseTotal: 0 };
 
   return {
+    gameType: 'poker' as const,
     round: state.round,
     communityCards: state.communityCards,
     pot: state.pot,
@@ -51,6 +53,54 @@ export function filterStateForAllPlayers(state: GameState): Record<string, Filte
   const result: Record<string, FilteredGameState> = {};
   for (const player of state.players) {
     result[player.id] = filterStateForPlayer(state, player.id);
+  }
+  return result;
+}
+
+export function filterBlackjackStateForPlayer(state: BlackjackGameState, playerId: string): FilteredBlackjackState {
+  const playerIdx = state.players.findIndex(p => p.id === playerId);
+
+  // Dealer hole card hidden during play
+  const dealerCards: (Card | null)[] = state.dealerRevealed
+    ? state.dealerCards
+    : [state.dealerCards[0], null];
+
+  const dealerTotal = state.dealerRevealed
+    ? handTotal(state.dealerCards).total
+    : null;
+
+  const filteredPlayers: FilteredBlackjackPlayer[] = state.players.map(p => ({
+    id: p.id,
+    name: p.name,
+    chips: p.chips,
+    hands: p.hands,
+    activeHandIndex: p.activeHandIndex,
+    connected: p.connected,
+  }));
+
+  const isMyTurn = state.phase === 'playing' && state.activePlayerIndex === playerIdx;
+  const validActions = isMyTurn ? getValidBlackjackActions(state) : [];
+
+  return {
+    gameType: 'blackjack' as const,
+    phase: state.phase,
+    dealerCards,
+    dealerTotal,
+    players: filteredPlayers,
+    activePlayerIndex: state.activePlayerIndex,
+    handNumber: state.handNumber,
+    gameLog: state.gameLog,
+    winners: state.winners,
+    handInProgress: state.handInProgress,
+    validActions,
+    betAmount: state.betAmount,
+  };
+}
+
+export function filterBlackjackStateForAllPlayers(state: BlackjackGameState): Record<string, FilteredAnyGameState> {
+  const result: Record<string, FilteredAnyGameState> = {};
+  for (const player of state.players) {
+    result[player.id] = filterBlackjackStateForPlayer(state, player.id);
   }
   return result;
 }

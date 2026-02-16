@@ -6,7 +6,7 @@ export interface Card {
   rank: Rank;
 }
 
-export type GameType = 'poker';
+export type GameType = 'poker' | 'blackjack';
 
 export type PokerRound = 'preflop' | 'flop' | 'turn' | 'river' | 'showdown';
 
@@ -74,6 +74,7 @@ export interface RoomConfig {
   startingChips: number;
   smallBlind: number;
   bigBlind: number;
+  betAmount: number;
   maxPlayers: number;
 }
 
@@ -101,6 +102,7 @@ export interface FilteredPlayer {
 }
 
 export interface FilteredGameState {
+  gameType: 'poker';
   round: PokerRound;
   communityCards: Card[];
   pot: number;
@@ -120,7 +122,82 @@ export interface FilteredGameState {
   maxRaiseTotal: number;
 }
 
+// Blackjack types
+
+export type BlackjackActionType = 'hit' | 'stand' | 'double' | 'split';
+
+export interface BlackjackAction {
+  type: BlackjackActionType;
+  playerId: string;
+}
+
+export interface BlackjackHand {
+  cards: Card[];
+  bet: number;
+  stood: boolean;
+  busted: boolean;
+  isBlackjack: boolean;
+  result: 'win' | 'lose' | 'push' | 'blackjack' | null;
+  payout: number;
+}
+
+export interface BlackjackPlayer {
+  id: string;
+  name: string;
+  chips: number;
+  hands: BlackjackHand[];
+  activeHandIndex: number;
+  connected: boolean;
+}
+
+export type BlackjackPhase = 'playing' | 'dealer' | 'resolved';
+
+export interface BlackjackGameState {
+  phase: BlackjackPhase;
+  deck: Card[];
+  dealerCards: Card[];
+  dealerRevealed: boolean;
+  players: BlackjackPlayer[];
+  activePlayerIndex: number;
+  handNumber: number;
+  gameLog: string[];
+  winners: {
+    playerId: string;
+    playerName: string;
+    amount: number;
+    hand: { description: string };
+  }[] | null;
+  handInProgress: boolean;
+  betAmount: number;
+}
+
+export interface FilteredBlackjackPlayer {
+  id: string;
+  name: string;
+  chips: number;
+  hands: BlackjackHand[];
+  activeHandIndex: number;
+  connected: boolean;
+}
+
+export interface FilteredBlackjackState {
+  gameType: 'blackjack';
+  phase: BlackjackPhase;
+  dealerCards: (Card | null)[];
+  dealerTotal: number | null;
+  players: FilteredBlackjackPlayer[];
+  activePlayerIndex: number;
+  handNumber: number;
+  gameLog: string[];
+  winners: BlackjackGameState['winners'];
+  handInProgress: boolean;
+  validActions: BlackjackActionType[];
+  betAmount: number;
+}
+
+export type FilteredAnyGameState = FilteredGameState | FilteredBlackjackState;
+
 export interface BroadcastPayload {
   channel: string;
-  playerStates: Record<string, FilteredGameState>;
+  playerStates: Record<string, FilteredAnyGameState>;
 }
