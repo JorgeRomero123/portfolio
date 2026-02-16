@@ -38,17 +38,10 @@ export default function CardGames({ initialRoomCode }: CardGamesProps) {
   // The displayed game state: host uses locally computed state; non-host uses Pusher state
   const gameState = isHost ? hostGameState : pusherGameState;
 
+  const pendingBroadcast = useRef<Record<string, FilteredGameState> | null>(null);
   const broadcastInFlight = useRef(false);
 
-  const handleBroadcast = useCallback(async (playerStates: Record<string, FilteredGameState>) => {
-    // Host updates its own local state immediately
-    if (playerStates[playerId]) {
-      setHostGameState(playerStates[playerId]);
-    }
-
-    if (broadcastInFlight.current) return;
-    broadcastInFlight.current = true;
-
+  const flushBroadcast = useCallback(async (playerStates: Record<string, FilteredGameState>) => {
     try {
       await fetch('/api/card-games/broadcast', {
         method: 'POST',
@@ -60,10 +53,33 @@ export default function CardGames({ initialRoomCode }: CardGamesProps) {
       });
     } catch (err) {
       console.error('Broadcast failed:', err);
-    } finally {
-      broadcastInFlight.current = false;
     }
-  }, [roomCode, playerId]);
+  }, [roomCode]);
+
+  const handleBroadcast = useCallback(async (playerStates: Record<string, FilteredGameState>) => {
+    // Host updates its own local state immediately
+    if (playerStates[playerId]) {
+      setHostGameState(playerStates[playerId]);
+    }
+
+    // If a broadcast is already in flight, queue the latest state
+    if (broadcastInFlight.current) {
+      pendingBroadcast.current = playerStates;
+      return;
+    }
+
+    broadcastInFlight.current = true;
+    await flushBroadcast(playerStates);
+
+    // Send any queued broadcast (latest state wins)
+    while (pendingBroadcast.current) {
+      const queued = pendingBroadcast.current;
+      pendingBroadcast.current = null;
+      await flushBroadcast(queued);
+    }
+
+    broadcastInFlight.current = false;
+  }, [playerId, flushBroadcast]);
 
   const poker = usePokerGame({
     isHost,

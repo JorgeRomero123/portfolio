@@ -65,7 +65,7 @@ export function initializeHand(players: Player[], config: RoomConfig, prevDealer
     minRaise: config.bigBlind,
     dealerIndex,
     activePlayerIndex: activeIndex,
-    lastRaiserIndex: bbIndex,
+    lastRaiserIndex: activeIndex,
     players,
     handNumber: 1,
     gameLog,
