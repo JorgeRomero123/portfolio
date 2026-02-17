@@ -120,6 +120,10 @@ export default function CardGames({ initialRoomCode }: CardGamesProps) {
         } else {
           poker.startGame();
         }
+      } else if (event === 'client-place-bet') {
+        if (config.gameType === 'blackjack') {
+          blackjack.handlePlaceBet(data.amount as number);
+        }
       } else if (event === 'client-action') {
         if (config.gameType === 'blackjack') {
           blackjack.handleAction({
@@ -190,6 +194,14 @@ export default function CardGames({ initialRoomCode }: CardGamesProps) {
     }
   }, [isHost, blackjack, sendAction, playerId]);
 
+  const handlePlaceBet = useCallback((amount: number) => {
+    if (isHost) {
+      blackjack.handlePlaceBet(amount);
+    } else {
+      sendAction('client-place-bet', { playerId, amount });
+    }
+  }, [isHost, blackjack, sendAction, playerId]);
+
   if (view === 'lobby') {
     return (
       <Lobby
@@ -230,6 +242,7 @@ export default function CardGames({ initialRoomCode }: CardGamesProps) {
           gameState={gameState as FilteredBlackjackState}
           playerId={playerId}
           onAction={handleBlackjackAction}
+          onPlaceBet={handlePlaceBet}
         />
       );
     }

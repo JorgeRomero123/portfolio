@@ -4,7 +4,7 @@ import { useCallback, useRef, useEffect } from 'react';
 import { BlackjackGameState, BlackjackPlayer, BlackjackAction, RoomConfig, FilteredAnyGameState } from '@/lib/card-games/types';
 import { initializeBlackjackHand, processBlackjackAction, startNextBlackjackHand } from '@/lib/card-games/blackjack-engine';
 import { filterBlackjackStateForAllPlayers } from '@/lib/card-games/state-filter';
-import { WINNER_OVERLAY_DURATION } from '@/lib/card-games/constants';
+
 
 interface UseBlackjackGameOptions {
   isHost: boolean;
@@ -23,6 +23,13 @@ export function useBlackjackGame({ isHost, roomCode, config, players, onBroadcas
     onBroadcast(playerStates);
   }, [onBroadcast]);
 
+  // Shared logic: after any state change that ends a hand, schedule winner overlay
+  // but do NOT auto-start next hand — player must place bet via handlePlaceBet
+  const broadcastAndHandleEnd = useCallback((state: BlackjackGameState) => {
+    gameStateRef.current = state;
+    broadcast(state);
+  }, [broadcast]);
+
   const startGame = useCallback(() => {
     if (!isHost) return;
 
@@ -36,32 +43,28 @@ export function useBlackjackGame({ isHost, roomCode, config, players, onBroadcas
     }));
 
     const state = initializeBlackjackHand(gamePlayers, config.betAmount, 0);
-    gameStateRef.current = state;
-    broadcast(state);
-  }, [isHost, players, config, broadcast]);
+    broadcastAndHandleEnd(state);
+  }, [isHost, players, config, broadcastAndHandleEnd]);
 
   const handleAction = useCallback((action: BlackjackAction) => {
     if (!isHost || !gameStateRef.current) return;
 
     const newState = processBlackjackAction(gameStateRef.current, action);
-    gameStateRef.current = newState;
-    broadcast(newState);
+    broadcastAndHandleEnd(newState);
+  }, [isHost, broadcastAndHandleEnd]);
 
-    // If hand ended, auto-start next hand after delay
-    if (!newState.handInProgress) {
-      const hasEligiblePlayers = newState.players.some(p => p.chips >= newState.betAmount);
-      if (hasEligiblePlayers) {
-        if (nextHandTimerRef.current) clearTimeout(nextHandTimerRef.current);
-        nextHandTimerRef.current = setTimeout(() => {
-          if (gameStateRef.current && !gameStateRef.current.handInProgress) {
-            const nextState = startNextBlackjackHand(gameStateRef.current, config.betAmount);
-            gameStateRef.current = nextState;
-            broadcast(nextState);
-          }
-        }, WINNER_OVERLAY_DURATION);
-      }
+  const handlePlaceBet = useCallback((betAmount: number) => {
+    if (!isHost || !gameStateRef.current) return;
+
+    // Clear any pending timer
+    if (nextHandTimerRef.current) {
+      clearTimeout(nextHandTimerRef.current);
+      nextHandTimerRef.current = null;
     }
-  }, [isHost, config, broadcast]);
+
+    const nextState = startNextBlackjackHand(gameStateRef.current, betAmount);
+    broadcastAndHandleEnd(nextState);
+  }, [isHost, broadcastAndHandleEnd]);
 
   useEffect(() => {
     return () => {
@@ -72,6 +75,7 @@ export function useBlackjackGame({ isHost, roomCode, config, players, onBroadcas
   return {
     startGame,
     handleAction,
+    handlePlaceBet,
     getState: () => gameStateRef.current,
   };
 }
