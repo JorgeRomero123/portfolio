@@ -81,7 +81,7 @@ export default function Home() {
           <div className="max-w-4xl mx-auto">
             <div className="relative w-full overflow-hidden rounded-lg shadow-xl" style={{ paddingBottom: '75%' }}>
               <iframe
-                src="/albums/pinta-tu-mascota-enero-2026"
+                src="https://www.myalbumlink.com/albums/pinta-tu-mascota-enero-2026"
                 title="Pinta tu Mascota Enero 2026"
                 className="absolute top-0 left-0 w-full h-full border-0"
                 allowFullScreen
