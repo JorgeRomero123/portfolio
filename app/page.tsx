@@ -84,6 +84,7 @@ export default function Home() {
                 src="https://myalbumlink.com/albums/pinta-tu-mascota-enero-2026?embed=true"
                 title="Pinta tu Mascota Enero 2026"
                 className="absolute top-0 left-0 w-full h-full border-0"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                 allowFullScreen
                 loading="lazy"
               />
@@ -92,8 +93,62 @@ export default function Home() {
         </div>
       </section>
 
-      {/* About Preview */}
+      {/* Projects I've Built */}
       <section className="bg-gray-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Projects I've Built
+            </h2>
+            <p className="text-lg text-gray-600">
+              Web applications I designed and developed
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="bg-white rounded-lg shadow-md p-8 hover:shadow-xl transition-shadow">
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">MyAlbumLink</h3>
+              <p className="text-gray-600">
+                A platform for creating and sharing multimedia albums — photos, videos, 360° content,
+                documents, and more — all in one beautiful, shareable link.
+              </p>
+              <a
+                href="https://myalbumlink.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-4 text-blue-600 font-semibold hover:text-blue-700"
+              >
+                myalbumlink.com →
+              </a>
+              <a
+                href="https://myalbumlink.com/albums/jorge-fotografia-aerea"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block mt-2 text-sm text-blue-500 hover:text-blue-700"
+              >
+                See an example album →
+              </a>
+            </div>
+            <a
+              href="https://labwiselink.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white rounded-lg shadow-md p-8 hover:shadow-xl transition-shadow"
+            >
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">LabWiseLink</h3>
+              <p className="text-gray-600">
+                A dental lab management platform that streamlines order tracking and communication
+                between dental professionals and laboratories.
+              </p>
+              <span className="inline-block mt-4 text-blue-600 font-semibold">
+                labwiselink.com →
+              </span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* About Preview */}
+      <section className="bg-white py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             About Me
@@ -113,7 +168,7 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section className="bg-white py-16">
+      <section className="bg-gray-50 py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             Contact Me
