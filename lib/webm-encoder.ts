@@ -7,7 +7,6 @@ export async function encodeVideoToWebM(
   videoSrc: string,
   startTime: number,
   endTime: number,
-  fps: number,
   outputWidth: number,
   onProgress?: (percent: number) => void
 ): Promise<Blob> {
@@ -36,7 +35,7 @@ export async function encodeVideoToWebM(
     video.addEventListener('seeked', () => resolve(), { once: true });
   });
 
-  const stream = canvas.captureStream(fps);
+  const stream = canvas.captureStream();
 
   // Pick best supported codec
   let mimeType = 'video/webm;codecs=vp9';

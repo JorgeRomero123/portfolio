@@ -17,7 +17,6 @@ export default function VideoToWebm() {
   const [videoDuration, setVideoDuration] = useState(0);
   const [startTime, setStartTime] = useState(0);
   const [endTime, setEndTime] = useState(0);
-  const [fps, setFps] = useState(30);
   const [outputWidth, setOutputWidth] = useState(480);
   const [webmBlob, setWebmBlob] = useState<Blob | null>(null);
   const [webmUrl, setWebmUrl] = useState<string | null>(null);
@@ -85,7 +84,6 @@ export default function VideoToWebm() {
         videoSrc,
         startTime,
         endTime,
-        fps,
         outputWidth,
         (p) => setProgress(p)
       );
@@ -251,20 +249,6 @@ export default function VideoToWebm() {
           <div className="space-y-3">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs text-gray-500">FPS</label>
-                <span className="text-xs font-medium text-gray-700">{fps}</span>
-              </div>
-              <input
-                type="range"
-                min={5}
-                max={60}
-                value={fps}
-                onChange={(e) => setFps(Number(e.target.value))}
-                className="w-full accent-violet-600"
-              />
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-1">
                 <label className="text-xs text-gray-500">Width (px)</label>
                 <span className="text-xs font-medium text-gray-700">{outputWidth}</span>
               </div>
@@ -307,7 +291,7 @@ export default function VideoToWebm() {
           )}
           <div className="mt-auto pt-3">
             <p className="text-xs text-gray-400">
-              {clipDuration.toFixed(1)}s clip at {fps} FPS, {outputWidth}px wide
+              {clipDuration.toFixed(1)}s clip, {outputWidth}px wide
             </p>
           </div>
         </div>
