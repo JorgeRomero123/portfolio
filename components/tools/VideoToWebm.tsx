@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { extractFrames, encodeGif } from '@/lib/gif-encoder';
+import { encodeVideoToWebM } from '@/lib/webm-encoder';
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return bytes + ' B';
@@ -9,7 +9,7 @@ function formatFileSize(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-export default function VideoToGif() {
+export default function VideoToWebm() {
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const [fileName, setFileName] = useState('');
   const [dragActive, setDragActive] = useState(false);
@@ -17,10 +17,10 @@ export default function VideoToGif() {
   const [videoDuration, setVideoDuration] = useState(0);
   const [startTime, setStartTime] = useState(0);
   const [endTime, setEndTime] = useState(0);
-  const [fps, setFps] = useState(12);
+  const [fps, setFps] = useState(30);
   const [outputWidth, setOutputWidth] = useState(480);
-  const [gifBlob, setGifBlob] = useState<Blob | null>(null);
-  const [gifUrl, setGifUrl] = useState<string | null>(null);
+  const [webmBlob, setWebmBlob] = useState<Blob | null>(null);
+  const [webmUrl, setWebmUrl] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -28,16 +28,16 @@ export default function VideoToGif() {
   const handleFile = useCallback((file: File) => {
     if (!file.type.startsWith('video/')) return;
     if (videoSrc) URL.revokeObjectURL(videoSrc);
-    if (gifUrl) URL.revokeObjectURL(gifUrl);
+    if (webmUrl) URL.revokeObjectURL(webmUrl);
     const url = URL.createObjectURL(file);
     setVideoSrc(url);
     setFileName(file.name);
-    setGifBlob(null);
-    setGifUrl(null);
+    setWebmBlob(null);
+    setWebmUrl(null);
     setProgress(0);
     setStartTime(0);
     setEndTime(0);
-  }, [videoSrc, gifUrl]);
+  }, [videoSrc, webmUrl]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -55,16 +55,16 @@ export default function VideoToGif() {
     const video = videoRef.current;
     if (!video) return;
     setVideoDuration(video.duration);
-    setEndTime(Math.min(video.duration, 5));
+    setEndTime(Math.min(video.duration, 30));
   };
 
   const close = () => {
     if (videoSrc) URL.revokeObjectURL(videoSrc);
-    if (gifUrl) URL.revokeObjectURL(gifUrl);
+    if (webmUrl) URL.revokeObjectURL(webmUrl);
     setVideoSrc(null);
     setFileName('');
-    setGifBlob(null);
-    setGifUrl(null);
+    setWebmBlob(null);
+    setWebmUrl(null);
     setProgress(0);
     setStartTime(0);
     setEndTime(0);
@@ -72,44 +72,27 @@ export default function VideoToGif() {
   };
 
   const generate = async () => {
-    const video = videoRef.current;
-    if (!video || isProcessing) return;
+    if (!videoSrc || isProcessing) return;
 
     setIsProcessing(true);
     setProgress(0);
-    if (gifUrl) URL.revokeObjectURL(gifUrl);
-    setGifBlob(null);
-    setGifUrl(null);
+    if (webmUrl) URL.revokeObjectURL(webmUrl);
+    setWebmBlob(null);
+    setWebmUrl(null);
 
     try {
-      // Pause video during frame extraction
-      video.pause();
-
-      const frames = await extractFrames(
-        video,
+      const blob = await encodeVideoToWebM(
+        videoSrc,
         startTime,
         endTime,
         fps,
         outputWidth,
-        (p) => setProgress(p * 0.5) // 0-50%
+        (p) => setProgress(p)
       );
 
-      if (frames.length === 0) {
-        setIsProcessing(false);
-        return;
-      }
-
-      const width = frames[0].width;
-      const height = frames[0].height;
-
-      const gifBytes = encodeGif(frames, width, height, fps, (p) =>
-        setProgress(50 + p * 0.5) // 50-100%
-      );
-
-      const blob = new Blob([gifBytes.buffer as ArrayBuffer], { type: 'image/gif' });
       const url = URL.createObjectURL(blob);
-      setGifBlob(blob);
-      setGifUrl(url);
+      setWebmBlob(blob);
+      setWebmUrl(url);
       setProgress(100);
     } catch {
       setProgress(0);
@@ -119,10 +102,10 @@ export default function VideoToGif() {
   };
 
   const download = () => {
-    if (!gifUrl) return;
+    if (!webmUrl) return;
     const a = document.createElement('a');
-    a.href = gifUrl;
-    a.download = fileName.replace(/\.[^.]+$/, '') + '.gif';
+    a.href = webmUrl;
+    a.download = fileName.replace(/\.[^.]+$/, '') + '.webm';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -178,7 +161,6 @@ export default function VideoToGif() {
 
   // Editor screen
   const clipDuration = endTime - startTime;
-  const estimatedFrames = Math.max(1, Math.floor(clipDuration * fps));
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-6">
@@ -258,7 +240,7 @@ export default function VideoToGif() {
               />
             </div>
             <p className="text-xs text-gray-400">
-              Duration: {clipDuration.toFixed(1)}s &middot; ~{estimatedFrames} frames
+              Duration: {clipDuration.toFixed(1)}s
             </p>
           </div>
         </div>
@@ -275,7 +257,7 @@ export default function VideoToGif() {
               <input
                 type="range"
                 min={5}
-                max={30}
+                max={60}
                 value={fps}
                 onChange={(e) => setFps(Number(e.target.value))}
                 className="w-full accent-violet-600"
@@ -289,7 +271,7 @@ export default function VideoToGif() {
               <input
                 type="range"
                 min={100}
-                max={800}
+                max={1920}
                 step={10}
                 value={outputWidth}
                 onChange={(e) => setOutputWidth(Number(e.target.value))}
@@ -301,18 +283,18 @@ export default function VideoToGif() {
 
         {/* Generate */}
         <div className="bg-white rounded-lg shadow-md p-4 flex flex-col">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Generate</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Convert</h3>
           <button
             onClick={generate}
             disabled={isProcessing || clipDuration <= 0}
             className="w-full px-4 py-2.5 bg-violet-600 text-white rounded-lg font-semibold hover:bg-violet-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm"
           >
-            {isProcessing ? 'Processing...' : 'Generate GIF'}
+            {isProcessing ? 'Converting...' : 'Convert to WebM'}
           </button>
           {(isProcessing || progress > 0) && (
             <div className="mt-3">
               <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                <span>{progress < 50 ? 'Extracting frames...' : 'Encoding GIF...'}</span>
+                <span>Converting to WebM...</span>
                 <span>{Math.round(progress)}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
@@ -325,28 +307,32 @@ export default function VideoToGif() {
           )}
           <div className="mt-auto pt-3">
             <p className="text-xs text-gray-400">
-              ~{estimatedFrames} frames at {fps} FPS, {outputWidth}px wide
+              {clipDuration.toFixed(1)}s clip at {fps} FPS, {outputWidth}px wide
             </p>
           </div>
         </div>
       </div>
 
-      {/* GIF Preview */}
-      {gifUrl && gifBlob && (
+      {/* WebM Preview */}
+      {webmUrl && webmBlob && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Generated GIF</h3>
-            <span className="text-sm text-gray-500">{formatFileSize(gifBlob.size)}</span>
+            <h3 className="text-lg font-semibold text-gray-900">Converted WebM</h3>
+            <span className="text-sm text-gray-500">{formatFileSize(webmBlob.size)}</span>
           </div>
           <div className="flex justify-center bg-gray-100 rounded-lg p-4 mb-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={gifUrl} alt="Generated GIF" className="max-w-full max-h-[400px] rounded" />
+            <video
+              src={webmUrl}
+              controls
+              loop
+              className="max-w-full max-h-[400px] rounded"
+            />
           </div>
           <button
             onClick={download}
             className="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
           >
-            Download GIF
+            Download WebM
           </button>
         </div>
       )}
@@ -354,7 +340,7 @@ export default function VideoToGif() {
       {/* Info */}
       <div className="bg-violet-50 border border-violet-200 rounded-lg p-4">
         <p className="text-sm text-violet-700">
-          <span className="font-semibold">100% Local Processing</span> — Your video is never uploaded. All frame extraction and GIF encoding happens in your browser.
+          <span className="font-semibold">100% Local Processing</span> — Your video is never uploaded. All conversion happens in your browser using MediaRecorder.
         </p>
       </div>
     </div>

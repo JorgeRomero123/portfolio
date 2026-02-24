@@ -84,9 +84,9 @@ const tools = [
     color: 'from-yellow-500 to-orange-500',
   },
   {
-    name: 'Video to GIF',
-    description: 'Upload a video and create an animated GIF from a selected time range',
-    href: '/tools/video-to-gif',
+    name: 'Video to WebM',
+    description: 'Upload a video, trim it, and convert to WebM format',
+    href: '/tools/video-to-webm',
     icon: '🎬',
     color: 'from-violet-500 to-purple-500',
   },
