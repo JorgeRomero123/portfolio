@@ -91,6 +91,13 @@ const tools = [
     color: 'from-violet-500 to-purple-500',
   },
   {
+    name: 'Pinterest Downloader',
+    description: 'Download all images from a Pinterest board as a ZIP file',
+    href: '/tools/pinterest-downloader',
+    icon: '📌',
+    color: 'from-red-500 to-pink-500',
+  },
+  {
     name: 'Image Splitter',
     description: 'Split a large image into a grid of smaller images',
     href: '/tools/image-splitter',
