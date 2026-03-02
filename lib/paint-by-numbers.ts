@@ -232,47 +232,63 @@ export function detectRegions(
     regionColors.push(color);
   }
 
-  // Merge tiny regions into their largest neighbor
+  // Merge tiny regions into their largest neighbor using a pixel index
+  // (avoids O(tinyRegions * totalPixels) full scans that freeze the UI)
   if (minRegionSize > 1) {
-    for (let r = 0; r < regionSizes.length; r++) {
-      if (regionSizes[r] >= minRegionSize) continue;
+    // Build index: region → list of pixel indices (single pass)
+    const regionPixels = new Map<number, number[]>();
+    for (let i = 0; i < totalPixels; i++) {
+      const rid = regionMap[i];
+      let list = regionPixels.get(rid);
+      if (!list) { list = []; regionPixels.set(rid, list); }
+      list.push(i);
+    }
 
-      // Find the largest neighboring region
+    // Sort tiny regions smallest-first so they merge into larger neighbors
+    const tinyRegions: number[] = [];
+    for (let r = 0; r < regionSizes.length; r++) {
+      if (regionSizes[r] > 0 && regionSizes[r] < minRegionSize) tinyRegions.push(r);
+    }
+    tinyRegions.sort((a, b) => regionSizes[a] - regionSizes[b]);
+
+    for (const r of tinyRegions) {
+      const pixels = regionPixels.get(r);
+      if (!pixels || pixels.length === 0) continue;
+
+      // Find neighboring region with most shared border pixels
       const neighborCounts = new Map<number, number>();
-      for (let i = 0; i < totalPixels; i++) {
-        if (regionMap[i] !== r) continue;
+      for (const i of pixels) {
         const x = i % width;
         const y = (i - x) / width;
-        const neighbors = [
-          x > 0 ? i - 1 : -1,
-          x < width - 1 ? i + 1 : -1,
-          y > 0 ? i - width : -1,
-          y < height - 1 ? i + width : -1,
-        ];
-        for (const n of neighbors) {
-          if (n === -1) continue;
-          const nRegion = regionMap[n];
-          if (nRegion !== r && nRegion !== -1) {
-            neighborCounts.set(nRegion, (neighborCounts.get(nRegion) || 0) + 1);
-          }
-        }
+        if (x > 0)          { const nr = regionMap[i - 1];     if (nr !== r) neighborCounts.set(nr, (neighborCounts.get(nr) || 0) + 1); }
+        if (x < width - 1)  { const nr = regionMap[i + 1];     if (nr !== r) neighborCounts.set(nr, (neighborCounts.get(nr) || 0) + 1); }
+        if (y > 0)          { const nr = regionMap[i - width];  if (nr !== r) neighborCounts.set(nr, (neighborCounts.get(nr) || 0) + 1); }
+        if (y < height - 1) { const nr = regionMap[i + width];  if (nr !== r) neighborCounts.set(nr, (neighborCounts.get(nr) || 0) + 1); }
       }
 
       if (neighborCounts.size === 0) continue;
 
-      // Pick neighbor with most shared border pixels
       let bestNeighbor = -1;
       let bestCount = 0;
       for (const [nRegion, count] of neighborCounts) {
         if (count > bestCount) { bestCount = count; bestNeighbor = nRegion; }
       }
-
       if (bestNeighbor === -1) continue;
 
-      // Reassign pixels
-      for (let i = 0; i < totalPixels; i++) {
-        if (regionMap[i] === r) regionMap[i] = bestNeighbor;
+      // Reassign pixels using the index (no full scan)
+      for (const i of pixels) {
+        regionMap[i] = bestNeighbor;
       }
+
+      // Update index: append pixels to the target region's list
+      const targetPixels = regionPixels.get(bestNeighbor);
+      if (targetPixels) {
+        for (const i of pixels) targetPixels.push(i);
+      } else {
+        regionPixels.set(bestNeighbor, pixels);
+      }
+      regionPixels.delete(r);
+
       regionSizes[bestNeighbor] += regionSizes[r];
       regionSizes[r] = 0;
     }

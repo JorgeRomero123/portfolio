@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   type PBNConfig,
   type PBNResult,
@@ -97,6 +97,45 @@ export default function PaintByNumbers() {
       setIsExporting(false);
     }, 50);
   }, [originalImage, colorCount, difficulty, showTint, downloadCanvas]);
+
+  const downloadPdf = useCallback(async () => {
+    if (!originalImage || !result) return;
+    setIsExporting(true);
+
+    // Let spinner paint, then do heavy work
+    await new Promise((r) => setTimeout(r, 50));
+
+    // Full-res pipeline for print quality
+    const imageData = imageToImageData(originalImage);
+    const config: PBNConfig = {
+      colorCount,
+      minRegionSize: DIFFICULTY_PRESETS[difficulty].minRegionSize,
+      showTint,
+      maxPreviewDim: DEFAULT_CONFIG.maxPreviewDim,
+    };
+    const fullResult = generatePaintByNumbers(imageData, config);
+    const outlineDataUrl = fullResult.outlineCanvas.toDataURL('image/png');
+
+    // Dynamic import to keep bundle small
+    const { pdf } = await import('@react-pdf/renderer');
+    const { default: PBNPdfDocument } = await import('./paint-by-numbers-pdf');
+
+    const doc = React.createElement(PBNPdfDocument, {
+      outlineDataUrl,
+      palette: fullResult.palette,
+      imageWidth: fullResult.width,
+      imageHeight: fullResult.height,
+    });
+
+    const blob = await (pdf(doc as any).toBlob());
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${fileName}_paint-by-numbers.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setIsExporting(false);
+  }, [originalImage, result, colorCount, difficulty, showTint, fileName]);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -468,6 +507,25 @@ export default function PaintByNumbers() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                       </svg>
                       Full-Res Export
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={downloadPdf}
+                  disabled={isExporting}
+                  className="px-4 py-2 bg-rose-600 text-white rounded-lg font-semibold hover:bg-rose-700 disabled:opacity-50 transition-colors flex items-center text-sm"
+                >
+                  {isExporting ? (
+                    <>
+                      <Spinner />
+                      Generating PDF...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                      Print PDF
                     </>
                   )}
                 </button>
