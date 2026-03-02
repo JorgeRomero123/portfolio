@@ -48,7 +48,7 @@ Your task: Rewrite the CV tailored specifically to this job vacancy.
 
 RULES:
 - Output the tailored CV as clean, well-structured markdown
-- THE CV MUST FIT ON A SINGLE PAGE. Be ruthlessly concise — cut filler, merge related bullets, drop less relevant experience
+- THE CV MUST FIT ON A SINGLE PAGE. Be concise — cut filler, merge related bullets, drop less relevant experience
 - Emphasize relevant experience, skills, and achievements that match the vacancy
 - Reorder sections to prioritize what matters most for this role
 - Adjust wording to mirror the job description's language and keywords
@@ -56,6 +56,8 @@ RULES:
 - You may rephrase and reframe existing experience to better align with the vacancy
 - Use markdown headings (##), bullet points, and bold for structure
 - Keep bullet points short (one line each). Aim for 3-4 bullets per role max
+- IMPORTANT: If the candidate has projects that directly demonstrate skills the job is asking for, give them MORE detail, not less. These are proof of ability — list specific examples, technologies, and outcomes. This is where you should invest space even if it means trimming less relevant work experience
+- Preserve all URLs and links from the original CV (project URLs, LinkedIn, etc). Format them as proper markdown links: [label](url)
 - Do not include any commentary or explanation — output ONLY the tailored CV in markdown
 
 JOB VACANCY:
