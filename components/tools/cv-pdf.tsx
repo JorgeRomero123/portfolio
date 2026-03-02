@@ -5,6 +5,7 @@ import {
   Page,
   View,
   Text,
+  Link,
   StyleSheet,
 } from '@react-pdf/renderer';
 
@@ -62,6 +63,10 @@ const styles = StyleSheet.create({
   bold: {
     fontFamily: 'Helvetica-Bold',
   },
+  link: {
+    color: '#2563eb',
+    textDecoration: 'none',
+  },
   separator: {
     marginVertical: 4,
     borderBottomWidth: 0.5,
@@ -73,20 +78,40 @@ interface CVPdfDocumentProps {
   markdown: string;
 }
 
-function parseBold(text: string) {
-  const parts = text.split(/\*\*(.+?)\*\*/g);
-  if (parts.length === 1) return <Text>{text}</Text>;
-  return (
-    <Text>
-      {parts.map((part, i) =>
-        i % 2 === 1 ? (
-          <Text key={i} style={styles.bold}>{part}</Text>
-        ) : (
-          <Text key={i}>{part}</Text>
-        )
-      )}
-    </Text>
-  );
+function parseInline(text: string) {
+  // Match **bold** and [label](url) in a single pass
+  const regex = /\*\*(.+?)\*\*|\[([^\]]+)\]\(([^)]+)\)/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let key = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(text)) !== null) {
+    // Push plain text before this match
+    if (match.index > lastIndex) {
+      parts.push(<Text key={key++}>{text.slice(lastIndex, match.index)}</Text>);
+    }
+
+    if (match[1] !== undefined) {
+      // Bold
+      parts.push(<Text key={key++} style={styles.bold}>{match[1]}</Text>);
+    } else if (match[2] !== undefined && match[3] !== undefined) {
+      // Link — show the label as a clickable hyperlink
+      parts.push(
+        <Link key={key++} src={match[3]} style={styles.link}>{match[2]}</Link>
+      );
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Remaining plain text
+  if (lastIndex < text.length) {
+    parts.push(<Text key={key++}>{text.slice(lastIndex)}</Text>);
+  }
+
+  if (parts.length === 0) return <Text>{text}</Text>;
+  return <Text>{parts}</Text>;
 }
 
 export default function CVPdfDocument({ markdown }: CVPdfDocumentProps) {
@@ -139,7 +164,7 @@ export default function CVPdfDocument({ markdown }: CVPdfDocumentProps) {
       elements.push(
         <View key={i} style={styles.bullet}>
           <Text style={styles.bulletDot}>•</Text>
-          <View style={styles.bulletText}>{parseBold(text)}</View>
+          <View style={styles.bulletText}>{parseInline(text)}</View>
         </View>
       );
       i++;
@@ -148,7 +173,7 @@ export default function CVPdfDocument({ markdown }: CVPdfDocumentProps) {
 
     // Regular paragraph
     elements.push(
-      <View key={i} style={styles.paragraph}>{parseBold(line)}</View>
+      <View key={i} style={styles.paragraph}>{parseInline(line)}</View>
     );
     i++;
   }
