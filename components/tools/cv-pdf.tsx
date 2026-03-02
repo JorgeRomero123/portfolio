@@ -10,60 +10,61 @@ import {
 
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
+    padding: 30,
+    paddingBottom: 20,
     fontFamily: 'Helvetica',
-    fontSize: 10,
-    lineHeight: 1.5,
+    fontSize: 9,
+    lineHeight: 1.4,
     color: '#1a1a1a',
   },
   h1: {
-    fontSize: 22,
+    fontSize: 18,
     fontFamily: 'Helvetica-Bold',
-    marginBottom: 6,
+    marginBottom: 4,
     color: '#111827',
   },
   h2: {
-    fontSize: 15,
-    fontFamily: 'Helvetica-Bold',
-    marginBottom: 4,
-    marginTop: 14,
-    color: '#1f2937',
-    borderBottomWidth: 1,
-    borderBottomColor: '#d1d5db',
-    paddingBottom: 3,
-  },
-  h3: {
     fontSize: 12,
     fontFamily: 'Helvetica-Bold',
-    marginBottom: 3,
-    marginTop: 10,
+    marginBottom: 2,
+    marginTop: 8,
+    color: '#1f2937',
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#d1d5db',
+    paddingBottom: 2,
+  },
+  h3: {
+    fontSize: 10,
+    fontFamily: 'Helvetica-Bold',
+    marginBottom: 2,
+    marginTop: 5,
     color: '#374151',
   },
   paragraph: {
-    marginBottom: 6,
-    fontSize: 10,
-    lineHeight: 1.6,
+    marginBottom: 3,
+    fontSize: 9,
+    lineHeight: 1.4,
   },
   bullet: {
     flexDirection: 'row',
-    marginBottom: 3,
-    paddingLeft: 8,
+    marginBottom: 1.5,
+    paddingLeft: 6,
   },
   bulletDot: {
-    width: 12,
-    fontSize: 10,
+    width: 10,
+    fontSize: 9,
   },
   bulletText: {
     flex: 1,
-    fontSize: 10,
-    lineHeight: 1.5,
+    fontSize: 9,
+    lineHeight: 1.4,
   },
   bold: {
     fontFamily: 'Helvetica-Bold',
   },
   separator: {
-    marginVertical: 8,
-    borderBottomWidth: 1,
+    marginVertical: 4,
+    borderBottomWidth: 0.5,
     borderBottomColor: '#e5e7eb',
   },
 });
@@ -154,7 +155,7 @@ export default function CVPdfDocument({ markdown }: CVPdfDocumentProps) {
 
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={styles.page} wrap={false}>
         {elements}
       </Page>
     </Document>
