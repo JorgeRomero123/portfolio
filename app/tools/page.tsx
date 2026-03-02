@@ -125,6 +125,13 @@ const tools = [
     icon: '📝',
     color: 'from-red-500 to-rose-600',
   },
+  {
+    name: 'CV Tailor',
+    description: 'Tailor your CV to a job vacancy using AI',
+    href: '/tools/cv-tailor',
+    icon: '📄',
+    color: 'from-blue-600 to-indigo-600',
+  },
 ];
 
 export default function ToolsPage() {
