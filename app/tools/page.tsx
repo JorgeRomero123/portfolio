@@ -132,6 +132,13 @@ const tools = [
     icon: '📄',
     color: 'from-blue-600 to-indigo-600',
   },
+  {
+    name: 'Paint by Numbers',
+    description: 'Generate paint-by-numbers templates with acrylic paint recipes',
+    href: '/tools/paint-by-numbers',
+    icon: '🎨',
+    color: 'from-rose-500 to-amber-500',
+  },
 ];
 
 export default function ToolsPage() {
