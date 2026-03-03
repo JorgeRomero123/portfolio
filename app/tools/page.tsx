@@ -139,6 +139,13 @@ const tools = [
     icon: '🎨',
     color: 'from-rose-500 to-amber-500',
   },
+  {
+    name: 'Travel Time Calculator',
+    description: 'Calculate driving times from multiple origins to a target on the map',
+    href: '/tools/travel-time-calculator',
+    icon: '🗺️',
+    color: 'from-green-500 to-teal-500',
+  },
 ];
 
 export default function ToolsPage() {
