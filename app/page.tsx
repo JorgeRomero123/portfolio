@@ -67,49 +67,62 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Gallery Showcase */}
-      <section className="bg-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Pinta tu Mascota
-            </h2>
-            <p className="text-lg text-gray-600">
-              Enero 2026
-            </p>
-          </div>
-          <div className="max-w-4xl mx-auto">
-            <div className="relative w-full overflow-hidden rounded-lg shadow-xl" style={{ paddingBottom: '75%' }}>
-              <iframe
-                src="https://myalbumlink.com/albums/pinta-tu-mascota-enero-2026?embed=true"
-                title="Pinta tu Mascota Enero 2026"
-                className="absolute top-0 left-0 w-full h-full border-0"
-                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-                allowFullScreen
-                loading="lazy"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Projects I've Built */}
+      {/* Projects I've Worked On */}
       <section className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Projects I've Built
+              Projects I&apos;ve Worked On
             </h2>
             <p className="text-lg text-gray-600">
-              Web applications I designed and developed
+              Professional and independent web applications
             </p>
           </div>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <a
+              href="https://fastlane.paypal.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white rounded-lg shadow-md p-8 hover:shadow-xl transition-shadow"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-xl font-semibold text-gray-900">Fastlane by PayPal</h3>
+                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">PayPal</span>
+              </div>
+              <p className="text-gray-600">
+                Technical co-leader for the profile management portal from repo creation through
+                production launch. Maintained the Next.js application serving 200k+ monthly users
+                and led its international expansion across continents.
+              </p>
+              <span className="inline-block mt-4 text-blue-600 font-semibold">
+                fastlane.paypal.com →
+              </span>
+            </a>
+            <a
+              href="https://www.bing.com/images?FORM=Z9LH"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white rounded-lg shadow-md p-8 hover:shadow-xl transition-shadow"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-xl font-semibold text-gray-900">Bing Image Inspiration Feed</h3>
+                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">Microsoft</span>
+              </div>
+              <p className="text-gray-600">
+                Drove UX development for a 0-to-1 recommendation feed for Bing Multimedia.
+                Built and shipped features using C#, TypeScript, and React that contributed to a
+                400% increase in daily active users over 9 months.
+              </p>
+              <span className="inline-block mt-4 text-blue-600 font-semibold">
+                bing.com/images →
+              </span>
+            </a>
             <div className="bg-white rounded-lg shadow-md p-8 hover:shadow-xl transition-shadow">
               <h3 className="text-xl font-semibold text-gray-900 mb-3">MyAlbumLink</h3>
               <p className="text-gray-600">
-                A platform for creating and sharing multimedia albums — photos, videos, 360° content,
-                documents, and more — all in one beautiful, shareable link.
+                A multi-tenant SaaS platform for creating shareable media albums via a single link.
+                Features photo/video uploads with automatic compression, 360° content, watermarking,
+                passcode protection, per-album analytics, and tiered Stripe subscriptions.
               </p>
               <a
                 href="https://myalbumlink.com"
@@ -129,15 +142,16 @@ export default function Home() {
               </a>
             </div>
             <a
-              href="https://labwiselink.com"
+              href="https://www.labwiselink.com"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-white rounded-lg shadow-md p-8 hover:shadow-xl transition-shadow"
             >
               <h3 className="text-xl font-semibold text-gray-900 mb-3">LabWiseLink</h3>
               <p className="text-gray-600">
-                A dental lab management platform that streamlines order tracking and communication
-                between dental professionals and laboratories.
+                A multi-tenant dental lab order management platform connecting a laboratory with
+                multiple clinics. Features 5-role RBAC, an order state machine with audit logging,
+                real-time SSE alerts, file storage, and multi-clinic doctor support.
               </p>
               <span className="inline-block mt-4 text-blue-600 font-semibold">
                 labwiselink.com →
