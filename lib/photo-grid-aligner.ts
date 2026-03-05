@@ -41,6 +41,16 @@ export const DEFAULT_GRID: GridSettings = {
   visible: true,
 };
 
+export interface PerspectiveSettings {
+  vertical: number;   // -45 to 45 degrees
+  horizontal: number; // -45 to 45 degrees
+}
+
+export const DEFAULT_PERSPECTIVE: PerspectiveSettings = {
+  vertical: 0,
+  horizontal: 0,
+};
+
 /**
  * Sobel edge detection + weighted angle histogram → dominant skew angle.
  * Returns null if no dominant alignment is found.
@@ -206,6 +216,93 @@ export function drawGrid(
   ctx.restore();
 }
 
+/** Draw image as perspective-distorted strips in the current coordinate space (centered at 0,0). */
+function drawWithPerspective(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement | HTMLCanvasElement,
+  drawW: number,
+  drawH: number,
+  perspective: PerspectiveSettings,
+): void {
+  const hasV = Math.abs(perspective.vertical) > 0.01;
+  const hasH = Math.abs(perspective.horizontal) > 0.01;
+
+  if (!hasV && !hasH) {
+    ctx.drawImage(image, -drawW / 2, -drawH / 2, drawW, drawH);
+    return;
+  }
+
+  const STRIPS = 200;
+
+  if (hasV && !hasH) {
+    const f = Math.tan((perspective.vertical * Math.PI) / 180);
+    for (let i = 0; i < STRIPS; i++) {
+      const t = i / STRIPS;
+      const scale = 1 + f * (t - 0.5) * 2;
+      const srcY = t * image.height;
+      const srcH = image.height / STRIPS;
+      const dstH = drawH / STRIPS;
+      const dstW = drawW * scale;
+      ctx.drawImage(
+        image, 0, srcY, image.width, srcH + 1,
+        -dstW / 2, -drawH / 2 + i * dstH, dstW, dstH + 1,
+      );
+    }
+    return;
+  }
+
+  if (hasH && !hasV) {
+    const f = Math.tan((perspective.horizontal * Math.PI) / 180);
+    for (let i = 0; i < STRIPS; i++) {
+      const t = i / STRIPS;
+      const scale = 1 + f * (t - 0.5) * 2;
+      const srcX = t * image.width;
+      const srcW = image.width / STRIPS;
+      const dstW = drawW / STRIPS;
+      const dstH = drawH * scale;
+      ctx.drawImage(
+        image, srcX, 0, srcW + 1, image.height,
+        -drawW / 2 + i * dstW, -dstH / 2, dstW + 1, dstH,
+      );
+    }
+    return;
+  }
+
+  // Both axes: apply vertical to temp canvas, then horizontal to final
+  const tmpCanvas = document.createElement('canvas');
+  tmpCanvas.width = Math.round(drawW);
+  tmpCanvas.height = Math.round(drawH);
+  const tmpCtx = tmpCanvas.getContext('2d')!;
+
+  const fV = Math.tan((perspective.vertical * Math.PI) / 180);
+  for (let i = 0; i < STRIPS; i++) {
+    const t = i / STRIPS;
+    const scale = 1 + fV * (t - 0.5) * 2;
+    const srcY = t * image.height;
+    const srcH = image.height / STRIPS;
+    const dstH = drawH / STRIPS;
+    const dstW = drawW * scale;
+    tmpCtx.drawImage(
+      image, 0, srcY, image.width, srcH + 1,
+      (drawW - dstW) / 2, i * dstH, dstW, dstH + 1,
+    );
+  }
+
+  const fH = Math.tan((perspective.horizontal * Math.PI) / 180);
+  for (let i = 0; i < STRIPS; i++) {
+    const t = i / STRIPS;
+    const scale = 1 + fH * (t - 0.5) * 2;
+    const srcX = t * tmpCanvas.width;
+    const srcW = tmpCanvas.width / STRIPS;
+    const dstW = drawW / STRIPS;
+    const dstH = drawH * scale;
+    ctx.drawImage(
+      tmpCanvas, srcX, 0, srcW + 1, tmpCanvas.height,
+      -drawW / 2 + i * dstW, -dstH / 2, dstW + 1, dstH,
+    );
+  }
+}
+
 /** Draw the image centered in canvas with rotate/scale/translate. */
 export function drawTransformedImage(
   ctx: CanvasRenderingContext2D,
@@ -213,6 +310,7 @@ export function drawTransformedImage(
   cw: number,
   ch: number,
   transform: Transform,
+  perspective?: PerspectiveSettings,
 ): void {
   ctx.save();
   ctx.translate(cw / 2 + transform.translateX, ch / 2 + transform.translateY);
@@ -225,7 +323,12 @@ export function drawTransformedImage(
   const fitScale = Math.min(cw / image.width, ch / image.height);
   const drawW = image.width * fitScale;
   const drawH = image.height * fitScale;
-  ctx.drawImage(image, -drawW / 2, -drawH / 2, drawW, drawH);
+
+  if (perspective && (Math.abs(perspective.vertical) > 0.01 || Math.abs(perspective.horizontal) > 0.01)) {
+    drawWithPerspective(ctx, image, drawW, drawH, perspective);
+  } else {
+    ctx.drawImage(image, -drawW / 2, -drawH / 2, drawW, drawH);
+  }
   ctx.restore();
 }
 
@@ -341,6 +444,7 @@ export function renderForExport(
   canvasDisplayW: number,
   canvasDisplayH: number,
   crop?: CropRect | null,
+  perspective?: PerspectiveSettings,
 ): HTMLCanvasElement {
   const ow = image.width;
   const oh = image.height;
@@ -365,7 +469,11 @@ export function renderForExport(
     tmpCtx.translate(fullW / 2 + transform.translateX * fullResScale, fullH / 2 + transform.translateY * fullResScale);
     tmpCtx.rotate(rad);
     tmpCtx.scale(s * (transform.flipH ? -1 : 1), s * (transform.flipV ? -1 : 1));
-    tmpCtx.drawImage(image, -ow / 2, -oh / 2, ow, oh);
+    if (perspective && (Math.abs(perspective.vertical) > 0.01 || Math.abs(perspective.horizontal) > 0.01)) {
+      drawWithPerspective(tmpCtx, image, ow, oh, perspective);
+    } else {
+      tmpCtx.drawImage(image, -ow / 2, -oh / 2, ow, oh);
+    }
 
     // Extract crop region (scale crop coords from display → full-res)
     const cx = Math.round(crop.x * fullResScale);
@@ -391,7 +499,11 @@ export function renderForExport(
   ctx.translate(ow / 2, oh / 2);
   ctx.rotate(rad);
   ctx.scale(s * (transform.flipH ? -1 : 1), s * (transform.flipV ? -1 : 1));
-  ctx.drawImage(image, -ow / 2, -oh / 2, ow, oh);
+  if (perspective && (Math.abs(perspective.vertical) > 0.01 || Math.abs(perspective.horizontal) > 0.01)) {
+    drawWithPerspective(ctx, image, ow, oh, perspective);
+  } else {
+    ctx.drawImage(image, -ow / 2, -oh / 2, ow, oh);
+  }
 
   return outCanvas;
 }

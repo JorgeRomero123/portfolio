@@ -6,8 +6,10 @@ import {
   type GridSettings,
   type CropRect,
   type HandleName,
+  type PerspectiveSettings,
   DEFAULT_TRANSFORM,
   DEFAULT_GRID,
+  DEFAULT_PERSPECTIVE,
   detectSkewAngle,
   computeInscribedCrop,
   drawCheckerboard,
@@ -29,6 +31,7 @@ import {
   TransformPanel,
   GridPanel,
   CropPanel,
+  PerspectivePanel,
   AutoColorPanel,
   ManualColorPanel,
   PresetsPanel,
@@ -58,6 +61,7 @@ export default function PhotoEditor() {
 
   const [canvasDisplaySize, setCanvasDisplaySize] = useState({ width: 800, height: 600 });
   const [adjustments, setAdjustments] = useState<ColorAdjustments>(DEFAULT_ADJUSTMENTS);
+  const [perspective, setPerspective] = useState<PerspectiveSettings>(DEFAULT_PERSPECTIVE);
   const [activeTab, setActiveTab] = useState<'transform' | 'color'>('transform');
 
   // --- Refs ---
@@ -107,6 +111,7 @@ export default function PhotoEditor() {
         setCrop(null);
         setCropMode(false);
         setAdjustments(DEFAULT_ADJUSTMENTS);
+        setPerspective(DEFAULT_PERSPECTIVE);
         setIsProcessing(false);
       };
       img.onerror = () => setIsProcessing(false);
@@ -161,16 +166,16 @@ export default function PhotoEditor() {
         tmpCanvas.height = processed.height;
         const tmpCtx = tmpCanvas.getContext('2d')!;
         tmpCtx.putImageData(processed, 0, 0);
-        drawTransformedImage(ctx, tmpCanvas, cw, ch, transform);
+        drawTransformedImage(ctx, tmpCanvas, cw, ch, transform, perspective);
       } else {
-        drawTransformedImage(ctx, originalImage, cw, ch, transform);
+        drawTransformedImage(ctx, originalImage, cw, ch, transform, perspective);
       }
       drawGrid(ctx, cw, ch, grid);
       if (crop) {
         drawCropOverlay(ctx, cw, ch, crop);
       }
     }
-  }, [originalImage, transform, grid, canvasDisplaySize, crop, showOriginal, adjustments]);
+  }, [originalImage, transform, grid, canvasDisplaySize, crop, showOriginal, adjustments, perspective]);
 
   // ---------- Pointer events ----------
   const getCanvasCoords = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -354,12 +359,12 @@ export default function PhotoEditor() {
       source = tmpCanvas;
     }
 
-    const outCanvas = renderForExport(source, transform, canvasDisplaySize.width, canvasDisplaySize.height, crop);
+    const outCanvas = renderForExport(source, transform, canvasDisplaySize.width, canvasDisplaySize.height, crop, perspective);
     const link = document.createElement('a');
     link.download = `${fileName}_edited.png`;
     link.href = outCanvas.toDataURL('image/png');
     link.click();
-  }, [originalImage, transform, fileName, crop, canvasDisplaySize, adjustments]);
+  }, [originalImage, transform, fileName, crop, canvasDisplaySize, adjustments, perspective]);
 
   // ---------- Reset ----------
   const reset = () => {
@@ -372,6 +377,7 @@ export default function PhotoEditor() {
     setCropMode(false);
     setShowOriginal(false);
     setAdjustments(DEFAULT_ADJUSTMENTS);
+    setPerspective(DEFAULT_PERSPECTIVE);
     originalImageDataRef.current = null;
     previewImageDataRef.current = null;
   };
@@ -495,6 +501,10 @@ export default function PhotoEditor() {
                 cropMode={cropMode}
                 setCropMode={setCropMode}
                 onAutoFitCrop={autoFitCrop}
+              />
+              <PerspectivePanel
+                perspective={perspective}
+                setPerspective={setPerspective}
               />
             </div>
           )}

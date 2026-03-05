@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { Transform, GridSettings, CropRect } from '@/lib/photo-grid-aligner';
-import { DEFAULT_TRANSFORM } from '@/lib/photo-grid-aligner';
+import type { Transform, GridSettings, CropRect, PerspectiveSettings } from '@/lib/photo-grid-aligner';
+import { DEFAULT_TRANSFORM, DEFAULT_PERSPECTIVE } from '@/lib/photo-grid-aligner';
 import type { ColorAdjustments } from '@/lib/photo-color-enhancer';
 import { DEFAULT_ADJUSTMENTS, COLOR_PRESETS } from '@/lib/photo-color-enhancer';
 
@@ -313,6 +313,48 @@ export function CropPanel({
           Draw a crop rectangle on the canvas, or use Auto-fit.
         </p>
       )}
+    </div>
+  );
+}
+
+// ---------- Perspective panel ----------
+
+export function PerspectivePanel({
+  perspective,
+  setPerspective,
+}: {
+  perspective: PerspectiveSettings;
+  setPerspective: Dispatch<SetStateAction<PerspectiveSettings>>;
+}) {
+  return (
+    <div className="bg-white rounded-lg shadow-md p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-gray-700">Perspective</h3>
+        <button
+          onClick={() => setPerspective(DEFAULT_PERSPECTIVE)}
+          className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors text-gray-600"
+        >
+          Reset
+        </button>
+      </div>
+      <SliderControl
+        label="Vertical Tilt"
+        value={perspective.vertical}
+        min={-45}
+        max={45}
+        step={0.5}
+        onChange={(v) => setPerspective((p) => ({ ...p, vertical: v }))}
+        unit="°"
+      />
+      <SliderControl
+        label="Horizontal Tilt"
+        value={perspective.horizontal}
+        min={-45}
+        max={45}
+        step={0.5}
+        onChange={(v) => setPerspective((p) => ({ ...p, horizontal: v }))}
+        unit="°"
+      />
     </div>
   );
 }
