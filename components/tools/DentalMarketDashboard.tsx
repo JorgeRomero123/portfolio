@@ -46,6 +46,8 @@ import {
   DemandDriversSection,
   PatientBehaviorSection,
   OpportunitiesSection,
+  StrategicImplicationsSection,
+  SectionKeyTakeaways,
   LoadingSpinner,
   ErrorMessage,
   collectAllSources,
@@ -67,6 +69,7 @@ const SECTION_INTROS: Record<string, string> = {
   dental_client_segments: 'Los laboratorios dentales atienden a diferentes tipos de clientes dentro del sector odontológico, desde consultorios independientes hasta clínicas especializadas en estética o implantología. Identificar estos segmentos permite comprender cómo varía la demanda de servicios de laboratorio según el tipo de práctica dental.',
   patient_demand_trends: 'La demanda de tratamientos dentales está influenciada por factores demográficos, económicos y culturales. Tendencias como el crecimiento de la estética dental, el envejecimiento poblacional y el turismo dental están impulsando un mayor volumen de tratamientos que requieren servicios de laboratorio.',
   strategic_opportunities: 'A partir del análisis del mercado, la estructura de la industria y las tendencias tecnológicas, se pueden identificar varias oportunidades estratégicas para los laboratorios dentales. Estas oportunidades reflejan áreas donde los laboratorios pueden diferenciarse, expandir su alcance y capturar mayor valor dentro del mercado.',
+  fusion_strategic_implications: 'A partir del análisis del mercado dental mexicano, las tendencias tecnológicas y la estructura del sector, se identifican implicaciones estratégicas relevantes para laboratorios dentales con posicionamiento premium y capacidades digitales avanzadas como Fusion Dental Lab.',
 };
 
 function buildHeroMetrics(sections: SectionData[]): { value: string; label: string }[] {
@@ -259,6 +262,8 @@ function SectionRenderer({ section, index }: { section: SectionData; index: numb
       {section.demand_drivers && <DemandDriversSection drivers={section.demand_drivers} />}
       {section.patient_behavior_changes && <PatientBehaviorSection changes={section.patient_behavior_changes} />}
       {section.opportunities && <OpportunitiesSection opportunities={section.opportunities} />}
+      {section.strategic_implications && <StrategicImplicationsSection implications={section.strategic_implications} />}
+      {section.key_takeaways && <SectionKeyTakeaways takeaways={section.key_takeaways} />}
 
       {/* Per-section insights */}
       {section.insights && section.insights.length > 0 && (

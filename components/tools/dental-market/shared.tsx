@@ -173,6 +173,13 @@ export interface StrategicOpportunity {
   potential_benefits: string[];
 }
 
+export interface StrategicImplication {
+  implication: string;
+  context: string;
+  relevance_for_fusion: string;
+  supporting_trend: string;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface SectionData extends Record<string, any> {
   section_id: string;
@@ -208,6 +215,8 @@ export interface SectionData extends Record<string, any> {
   demand_drivers?: DemandDriver[];
   patient_behavior_changes?: PatientBehaviorChange[];
   opportunities?: StrategicOpportunity[];
+  strategic_implications?: StrategicImplication[];
+  key_takeaways?: string[];
   insights?: Insight[];
   sources?: Source[];
 }
@@ -1236,6 +1245,66 @@ export function OpportunitiesSection({ opportunities }: { opportunities: Strateg
                 </div>
               </div>
             </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ── Section 11: Fusion Strategic Implications ──
+
+export function StrategicImplicationsSection({ implications }: { implications: StrategicImplication[] }) {
+  return (
+    <section className="mb-12">
+      <div className="space-y-6">
+        {implications.map((imp, i) => (
+          <div key={i} className="bg-white rounded-2xl border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden flex">
+            <div className="w-1.5 bg-blue-600 shrink-0" />
+            <div className="p-7 sm:p-9 flex-1">
+              <div className="flex items-start gap-4 mb-5">
+                <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-blue-600 text-white text-lg font-bold shrink-0 shadow-sm">
+                  {i + 1}
+                </span>
+                <div>
+                  <h3 className="text-xl font-extrabold text-[#111111] mb-2 tracking-tight">{imp.implication}</h3>
+                  <p className="text-sm text-[#6b7280] leading-relaxed">{imp.context}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="bg-blue-50/70 rounded-xl p-6">
+                  <p className="text-xs font-bold uppercase tracking-wider text-blue-700 mb-3">Relevancia para Fusion</p>
+                  <p className="text-sm text-[#111111] leading-relaxed">{imp.relevance_for_fusion}</p>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-3">Tendencia de Soporte</p>
+                  <p className="text-sm text-[#111111] leading-relaxed font-medium">{imp.supporting_trend}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function SectionKeyTakeaways({ takeaways }: { takeaways: string[] }) {
+  return (
+    <section className="mb-12">
+      <div className="flex items-center gap-2 mb-6">
+        <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h3 className="text-xl font-extrabold text-[#111111] tracking-tight">Conclusiones Clave</h3>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {takeaways.map((t, i) => (
+          <div key={i} className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 rounded-2xl p-6 border border-blue-100/80 flex items-start gap-3">
+            <svg className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <p className="text-[15px] text-[#111111] leading-[1.7] font-medium">{t}</p>
           </div>
         ))}
       </div>
