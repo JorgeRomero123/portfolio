@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import DentalMarketDashboard from '@/components/tools/DentalMarketDashboard';
-import PasswordGate from '@/components/PasswordGate';
 
 export const metadata = {
   title: 'Estudio de Mercado Dental en México | Jorge Romero Romanis',
@@ -25,9 +24,7 @@ export default function DentalMarketPage() {
         Volver a Herramientas
       </Link>
 
-      <PasswordGate password="1234" storageKey="dental-market-access">
-        <DentalMarketDashboard />
-      </PasswordGate>
+      <DentalMarketDashboard />
     </div>
   );
 }
