@@ -348,24 +348,24 @@ export function DashboardHeader({
   heroMetrics?: { value: string; label: string }[];
 }) {
   return (
-    <header className="relative mb-20 pt-8 pb-12">
+    <header className="relative mb-24 pt-12 pb-16">
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 rounded-3xl -mx-4 sm:-mx-6" />
-      <div className="relative z-10 text-center px-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-300 mb-4">
+      <div className="relative z-10 text-center px-4 sm:px-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-blue-300/90 mb-5">
           Estudio de Mercado {lastUpdated}
         </p>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-5 tracking-tight leading-[1.1]">
           {title}
         </h1>
-        <p className="text-base sm:text-lg text-blue-200/80 max-w-2xl mx-auto mb-10 leading-relaxed">
+        <p className="text-base sm:text-lg text-blue-200/70 max-w-2xl mx-auto mb-14 leading-relaxed">
           {subtitle}
         </p>
         {heroMetrics && heroMetrics.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 max-w-5xl mx-auto">
             {heroMetrics.map((m, i) => (
-              <div key={i} className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/10">
-                <p className="text-2xl sm:text-3xl font-bold text-white mb-1">{m.value}</p>
-                <p className="text-xs sm:text-sm text-blue-200/70 leading-snug">{m.label}</p>
+              <div key={i} className="bg-white/[0.07] backdrop-blur-md rounded-2xl p-6 sm:p-7 border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+                <p className="text-3xl sm:text-4xl font-extrabold text-white mb-2 tracking-tight">{m.value}</p>
+                <p className="text-sm text-blue-200/60 leading-snug">{m.label}</p>
               </div>
             ))}
           </div>
@@ -377,7 +377,7 @@ export function DashboardHeader({
 
 export function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-2xl font-semibold text-[#111111] mb-6">{children}</h2>
+    <h3 className="text-xl font-extrabold text-[#111111] mb-6 tracking-tight">{children}</h3>
   );
 }
 
@@ -391,27 +391,31 @@ export function SectionBadge({ label }: { label: string }) {
   );
 }
 
-export function SectionHeader({ number, label, title, description }: { number: number; label?: string; title: string; description: string }) {
+export function SectionHeader({ number, label, title, description, intro }: { number: number; label?: string; title: string; description: string; intro?: string }) {
   return (
-    <div className="mb-10">
-      <div className="flex items-center gap-3 mb-3">
-        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-bold">
+    <div className="mb-12">
+      <div className="flex items-center gap-3 mb-4">
+        <span className="flex items-center justify-center w-9 h-9 rounded-full bg-blue-600 text-white text-sm font-bold shadow-sm">
           {number}
         </span>
         {label && (
-          <span className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+          <span className="text-xs font-bold uppercase tracking-[0.15em] text-blue-600">
             {label}
           </span>
         )}
       </div>
-      <h2 className="text-2xl sm:text-3xl font-bold text-[#111111] mb-2 tracking-tight">{title}</h2>
-      <p className="text-base text-[#6b7280] leading-relaxed max-w-3xl">{description}</p>
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#111111] mb-3 tracking-tight leading-tight">{title}</h2>
+      <p className="text-base sm:text-lg text-[#6b7280] leading-relaxed max-w-3xl">{description}</p>
+      {intro && (
+        <p className="text-base text-[#374151] leading-[1.8] max-w-4xl mt-5">{intro}</p>
+      )}
+      <div className="mt-8 border-b border-gray-200" />
     </div>
   );
 }
 
 export function SectionDivider() {
-  return <div className="py-8"><hr className="border-gray-200" /></div>;
+  return <div className="py-10"><hr className="border-gray-200" /></div>;
 }
 
 export function MetricCard({ metricKey, metric }: { metricKey: string; metric: Metric }) {
@@ -454,14 +458,20 @@ export function MetricsGrid({ metrics, title }: { metrics: [string, Metric][]; t
 
 export function InsightCard({ insight }: { insight: Insight }) {
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 sm:p-8 border border-blue-100 hover:shadow-lg transition-all duration-300">
+    <div className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 rounded-2xl p-7 sm:p-8 border border-blue-100/80 hover:shadow-lg hover:shadow-blue-100/50 transition-all duration-300">
+      <div className="flex items-center gap-2 mb-4">
+        <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+        </svg>
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-700">Insight</span>
+      </div>
       <span className="inline-block text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-3 py-1 rounded-full mb-4">
         {formatInsightType(insight.type)}
       </span>
-      <p className="text-[#111111] leading-relaxed mb-5 text-base">
+      <p className="text-[#111111] leading-[1.7] mb-6 text-[15px]">
         {insight.description}
       </p>
-      <div className="bg-white/80 backdrop-blur-sm border-l-4 border-blue-600 rounded-r-xl p-5">
+      <div className="bg-white/90 backdrop-blur-sm border-l-4 border-blue-600 rounded-r-xl p-5">
         <p className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2">
           Implicación para Laboratorios
         </p>
@@ -787,20 +797,29 @@ export function MarketCalculationSection({ calculation }: { calculation: Record<
   const entries = Object.entries(calculation);
   return (
     <section className="mb-16">
-      <SectionTitle>Resultado de la Estimación</SectionTitle>
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+          <h3 className="text-xl font-extrabold text-[#111111] tracking-tight">Oportunidad de Mercado</h3>
+        </div>
+        <p className="text-sm text-[#6b7280]">Resultado de la estimación del mercado de laboratorios dentales</p>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {entries.map(([key, c]) => (
-          <div key={key} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
-            <p className="text-3xl md:text-4xl font-bold text-[#111111] mb-1">
+          <div key={key} className="relative bg-gradient-to-br from-slate-900 to-blue-950 rounded-2xl p-7 sm:p-8 shadow-lg overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-2 tracking-tight relative z-10">
               {c.currency ? formatNumber(c.value, c.currency) : formatNumber(c.value)}
             </p>
-            <p className="text-sm font-semibold text-[#2563eb] uppercase tracking-wide mb-2">
+            <p className="text-sm font-bold text-blue-300 uppercase tracking-wider mb-3 relative z-10">
               {formatMetricLabel(key)}
             </p>
             {c.description && (
-              <p className="text-sm text-[#6b7280] mb-2 leading-relaxed">{c.description}</p>
+              <p className="text-sm text-blue-200/60 mb-2 leading-relaxed relative z-10">{c.description}</p>
             )}
-            <p className="text-xs font-mono text-[#9ca3af]">{c.calculation}</p>
+            <p className="text-xs font-mono text-blue-300/40 relative z-10">{c.calculation}</p>
           </div>
         ))}
       </div>
@@ -1185,33 +1204,36 @@ export function OpportunitiesSection({ opportunities }: { opportunities: Strateg
     <section className="mb-12">
       <div className="space-y-6">
         {opportunities.map((o, i) => (
-          <div key={i} className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 hover:shadow-lg transition-all duration-300">
-            <div className="flex items-start gap-4 mb-5">
-              <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-600 text-white text-lg font-bold shrink-0">
-                {i + 1}
-              </span>
-              <div>
-                <h3 className="text-xl font-bold text-[#111111] mb-1">{o.opportunity}</h3>
-                <p className="text-sm text-[#6b7280] leading-relaxed">{o.description}</p>
+          <div key={i} className="bg-white rounded-2xl border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden flex">
+            <div className="w-1.5 bg-blue-600 shrink-0" />
+            <div className="p-7 sm:p-9 flex-1">
+              <div className="flex items-start gap-4 mb-6">
+                <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-blue-600 text-white text-lg font-bold shrink-0 shadow-sm">
+                  {i + 1}
+                </span>
+                <div>
+                  <h3 className="text-xl font-extrabold text-[#111111] mb-2 tracking-tight">{o.opportunity}</h3>
+                  <p className="text-sm text-[#6b7280] leading-relaxed">{o.description}</p>
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-blue-50 rounded-xl p-5">
-                <p className="text-xs font-bold uppercase tracking-wider text-blue-700 mb-2">Motor del Mercado</p>
-                <p className="text-sm text-[#111111] leading-relaxed">{o.market_driver}</p>
-              </div>
-              <div className="bg-emerald-50 rounded-xl p-5">
-                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-3">Beneficios Potenciales</p>
-                <ul className="space-y-1.5">
-                  {o.potential_benefits.map((b) => (
-                    <li key={b} className="text-sm text-[#111111] flex items-start gap-2">
-                      <svg className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      {b}
-                    </li>
-                  ))}
-                </ul>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="bg-blue-50/70 rounded-xl p-6">
+                  <p className="text-xs font-bold uppercase tracking-wider text-blue-700 mb-3">Motor del Mercado</p>
+                  <p className="text-sm text-[#111111] leading-relaxed">{o.market_driver}</p>
+                </div>
+                <div className="bg-emerald-50/70 rounded-xl p-6">
+                  <p className="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-3">Beneficios Potenciales</p>
+                  <ul className="space-y-2">
+                    {o.potential_benefits.map((b) => (
+                      <li key={b} className="text-sm text-[#111111] flex items-start gap-2">
+                        <svg className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </div>

@@ -56,6 +56,19 @@ const ACCENT = '#2563eb';
 const MUTED = '#6b7280';
 const PIE_COLORS = ['#2563eb', '#e5e7eb'];
 
+const SECTION_INTROS: Record<string, string> = {
+  executive_summary: 'Este reporte analiza la estructura, el tamaño y las tendencias del mercado de laboratorios dentales en México. A partir de datos de la industria, procesos operativos y dinámicas de demanda, se identifican los factores clave que están moldeando el sector y las oportunidades estratégicas para laboratorios como Fusion Dental Lab.',
+  mexico_dental_market_overview: 'La industria dental en México es amplia y altamente fragmentada, con decenas de miles de consultorios dentales operando en todo el país. Comprender el tamaño, la distribución geográfica y la estructura de este mercado permite contextualizar la demanda por servicios de laboratorio dental.',
+  dental_laboratories_market_mexico: 'Los laboratorios dentales son un componente esencial del ecosistema odontológico, ya que fabrican restauraciones, prótesis y soluciones estéticas prescritas por los dentistas. Analizar este segmento permite entender cómo se genera valor dentro de la cadena de servicios dentales.',
+  market_size_estimation: 'Estimar el tamaño del mercado de laboratorios dentales permite dimensionar la oportunidad económica disponible para los laboratorios que atienden a dentistas en México. A partir del número de dentistas activos, el volumen promedio de casos y los precios por restauración, es posible aproximar el valor anual del mercado.',
+  dental_industry_processes_and_pain_points: 'Los laboratorios dentales trabajan como socios técnicos de los dentistas, transformando especificaciones clínicas en restauraciones físicas para los pacientes. Analizar este flujo de trabajo permite identificar ineficiencias operativas y áreas donde la digitalización puede mejorar la coordinación entre clínicas y laboratorios.',
+  dental_technology_trends: 'La innovación tecnológica está transformando rápidamente la forma en que se diseñan y fabrican las restauraciones dentales. Tecnologías como los escáneres intraorales, los sistemas CAD/CAM y la impresión 3D están permitiendo procesos más rápidos, precisos y escalables dentro de los laboratorios dentales.',
+  dental_laboratory_competitors: 'El mercado de laboratorios dentales está compuesto por una amplia variedad de actores que van desde pequeños talleres técnicos hasta laboratorios altamente digitalizados. Analizar a los competidores permite entender cómo se posicionan diferentes laboratorios en términos de tecnología, especialización y servicios.',
+  dental_client_segments: 'Los laboratorios dentales atienden a diferentes tipos de clientes dentro del sector odontológico, desde consultorios independientes hasta clínicas especializadas en estética o implantología. Identificar estos segmentos permite comprender cómo varía la demanda de servicios de laboratorio según el tipo de práctica dental.',
+  patient_demand_trends: 'La demanda de tratamientos dentales está influenciada por factores demográficos, económicos y culturales. Tendencias como el crecimiento de la estética dental, el envejecimiento poblacional y el turismo dental están impulsando un mayor volumen de tratamientos que requieren servicios de laboratorio.',
+  strategic_opportunities: 'A partir del análisis del mercado, la estructura de la industria y las tendencias tecnológicas, se pueden identificar varias oportunidades estratégicas para los laboratorios dentales. Estas oportunidades reflejan áreas donde los laboratorios pueden diferenciarse, expandir su alcance y capturar mayor valor dentro del mercado.',
+};
+
 function buildHeroMetrics(sections: SectionData[]): { value: string; label: string }[] {
   const metrics: { value: string; label: string }[] = [];
 
@@ -98,14 +111,14 @@ function GeographicSection({ data }: { data: SectionData }) {
   const maxUnits = Math.max(...states.map((s) => s.economic_units));
 
   return (
-    <section className="mb-12">
-      <h3 className="text-xl font-bold text-[#111111] mb-2">
+    <section className="mb-14">
+      <h3 className="text-xl font-extrabold text-[#111111] mb-2 tracking-tight">
         Principales Estados por Actividad Dental
       </h3>
       <p className="text-sm text-[#6b7280] mb-8">{geo.note}</p>
 
-      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 mb-8">
-        <div className="h-72">
+      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm mb-10">
+        <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={states}
@@ -156,10 +169,10 @@ function MarketStructureSection({ data }: { data: SectionData }) {
   }));
 
   return (
-    <section className="mb-12">
+    <section className="mb-14">
       <SectionTitle>Estructura del Mercado</SectionTitle>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 flex items-center justify-center">
+        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm flex items-center justify-center">
           <div className="w-64 h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -214,6 +227,7 @@ function SectionRenderer({ section, index }: { section: SectionData; index: numb
         label={section.section_label}
         title={section.title}
         description={section.description}
+        intro={SECTION_INTROS[section.section_id]}
       />
 
       {metrics.length > 0 && <MetricsGrid metrics={metrics} />}
@@ -248,17 +262,26 @@ function SectionRenderer({ section, index }: { section: SectionData; index: numb
 
       {/* Per-section insights */}
       {section.insights && section.insights.length > 0 && (
-        <section className="mb-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <section className="mb-14">
+          <div className="flex items-center gap-2 mb-6">
+            <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            <h3 className="text-lg font-bold text-[#111111]">Hallazgos de esta sección</h3>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {section.insights.map((insight, i) => (
-              <div key={i} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-                <span className="inline-block text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-3 py-1 rounded-full mb-3">
+              <div key={i} className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 rounded-2xl p-7 border border-blue-100/80">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-700">Insight</span>
+                </div>
+                <span className="inline-block text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-3 py-1 rounded-full mb-4">
                   {insight.type.replace(/_/g, ' ')}
                 </span>
-                <p className="text-sm text-[#111111] leading-relaxed mb-3">{insight.description}</p>
+                <p className="text-[15px] text-[#111111] leading-[1.7] mb-4">{insight.description}</p>
                 {insight.implication_for_labs && (
-                  <div className="bg-white/80 border-l-4 border-blue-600 rounded-r-xl p-4">
-                    <p className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-1">Implicación para Laboratorios</p>
+                  <div className="bg-white/90 border-l-4 border-blue-600 rounded-r-xl p-5">
+                    <p className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2">Implicación para Laboratorios</p>
                     <p className="text-sm text-[#111111] leading-relaxed">{insight.implication_for_labs}</p>
                   </div>
                 )}
@@ -444,6 +467,37 @@ export default function DentalMarketDashboard() {
       <div id="insights" className="scroll-mt-20">
         <InsightsSection insights={allInsights} />
       </div>
+
+      {/* Key Takeaways — final summary from first 4 insights */}
+      {allInsights.length > 0 && (
+        <>
+          <SectionDivider />
+          <section className="mb-16">
+            <div className="mb-8">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#111111] mb-3 tracking-tight">Conclusiones del Estudio</h2>
+              <p className="text-base sm:text-lg text-[#6b7280]">Resumen ejecutivo de los hallazgos más relevantes para la toma de decisiones</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {allInsights.slice(0, 4).map((insight, i) => (
+                <div key={i} className="relative bg-white rounded-2xl border border-gray-100 overflow-hidden flex hover:shadow-lg transition-all duration-300">
+                  <div className="w-1.5 bg-blue-600 shrink-0" />
+                  <div className="p-6">
+                    <span className="inline-block text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-3">
+                      Conclusión {i + 1}
+                    </span>
+                    <p className="text-[15px] text-[#111111] leading-[1.7] font-medium">{insight.description}</p>
+                    {insight.implication_for_labs && (
+                      <p className="text-sm text-[#6b7280] mt-3 leading-relaxed">{insight.implication_for_labs}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
+
+      <SectionDivider />
       <div id="sources" className="scroll-mt-20">
         <SourcesSection sources={allSources} />
       </div>
