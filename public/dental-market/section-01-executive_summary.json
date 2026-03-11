@@ -1,0 +1,39 @@
+{
+  "section_id": "executive_summary",
+  "section_label": "Resumen Ejecutivo",
+  "title": "Resumen ejecutivo del estudio de mercado",
+  "description": "Principales hallazgos del análisis del mercado dental y de laboratorios dentales en México.",
+  "last_updated": "2026",
+  "key_findings": [
+    {
+      "finding": "Mercado significativo",
+      "description": "El mercado de servicios de laboratorio dental en México supera los 12 mil millones de pesos anuales."
+    },
+    {
+      "finding": "Industria fragmentada",
+      "description": "El sector está compuesto principalmente por pequeños laboratorios independientes con diferentes niveles de tecnología."
+    },
+    {
+      "finding": "Crecimiento de estética dental",
+      "description": "Los tratamientos estéticos como carillas y diseño de sonrisa están creciendo rápidamente."
+    },
+    {
+      "finding": "Transformación digital",
+      "description": "La adopción de escáneres intraorales, CAD/CAM e impresión 3D está transformando la industria."
+    }
+  ],
+  "strategic_takeaways": [
+    {
+      "theme": "especialización estética",
+      "recommendation": "Laboratorios que se posicionen como expertos en estética pueden capturar mayor valor."
+    },
+    {
+      "theme": "digitalización",
+      "recommendation": "Adoptar flujos digitales para mejorar velocidad y precisión."
+    },
+    {
+      "theme": "expansión geográfica",
+      "recommendation": "Aprovechar flujos digitales para atender dentistas en otras ciudades."
+    }
+  ]
+}

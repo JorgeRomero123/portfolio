@@ -143,6 +143,36 @@ export interface ClientSegment {
   typical_case_volume_per_month: number;
 }
 
+export interface KeyFinding {
+  finding: string;
+  description: string;
+}
+
+export interface StrategicTakeaway {
+  theme: string;
+  recommendation: string;
+}
+
+export interface DemandDriver {
+  driver: string;
+  description: string;
+  treatments_impacted: string[];
+  growth_indicator: string;
+  source: Source;
+}
+
+export interface PatientBehaviorChange {
+  trend: string;
+  description: string;
+}
+
+export interface StrategicOpportunity {
+  opportunity: string;
+  description: string;
+  market_driver: string;
+  potential_benefits: string[];
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface SectionData extends Record<string, any> {
   section_id: string;
@@ -173,6 +203,11 @@ export interface SectionData extends Record<string, any> {
   competitors?: Competitor[];
   competitive_dimensions?: CompetitiveDimension[];
   segments?: ClientSegment[];
+  key_findings?: KeyFinding[];
+  strategic_takeaways?: StrategicTakeaway[];
+  demand_drivers?: DemandDriver[];
+  patient_behavior_changes?: PatientBehaviorChange[];
+  opportunities?: StrategicOpportunity[];
   insights?: Insight[];
   sources?: Source[];
 }
@@ -257,6 +292,11 @@ const INSIGHT_LABELS: Record<string, string> = {
   premium_opportunity: 'Oportunidad Premium',
   premium_segment_growth: 'Crecimiento del Segmento Premium',
   relationship_driven_market: 'Mercado Basado en Relaciones',
+  esthetic_market_growth: 'Crecimiento del Mercado Estético',
+  tourism_opportunity: 'Oportunidad de Turismo Dental',
+  technology_expectation: 'Expectativa Tecnológica',
+  premium_market: 'Mercado Premium',
+  digital_scalability: 'Escalabilidad Digital',
 };
 
 export function formatMetricLabel(key: string): string {
@@ -1008,6 +1048,128 @@ export function ClientSegmentsSection({ segments }: { segments: ClientSegment[] 
   );
 }
 
+// ── Section 01: Executive Summary ──
+
+export function KeyFindingsSection({ findings }: { findings: KeyFinding[] }) {
+  return (
+    <section className="mb-16">
+      <SectionTitle>Hallazgos Principales</SectionTitle>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {findings.map((f, i) => (
+          <div key={i} className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-start gap-3">
+              <span className="w-8 h-8 rounded-full bg-[#2563eb] text-white flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">
+                {i + 1}
+              </span>
+              <div>
+                <h3 className="font-semibold text-[#111111] mb-1">{f.finding}</h3>
+                <p className="text-sm text-[#6b7280] leading-relaxed">{f.description}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function StrategicTakeawaysSection({ takeaways }: { takeaways: StrategicTakeaway[] }) {
+  return (
+    <section className="mb-16">
+      <SectionTitle>Recomendaciones Estratégicas</SectionTitle>
+      <div className="space-y-4">
+        {takeaways.map((t, i) => (
+          <div key={i} className="bg-[#f9fafb] rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
+            <span className="inline-block text-xs font-semibold uppercase tracking-wider text-[#2563eb] bg-blue-50 px-2.5 py-1 rounded-full mb-2 capitalize">
+              {t.theme}
+            </span>
+            <p className="text-sm text-[#111111] leading-relaxed">{t.recommendation}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ── Section 09: Patient Demand Trends ──
+
+export function DemandDriversSection({ drivers }: { drivers: DemandDriver[] }) {
+  return (
+    <section className="mb-16">
+      <SectionTitle>Impulsores de Demanda</SectionTitle>
+      <div className="space-y-5">
+        {drivers.map((d, i) => (
+          <div key={i} className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
+            <h3 className="font-semibold text-[#111111] text-lg mb-2">{d.driver}</h3>
+            <p className="text-sm text-[#6b7280] leading-relaxed mb-3">{d.description}</p>
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {d.treatments_impacted.map((t) => (
+                <span key={t} className="text-xs bg-blue-50 text-[#2563eb] px-2 py-0.5 rounded">{t}</span>
+              ))}
+            </div>
+            <div className="bg-green-50 border-l-4 border-green-400 rounded-r-lg p-3 mb-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-green-700 mb-1">Indicador de Crecimiento</p>
+              <p className="text-sm text-[#111111] leading-relaxed">{d.growth_indicator}</p>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-[#9ca3af]">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{d.source.organization} ({d.source.year})</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function PatientBehaviorSection({ changes }: { changes: PatientBehaviorChange[] }) {
+  return (
+    <section className="mb-16">
+      <SectionTitle>Cambios en el Comportamiento del Paciente</SectionTitle>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        {changes.map((c, i) => (
+          <div key={i} className="bg-[#f9fafb] rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
+            <h3 className="font-semibold text-[#111111] capitalize mb-2">{c.trend}</h3>
+            <p className="text-sm text-[#6b7280] leading-relaxed">{c.description}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ── Section 10: Strategic Opportunities ──
+
+export function OpportunitiesSection({ opportunities }: { opportunities: StrategicOpportunity[] }) {
+  return (
+    <section className="mb-16">
+      <SectionTitle>Oportunidades Estratégicas</SectionTitle>
+      <div className="space-y-5">
+        {opportunities.map((o, i) => (
+          <div key={i} className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
+            <h3 className="font-semibold text-[#111111] text-lg mb-2">{o.opportunity}</h3>
+            <p className="text-sm text-[#6b7280] leading-relaxed mb-3">{o.description}</p>
+            <div className="bg-blue-50 border-l-4 border-[#2563eb] rounded-r-lg p-3 mb-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#2563eb] mb-1">Motor del Mercado</p>
+              <p className="text-sm text-[#111111] leading-relaxed">{o.market_driver}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#6b7280] mb-2">Beneficios Potenciales</p>
+              <div className="flex flex-wrap gap-1.5">
+                {o.potential_benefits.map((b) => (
+                  <span key={b} className="text-xs bg-green-50 text-green-700 px-2.5 py-1 rounded-full">{b}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center py-20">
@@ -1055,6 +1217,10 @@ export function collectAllSources(sections: SectionData[]): Source[] {
     // competitors
     if (section.competitors) {
       section.competitors.forEach((c: Competitor) => add(c.source));
+    }
+    // demand_drivers
+    if (section.demand_drivers) {
+      section.demand_drivers.forEach((d: DemandDriver) => { if (d.source) add(d.source); });
     }
     // explicit sources array
     if (section.sources) {

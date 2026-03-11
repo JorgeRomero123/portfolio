@@ -40,6 +40,11 @@ import {
   CompetitorsSection,
   CompetitiveDimensionsSection,
   ClientSegmentsSection,
+  KeyFindingsSection,
+  StrategicTakeawaysSection,
+  DemandDriversSection,
+  PatientBehaviorSection,
+  OpportunitiesSection,
   LoadingSpinner,
   ErrorMessage,
   collectAllSources,
@@ -191,6 +196,12 @@ function SectionRenderer({ section }: { section: SectionData }) {
       {section.competitors && <CompetitorsSection competitors={section.competitors} />}
       {section.competitive_dimensions && <CompetitiveDimensionsSection dimensions={section.competitive_dimensions} />}
       {section.segments && <ClientSegmentsSection segments={section.segments} />}
+
+      {section.key_findings && <KeyFindingsSection findings={section.key_findings} />}
+      {section.strategic_takeaways && <StrategicTakeawaysSection takeaways={section.strategic_takeaways} />}
+      {section.demand_drivers && <DemandDriversSection drivers={section.demand_drivers} />}
+      {section.patient_behavior_changes && <PatientBehaviorSection changes={section.patient_behavior_changes} />}
+      {section.opportunities && <OpportunitiesSection opportunities={section.opportunities} />}
     </>
   );
 }

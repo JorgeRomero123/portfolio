@@ -1,0 +1,71 @@
+{
+  "section_id": "strategic_opportunities",
+  "section_label": "Oportunidades Estratégicas",
+  "title": "Oportunidades estratégicas para laboratorios dentales",
+  "description": "Posibles estrategias de crecimiento para laboratorios dentales basadas en tendencias del mercado, tecnología y demanda de servicios estéticos.",
+  "last_updated": "2026",
+  "opportunities": [
+    {
+      "opportunity": "Especialización en estética dental premium",
+      "description": "Ofrecer restauraciones estéticas de alta calidad como carillas de porcelana y diseño de sonrisa.",
+      "market_driver": "crecimiento de tratamientos cosméticos",
+      "potential_benefits": [
+        "precios más altos por caso",
+        "diferenciación frente a laboratorios tradicionales",
+        "atracción de clínicas estéticas"
+      ]
+    },
+    {
+      "opportunity": "Adopción de flujo digital completo",
+      "description": "Integrar escáneres intraorales, diseño CAD/CAM y fabricación digital.",
+      "market_driver": "digitalización de la odontología",
+      "potential_benefits": [
+        "reducción de tiempos de producción",
+        "mayor precisión",
+        "capacidad de atender clientes en otras ciudades"
+      ]
+    },
+    {
+      "opportunity": "Expansión geográfica",
+      "description": "Ofrecer servicios a clínicas en otras ciudades mediante envío de archivos digitales.",
+      "market_driver": "crecimiento de escaneo intraoral",
+      "potential_benefits": [
+        "ampliación del mercado",
+        "mayor volumen de casos",
+        "diversificación de clientes"
+      ]
+    },
+    {
+      "opportunity": "Servicios especializados para implantología",
+      "description": "Desarrollar capacidades avanzadas para restauraciones sobre implantes y guías quirúrgicas.",
+      "market_driver": "crecimiento del mercado de implantes dentales",
+      "potential_benefits": [
+        "mayor valor por caso",
+        "colaboración con especialistas",
+        "reputación técnica"
+      ]
+    },
+    {
+      "opportunity": "Plataformas digitales para gestión de pedidos",
+      "description": "Crear sistemas digitales que faciliten el envío de órdenes y comunicación entre dentistas y laboratorios.",
+      "market_driver": "fragmentación de procesos actuales",
+      "potential_benefits": [
+        "mejor experiencia para dentistas",
+        "reducción de errores en pedidos",
+        "mayor eficiencia operativa"
+      ]
+    }
+  ],
+  "insights": [
+    {
+      "type": "premium_market",
+      "description": "Los laboratorios especializados en estética pueden posicionarse en un segmento premium.",
+      "implication_for_labs": "Invertir en capacitación técnica y materiales de alta calidad."
+    },
+    {
+      "type": "digital_scalability",
+      "description": "Los flujos de trabajo digitales permiten escalar operaciones sin limitaciones geográficas.",
+      "implication_for_labs": "Laboratorios digitalizados pueden atender clientes a nivel nacional."
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "section_id": "patient_demand_trends",
+  "section_label": "Demanda de Pacientes",
+  "title": "Tendencias de demanda de pacientes en tratamientos dentales",
+  "description": "Factores demográficos, sociales y económicos que están impulsando la demanda de tratamientos dentales y servicios de laboratorio.",
+  "last_updated": "2026",
+  "demand_drivers": [
+    {
+      "driver": "Estética dental",
+      "description": "El crecimiento de la estética dental impulsado por redes sociales, cultura visual y mayor acceso a tratamientos cosméticos.",
+      "treatments_impacted": [
+        "carillas de porcelana",
+        "diseño de sonrisa",
+        "coronas estéticas",
+        "blanqueamiento dental"
+      ],
+      "growth_indicator": "alta demanda en clínicas urbanas",
+      "source": {
+        "title": "Cosmetic Dentistry Market Trends",
+        "organization": "American Academy of Cosmetic Dentistry",
+        "year": 2024,
+        "url": "https://www.aacd.com"
+      }
+    },
+    {
+      "driver": "Envejecimiento poblacional",
+      "description": "Las poblaciones mayores requieren más tratamientos restaurativos como coronas, implantes y prótesis dentales.",
+      "treatments_impacted": [
+        "implantes dentales",
+        "coronas",
+        "puentes dentales",
+        "prótesis removibles"
+      ],
+      "growth_indicator": "incremento sostenido de procedimientos restaurativos",
+      "source": {
+        "title": "Global Oral Health Status Report",
+        "organization": "World Health Organization",
+        "year": 2023,
+        "url": "https://www.who.int"
+      }
+    },
+    {
+      "driver": "Turismo dental",
+      "description": "Pacientes internacionales viajan a México para recibir tratamientos dentales a precios competitivos.",
+      "treatments_impacted": [
+        "implantes dentales",
+        "rehabilitación completa",
+        "carillas",
+        "coronas"
+      ],
+      "growth_indicator": "clínicas fronterizas y destinos turísticos con alta concentración de pacientes extranjeros",
+      "source": {
+        "title": "Dental Tourism Market Report",
+        "organization": "Patients Beyond Borders",
+        "year": 2024,
+        "url": "https://patientsbeyondborders.com"
+      }
+    },
+    {
+      "driver": "Mayor conciencia de salud oral",
+      "description": "Campañas de salud y mayor educación sobre higiene dental aumentan visitas al dentista.",
+      "treatments_impacted": [
+        "restauraciones tempranas",
+        "tratamientos preventivos",
+        "rehabilitaciones dentales"
+      ],
+      "growth_indicator": "incremento en revisiones dentales regulares",
+      "source": {
+        "title": "Oral Health Awareness Trends",
+        "organization": "FDI World Dental Federation",
+        "year": 2023,
+        "url": "https://www.fdiworlddental.org"
+      }
+    }
+  ],
+  "patient_behavior_changes": [
+    {
+      "trend": "mayor interés en estética",
+      "description": "Los pacientes buscan tratamientos que mejoren su apariencia dental, no solo su salud."
+    },
+    {
+      "trend": "comparación de precios",
+      "description": "Los pacientes comparan clínicas y tratamientos en línea antes de tomar decisiones."
+    },
+    {
+      "trend": "preferencia por tecnología digital",
+      "description": "Los pacientes valoran clínicas que utilizan escáneres intraorales y tecnologías modernas."
+    }
+  ],
+  "insights": [
+    {
+      "type": "esthetic_market_growth",
+      "description": "La estética dental es uno de los segmentos de mayor crecimiento en la odontología moderna.",
+      "implication_for_labs": "Laboratorios especializados en restauraciones estéticas pueden beneficiarse de esta tendencia."
+    },
+    {
+      "type": "tourism_opportunity",
+      "description": "México es un destino importante para turismo dental debido a precios competitivos.",
+      "implication_for_labs": "Laboratorios que trabajan con clínicas orientadas a turismo dental pueden aumentar su volumen de casos."
+    },
+    {
+      "type": "technology_expectation",
+      "description": "Pacientes esperan tratamientos más rápidos y cómodos gracias a tecnología digital.",
+      "implication_for_labs": "Laboratorios digitales pueden integrarse mejor con clínicas modernas."
+    }
+  ],
+  "sources": [
+    {
+      "title": "Cosmetic Dentistry Market Trends",
+      "organization": "American Academy of Cosmetic Dentistry",
+      "year": 2024,
+      "url": "https://www.aacd.com"
+    },
+    {
+      "title": "Global Oral Health Status Report",
+      "organization": "World Health Organization",
+      "year": 2023,
+      "url": "https://www.who.int"
+    },
+    {
+      "title": "Dental Tourism Market Report",
+      "organization": "Patients Beyond Borders",
+      "year": 2024,
+      "url": "https://patientsbeyondborders.com"
+    },
+    {
+      "title": "Oral Health Awareness Trends",
+      "organization": "FDI World Dental Federation",
+      "year": 2023,
+      "url": "https://www.fdiworlddental.org"
+    }
+  ]
+}
