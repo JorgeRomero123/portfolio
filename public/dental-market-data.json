@@ -1,0 +1,142 @@
+{
+  "section_id": "mexico_dental_market_overview",
+  "title": "Panorama del mercado dental en México",
+  "description": "Datos estructurales del mercado dental mexicano relevantes para laboratorios dentales que trabajan con clínicas y dentistas.",
+  "last_updated": "2026",
+  "key_metrics": {
+    "dentists_total_estimated": {
+      "value": 71178,
+      "unit": "dentists",
+      "year": 2025,
+      "description": "Número estimado de dentistas en México.",
+      "source": {
+        "title": "How Many Dentists are in Mexico",
+        "organization": "Poidata",
+        "year": 2025,
+        "url": "https://www.poidata.io/report/dentist/mexico"
+      }
+    },
+    "dental_clinics_total": {
+      "value": 8982,
+      "unit": "clinics",
+      "year": 2025,
+      "description": "Número estimado de clínicas dentales en México.",
+      "source": {
+        "title": "List of Dental Clinics in Mexico",
+        "organization": "Smartscraper",
+        "year": 2025,
+        "url": "https://rentechdigital.com/smartscraper/business-report-details/list-of-dental-clinics-in-mexico"
+      }
+    },
+    "dental_offices_economic_units": {
+      "value": 74034,
+      "unit": "economic_units",
+      "year": 2025,
+      "description": "Unidades económicas registradas como consultorios dentales.",
+      "source": {
+        "title": "Offices of Dentists Industry Profile",
+        "organization": "Data México / Secretaría de Economía",
+        "year": 2025,
+        "url": "https://www.economia.gob.mx/datamexico/en/profile/industry/offices-of-dentists"
+      }
+    },
+    "industry_revenue": {
+      "value": 18600000000,
+      "currency": "MXN",
+      "year": 2019,
+      "description": "Ingreso total estimado de consultorios dentales en México según censo económico.",
+      "source": {
+        "title": "Economic Census - Offices of Dentists",
+        "organization": "INEGI / Data México",
+        "year": 2019,
+        "url": "https://www.economia.gob.mx/datamexico/en/profile/industry/offices-of-dentists"
+      }
+    },
+    "workforce": {
+      "value": 428000,
+      "unit": "people",
+      "year": 2025,
+      "description": "Número aproximado de personas trabajando en la industria de consultorios dentales.",
+      "source": {
+        "title": "Offices of Dentists Industry Profile",
+        "organization": "Data México",
+        "year": 2025,
+        "url": "https://www.economia.gob.mx/datamexico/en/profile/industry/offices-of-dentists"
+      }
+    },
+    "average_salary": {
+      "value": 8350,
+      "currency": "MXN",
+      "unit": "monthly",
+      "year": 2025,
+      "description": "Salario promedio mensual en consultorios dentales.",
+      "source": {
+        "title": "Offices of Dentists Industry Profile",
+        "organization": "Data México",
+        "year": 2025,
+        "url": "https://www.economia.gob.mx/datamexico/en/profile/industry/offices-of-dentists"
+      }
+    }
+  },
+  "geographic_distribution": {
+    "top_states_by_dental_activity": [
+      {
+        "state": "Estado de México",
+        "economic_units": 9876,
+        "year": 2025
+      },
+      {
+        "state": "Ciudad de México",
+        "economic_units": 7334,
+        "year": 2025
+      },
+      {
+        "state": "Jalisco",
+        "economic_units": 4707,
+        "year": 2025
+      }
+    ],
+    "note": "Las zonas urbanas concentran la mayor cantidad de consultorios dentales y laboratorios asociados."
+  },
+  "market_structure": {
+    "single_owner_clinics_percentage": {
+      "value": 94.31,
+      "unit": "percent",
+      "description": "Porcentaje de clínicas dentales operadas por un solo propietario.",
+      "source": {
+        "title": "Dental Clinics Market Dataset",
+        "organization": "Smartscraper",
+        "year": 2025,
+        "url": "https://rentechdigital.com/smartscraper/business-report-details/list-of-dental-clinics-in-mexico"
+      }
+    },
+    "corporate_clinics_percentage": {
+      "value": 5.69,
+      "unit": "percent",
+      "description": "Porcentaje de clínicas que pertenecen a cadenas o grupos corporativos.",
+      "source": {
+        "title": "Dental Clinics Market Dataset",
+        "organization": "Smartscraper",
+        "year": 2025,
+        "url": "https://rentechdigital.com/smartscraper/business-report-details/list-of-dental-clinics-in-mexico"
+      }
+    }
+  },
+  "insights": [
+    {
+      "type": "market_fragmentation",
+      "description": "La industria dental mexicana está altamente fragmentada, con la gran mayoría de clínicas operadas por dentistas independientes.",
+      "implication_for_labs": "Los laboratorios dentales dependen de relaciones B2B con miles de dentistas independientes, lo que crea oportunidades para plataformas de gestión de pedidos y servicios especializados."
+    },
+    {
+      "type": "urban_concentration",
+      "description": "La mayor concentración de dentistas y consultorios se encuentra en áreas metropolitanas como Ciudad de México, Estado de México y Jalisco.",
+      "implication_for_labs": "Los laboratorios dentales pueden expandir su mercado enfocándose en redes de clínicas urbanas con alto volumen de pacientes."
+    },
+    {
+      "type": "large_workforce",
+      "description": "La industria dental emplea cientos de miles de personas en México, incluyendo dentistas, asistentes y técnicos dentales.",
+      "implication_for_labs": "Existe un ecosistema grande que depende de servicios de laboratorio, lo que indica una demanda estable para prótesis y restauraciones dentales."
+    }
+  ]
+}

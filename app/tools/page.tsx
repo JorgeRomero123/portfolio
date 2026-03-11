@@ -146,6 +146,13 @@ const tools = [
     icon: '🗺️',
     color: 'from-green-500 to-teal-500',
   },
+  {
+    name: 'Mercado Dental México',
+    description: 'Dashboard del mercado dental mexicano con métricas e insights clave',
+    href: '/tools/dental-market',
+    icon: '🦷',
+    color: 'from-blue-500 to-indigo-500',
+  },
 ];
 
 export default function ToolsPage() {
