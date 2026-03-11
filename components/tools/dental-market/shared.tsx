@@ -322,11 +322,19 @@ const UNIT_LABELS: Record<string, string> = {
   people: 'personas',
   cases: 'casos',
   dentists: 'dentistas',
+  laboratories: 'laboratorios',
+  clinics: 'clínicas',
+  economic_units: 'unidades económicas',
+  monthly: '/mes',
 };
 
 export function formatMetricValue(metric: Metric): string {
   if (metric.unit === 'percent') return `${metric.value}%`;
-  if (metric.currency) return formatNumber(metric.value, metric.currency);
+  if (metric.currency) {
+    const base = formatNumber(metric.value, metric.currency);
+    const unitSuffix = metric.unit ? UNIT_LABELS[metric.unit] : undefined;
+    return unitSuffix ? `${base} ${unitSuffix}` : base;
+  }
   const suffix = UNIT_LABELS[metric.unit || ''];
   if (suffix) return `${formatNumber(metric.value)} ${suffix}`;
   return formatNumber(metric.value);
@@ -444,7 +452,7 @@ export function MetricCard({ metricKey, metric }: { metricKey: string; metric: M
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span>{metric.source.organization} ({metric.year})</span>
+          <span>{metric.source.organization} ({metric.year || metric.source.year})</span>
         </div>
       )}
     </div>
@@ -453,10 +461,13 @@ export function MetricCard({ metricKey, metric }: { metricKey: string; metric: M
 
 export function MetricsGrid({ metrics, title }: { metrics: [string, Metric][]; title?: string }) {
   if (!metrics.length) return null;
+  const cols = metrics.length <= 2
+    ? 'grid-cols-1 sm:grid-cols-2'
+    : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
   return (
     <section className="mb-12">
-      {title && <h3 className="text-xl font-bold text-[#111111] mb-6">{title}</h3>}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {title && <h3 className="text-xl font-extrabold text-[#111111] mb-6 tracking-tight">{title}</h3>}
+      <div className={`grid ${cols} gap-5`}>
         {metrics.map(([key, metric]) => (
           <MetricCard key={key} metricKey={key} metric={metric} />
         ))}

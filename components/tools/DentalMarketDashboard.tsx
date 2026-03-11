@@ -18,6 +18,7 @@ import {
   formatNumber,
   formatMetricLabel,
   formatMetricValue,
+  formatInsightType,
   DashboardWrapper,
   DashboardHeader,
   SectionTitle,
@@ -122,7 +123,7 @@ function GeographicSection({ data }: { data: SectionData }) {
 
       <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm mb-10">
         <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
             <BarChart
               data={states}
               layout="vertical"
@@ -177,7 +178,7 @@ function MarketStructureSection({ data }: { data: SectionData }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm flex items-center justify-center">
           <div className="w-64 h-64">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <PieChart>
                 <Pie
                   data={pieData}
@@ -281,7 +282,7 @@ function SectionRenderer({ section, index }: { section: SectionData; index: numb
                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-700">Insight</span>
                 </div>
                 <span className="inline-block text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-3 py-1 rounded-full mb-4">
-                  {insight.type.replace(/_/g, ' ')}
+                  {formatInsightType(insight.type)}
                 </span>
                 <p className="text-[15px] text-[#111111] leading-[1.7] mb-4">{insight.description}</p>
                 {insight.implication_for_labs && (

@@ -24,7 +24,7 @@
     "percentage_using_external_labs": {
       "value": 80,
       "unit": "percent",
-      "description": "Porcentaje estimado de dentistas que trabajan con laboratorios externos.",
+      "description": "Porcentaje estimado de dentistas que trabajan con laboratorios externos (estimación basada en datos de EE.UU.).",
       "source": {
         "title": "Dental Practice Patterns Study",
         "organization": "American Dental Association",
@@ -46,7 +46,7 @@
     "average_lab_fee_per_case": {
       "value": 1200,
       "currency": "MXN",
-      "description": "Precio promedio pagado por un dentista a un laboratorio dental por una restauración estándar.",
+      "description": "Precio promedio pagado por un dentista a un laboratorio dental por una restauración estándar (referencia ajustada a mercado mexicano).",
       "source": {
         "title": "Dental Laboratory Pricing Benchmark",
         "organization": "Dental Economics",
