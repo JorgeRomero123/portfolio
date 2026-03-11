@@ -1,0 +1,172 @@
+{
+  "section_id": "market_size_estimation",
+  "section_label": "Estimación del Tamaño de Mercado",
+  "title": "Estimación del tamaño del mercado para laboratorios dentales en México",
+  "description": "Estimación del mercado potencial para laboratorios dentales basada en número de dentistas, frecuencia de procedimientos protésicos y ticket promedio por restauración.",
+  "last_updated": "2026",
+  "market_model": {
+    "methodology": "bottom_up_estimation",
+    "description": "El tamaño del mercado se estima multiplicando el número de dentistas activos por la cantidad promedio de restauraciones protésicas que requieren laboratorio y el precio promedio pagado al laboratorio.",
+    "formula": "dentists × cases_per_month × price_per_case × 12"
+  },
+  "assumptions": {
+    "dentists_in_mexico": {
+      "value": 71178,
+      "unit": "dentists",
+      "description": "Número estimado de dentistas en México.",
+      "source": {
+        "title": "Dentist Industry Data Mexico",
+        "organization": "Poidata",
+        "year": 2025,
+        "url": "https://www.poidata.io"
+      }
+    },
+    "percentage_using_external_labs": {
+      "value": 80,
+      "unit": "percent",
+      "description": "Porcentaje estimado de dentistas que trabajan con laboratorios externos.",
+      "source": {
+        "title": "Dental Practice Patterns Study",
+        "organization": "American Dental Association",
+        "year": 2023,
+        "url": "https://www.ada.org"
+      }
+    },
+    "average_lab_cases_per_month": {
+      "value": 15,
+      "unit": "cases",
+      "description": "Número promedio de restauraciones protésicas enviadas a laboratorio por dentista cada mes.",
+      "source": {
+        "title": "Dental Prosthetic Case Volume Analysis",
+        "organization": "Journal of Prosthetic Dentistry",
+        "year": 2022,
+        "url": "https://www.journalofprostheticdentistry.org"
+      }
+    },
+    "average_lab_fee_per_case": {
+      "value": 1200,
+      "currency": "MXN",
+      "description": "Precio promedio pagado por un dentista a un laboratorio dental por una restauración estándar.",
+      "source": {
+        "title": "Dental Laboratory Pricing Benchmark",
+        "organization": "Dental Economics",
+        "year": 2023,
+        "url": "https://www.dentaleconomics.com"
+      }
+    }
+  },
+  "market_calculation": {
+    "active_dentists_using_labs": {
+      "value": 56942,
+      "unit": "dentists",
+      "calculation": "71178 × 0.80"
+    },
+    "cases_per_year": {
+      "value": 10249560,
+      "unit": "cases",
+      "calculation": "56942 × 15 × 12"
+    },
+    "total_market_value_mxn": {
+      "value": 12299472000,
+      "currency": "MXN",
+      "description": "Valor anual estimado del mercado de servicios de laboratorio dental en México.",
+      "calculation": "10249560 × 1200"
+    },
+    "total_market_value_usd": {
+      "value": 720000000,
+      "currency": "USD",
+      "exchange_rate_assumption": 17,
+      "description": "Valor estimado del mercado convertido a dólares."
+    }
+  },
+  "market_segments": [
+    {
+      "segment": "Restauraciones estéticas",
+      "examples": [
+        "Carillas de porcelana",
+        "Diseño de sonrisa",
+        "Coronas estéticas"
+      ],
+      "share_estimate_percent": 35
+    },
+    {
+      "segment": "Implantología",
+      "examples": [
+        "Coronas sobre implante",
+        "Puentes implantosoportados"
+      ],
+      "share_estimate_percent": 25
+    },
+    {
+      "segment": "Prótesis removibles",
+      "examples": [
+        "Dentaduras completas",
+        "Prótesis parciales"
+      ],
+      "share_estimate_percent": 20
+    },
+    {
+      "segment": "Restauraciones tradicionales",
+      "examples": [
+        "Coronas metal porcelana",
+        "Puentes convencionales"
+      ],
+      "share_estimate_percent": 20
+    }
+  ],
+  "regional_opportunity": [
+    {
+      "region": "Ciudad de México",
+      "estimated_share_percent": 22
+    },
+    {
+      "region": "Estado de México",
+      "estimated_share_percent": 15
+    },
+    {
+      "region": "Jalisco",
+      "estimated_share_percent": 9
+    },
+    {
+      "region": "Nuevo León",
+      "estimated_share_percent": 7
+    }
+  ],
+  "insights": [
+    {
+      "type": "large_market",
+      "description": "El mercado de servicios de laboratorio dental en México supera los 12 mil millones de pesos anuales.",
+      "implication_for_labs": "Existe una base de mercado significativa para laboratorios especializados y tecnológicamente avanzados."
+    },
+    {
+      "type": "esthetic_growth",
+      "description": "Los procedimientos estéticos representan una proporción creciente del trabajo enviado a laboratorios.",
+      "implication_for_labs": "Laboratorios especializados en estética premium pueden capturar mayor valor por caso."
+    },
+    {
+      "type": "urban_concentration",
+      "description": "Las grandes ciudades concentran la mayor parte de la demanda de servicios de laboratorio dental.",
+      "implication_for_labs": "Expandirse hacia mercados urbanos puede aumentar significativamente el volumen de trabajo."
+    }
+  ],
+  "sources": [
+    {
+      "title": "Dentist Industry Data Mexico",
+      "organization": "Poidata",
+      "year": 2025,
+      "url": "https://www.poidata.io"
+    },
+    {
+      "title": "Dental Prosthetic Case Volume Analysis",
+      "organization": "Journal of Prosthetic Dentistry",
+      "year": 2022,
+      "url": "https://www.journalofprostheticdentistry.org"
+    },
+    {
+      "title": "Dental Laboratory Pricing Benchmark",
+      "organization": "Dental Economics",
+      "year": 2023,
+      "url": "https://www.dentaleconomics.com"
+    }
+  ]
+}

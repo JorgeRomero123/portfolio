@@ -1,0 +1,187 @@
+{
+  "section_id": "dental_industry_processes_and_pain_points",
+  "section_label": "Procesos y Puntos de Dolor",
+  "title": "Procesos actuales entre dentistas y laboratorios dentales",
+  "description": "Flujo operativo típico entre clínicas dentales y laboratorios dentales, incluyendo métodos de comunicación, logística de trabajo y principales ineficiencias observadas en la industria.",
+  "last_updated": "2026",
+  "workflow": [
+    {
+      "step": 1,
+      "actor": "Patient",
+      "process_name": "Consulta inicial",
+      "description": "El paciente acude al dentista para evaluación, diagnóstico o tratamiento estético o restaurativo.",
+      "tools_used": [
+        "Evaluación clínica",
+        "Radiografías",
+        "Fotografía dental"
+      ]
+    },
+    {
+      "step": 2,
+      "actor": "Dentist",
+      "process_name": "Preparación del caso",
+      "description": "El dentista prepara el diente o zona a restaurar y toma impresiones o escaneos digitales del paciente.",
+      "tools_used": [
+        "Material de impresión (silicona o alginato)",
+        "Escáner intraoral",
+        "Fotografía clínica"
+      ]
+    },
+    {
+      "step": 3,
+      "actor": "Dentist",
+      "process_name": "Creación de orden de laboratorio",
+      "description": "El dentista genera una orden de trabajo especificando el tipo de prótesis, material, color, y fecha requerida.",
+      "tools_used": [
+        "Formularios físicos",
+        "WhatsApp",
+        "Correo electrónico",
+        "Software dental (en clínicas más digitalizadas)"
+      ]
+    },
+    {
+      "step": 4,
+      "actor": "Dental Laboratory",
+      "process_name": "Recepción del caso",
+      "description": "El laboratorio recibe la orden junto con las impresiones físicas o archivos digitales del escaneo intraoral.",
+      "tools_used": [
+        "Mensajería local",
+        "Courier",
+        "Transferencia digital de archivos STL"
+      ]
+    },
+    {
+      "step": 5,
+      "actor": "Dental Laboratory",
+      "process_name": "Diseño y fabricación",
+      "description": "El laboratorio diseña y fabrica la prótesis dental utilizando técnicas manuales o digitales.",
+      "tools_used": [
+        "CAD/CAM dental",
+        "Impresión 3D",
+        "Fresadoras dentales",
+        "Trabajo manual del técnico dental"
+      ]
+    },
+    {
+      "step": 6,
+      "actor": "Dental Laboratory",
+      "process_name": "Entrega al dentista",
+      "description": "La prótesis final se envía de regreso a la clínica dental para su instalación.",
+      "tools_used": [
+        "Mensajería local",
+        "Entrega directa",
+        "Servicios de paquetería"
+      ]
+    },
+    {
+      "step": 7,
+      "actor": "Dentist",
+      "process_name": "Instalación en el paciente",
+      "description": "El dentista coloca la restauración o prótesis dental en el paciente y realiza ajustes finales.",
+      "tools_used": [
+        "Instrumental dental",
+        "Cementos dentales",
+        "Ajuste oclusal"
+      ]
+    }
+  ],
+  "communication_methods": [
+    {
+      "method": "WhatsApp",
+      "usage_level": "very_high",
+      "description": "Muchos dentistas utilizan WhatsApp para enviar fotografías, instrucciones y coordinar pedidos con el laboratorio."
+    },
+    {
+      "method": "Formularios físicos",
+      "usage_level": "high",
+      "description": "Algunos laboratorios aún reciben órdenes en papel junto con las impresiones físicas."
+    },
+    {
+      "method": "Correo electrónico",
+      "usage_level": "medium",
+      "description": "Se utiliza principalmente para enviar archivos digitales o confirmar pedidos."
+    },
+    {
+      "method": "Software dental especializado",
+      "usage_level": "low_to_medium",
+      "description": "Algunas clínicas utilizan software de gestión dental que permite enviar órdenes digitales al laboratorio."
+    }
+  ],
+  "pain_points": [
+    {
+      "problem": "Errores en especificaciones del caso",
+      "description": "Las órdenes incompletas o mal especificadas generan retrabajos o retrasos en la fabricación de prótesis.",
+      "impact": "Incremento en tiempos de entrega y costos operativos."
+    },
+    {
+      "problem": "Comunicación fragmentada",
+      "description": "Las conversaciones se distribuyen entre WhatsApp, llamadas y mensajes, lo que dificulta el seguimiento del caso.",
+      "impact": "Falta de trazabilidad del pedido."
+    },
+    {
+      "problem": "Dependencia de mensajería física",
+      "description": "Las impresiones físicas requieren transporte, lo que aumenta tiempos de entrega.",
+      "impact": "Retrasos logísticos entre clínicas y laboratorios."
+    },
+    {
+      "problem": "Falta de estandarización",
+      "description": "Cada dentista envía instrucciones de manera diferente, lo que dificulta automatizar procesos en el laboratorio.",
+      "impact": "Mayor carga administrativa."
+    }
+  ],
+  "industry_metrics": {
+    "average_turnaround_time_days": {
+      "value": 5,
+      "unit": "days",
+      "description": "Tiempo promedio de fabricación y entrega de una restauración dental estándar.",
+      "source": {
+        "title": "Dental Laboratory Workflow Studies",
+        "organization": "Journal of Prosthetic Dentistry",
+        "year": 2022,
+        "url": "https://www.journalofprostheticdentistry.org"
+      }
+    },
+    "digital_impression_adoption": {
+      "value": 35,
+      "unit": "percent",
+      "description": "Porcentaje aproximado de clínicas dentales que utilizan escaneo intraoral en lugar de impresiones físicas.",
+      "source": {
+        "title": "Digital Dentistry Adoption Survey",
+        "organization": "International Dental Journal",
+        "year": 2023,
+        "url": "https://www.sciencedirect.com/journal/international-dental-journal"
+      }
+    }
+  },
+  "insights": [
+    {
+      "type": "software_opportunity",
+      "description": "La falta de estandarización en pedidos entre dentistas y laboratorios genera oportunidades para plataformas digitales que gestionen órdenes.",
+      "implication_for_labs": "Un sistema digital podría centralizar pedidos, archivos y comunicación entre dentistas y laboratorios."
+    },
+    {
+      "type": "digital_transformation",
+      "description": "El crecimiento del escaneo intraoral y archivos digitales permite flujos completamente digitales.",
+      "implication_for_labs": "Laboratorios que adopten procesos digitales pueden reducir tiempos de entrega y escalar operaciones."
+    },
+    {
+      "type": "logistics_dependency",
+      "description": "El transporte físico de impresiones sigue siendo una limitación importante para laboratorios tradicionales.",
+      "implication_for_labs": "Los laboratorios que trabajen con archivos digitales pueden atender dentistas en otras ciudades."
+    }
+  ],
+  "sources": [
+    {
+      "title": "Journal of Prosthetic Dentistry Workflow Studies",
+      "organization": "Elsevier",
+      "year": 2022,
+      "url": "https://www.journalofprostheticdentistry.org"
+    },
+    {
+      "title": "Digital Dentistry Adoption Survey",
+      "organization": "International Dental Journal",
+      "year": 2023,
+      "url": "https://www.sciencedirect.com/journal/international-dental-journal"
+    }
+  ]
+}

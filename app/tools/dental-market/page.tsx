@@ -3,8 +3,8 @@ import DentalMarketDashboard from '@/components/tools/DentalMarketDashboard';
 import PasswordGate from '@/components/PasswordGate';
 
 export const metadata = {
-  title: 'Panorama del Mercado Dental en México | Jorge Romero Romanis',
-  description: 'Estructura del mercado e indicadores relevantes para laboratorios dentales en México',
+  title: 'Estudio de Mercado Dental en México | Jorge Romero Romanis',
+  description: 'Panorama del mercado dental y de laboratorios dentales en México — métricas, estructura, servicios y tendencias',
 };
 
 export default function DentalMarketPage() {

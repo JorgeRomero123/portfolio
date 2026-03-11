@@ -1,0 +1,86 @@
+{
+  "section_id": "dental_technology_trends",
+  "section_label": "Tendencias Tecnológicas",
+  "title": "Tendencias tecnológicas en odontología y laboratorios dentales",
+  "description": "Tecnologías emergentes que están transformando la odontología moderna y los laboratorios dentales, incluyendo digitalización de procesos, automatización y nuevas herramientas de diseño.",
+  "last_updated": "2026",
+  "technology_trends": [
+    {
+      "technology": "CAD/CAM dental",
+      "description": "Uso de software de diseño asistido por computadora y fresadoras para producir coronas, carillas y prótesis con alta precisión.",
+      "adoption_level": "high",
+      "impact_on_labs": "Reduce tiempos de fabricación y permite producción más consistente.",
+      "source": {
+        "title": "Digital Dentistry Market Report",
+        "organization": "Markets and Markets",
+        "year": 2024,
+        "url": "https://www.marketsandmarkets.com"
+      }
+    },
+    {
+      "technology": "Escáneres intraorales",
+      "description": "Dispositivos que permiten capturar impresiones digitales de la boca del paciente, eliminando la necesidad de moldes físicos.",
+      "adoption_level": "growing",
+      "impact_on_labs": "Permite enviar archivos digitales directamente al laboratorio, reduciendo tiempos de entrega.",
+      "source": {
+        "title": "Intraoral Scanner Market Analysis",
+        "organization": "Grand View Research",
+        "year": 2024,
+        "url": "https://www.grandviewresearch.com"
+      }
+    },
+    {
+      "technology": "Impresión 3D dental",
+      "description": "Uso de impresoras 3D para producir modelos dentales, guías quirúrgicas y alineadores.",
+      "adoption_level": "rapid_growth",
+      "impact_on_labs": "Reduce costos de producción y permite prototipado rápido.",
+      "source": {
+        "title": "Dental 3D Printing Market",
+        "organization": "Allied Market Research",
+        "year": 2024,
+        "url": "https://www.alliedmarketresearch.com"
+      }
+    },
+    {
+      "technology": "Diseño digital de sonrisa",
+      "description": "Software que permite simular resultados estéticos antes de realizar tratamientos.",
+      "adoption_level": "medium",
+      "impact_on_labs": "Permite colaboración más estrecha entre dentistas y técnicos dentales.",
+      "source": {
+        "title": "Digital Smile Design Trends",
+        "organization": "International Journal of Esthetic Dentistry",
+        "year": 2023,
+        "url": "https://www.quintessence-publishing.com"
+      }
+    },
+    {
+      "technology": "Inteligencia artificial en diagnóstico dental",
+      "description": "Herramientas de IA que analizan radiografías y escaneos para identificar problemas dentales.",
+      "adoption_level": "emerging",
+      "impact_on_labs": "Puede aumentar la demanda de restauraciones al mejorar la detección de problemas dentales.",
+      "source": {
+        "title": "AI in Dentistry Market Report",
+        "organization": "Fortune Business Insights",
+        "year": 2024,
+        "url": "https://www.fortunebusinessinsights.com"
+      }
+    }
+  ],
+  "industry_shift": {
+    "trend": "digital_dentistry",
+    "description": "La odontología está evolucionando hacia flujos de trabajo completamente digitales desde el diagnóstico hasta la fabricación de prótesis.",
+    "implication_for_labs": "Laboratorios que invierten en tecnología digital pueden reducir tiempos de entrega y ofrecer servicios de mayor precisión."
+  },
+  "insights": [
+    {
+      "type": "automation_opportunity",
+      "description": "Las tecnologías digitales permiten automatizar parte de la producción de prótesis dentales.",
+      "implication_for_labs": "Laboratorios que adopten estas tecnologías pueden escalar operaciones sin aumentar proporcionalmente el personal."
+    },
+    {
+      "type": "competitive_advantage",
+      "description": "Laboratorios con equipamiento digital avanzado pueden ofrecer mayor velocidad y precisión.",
+      "implication_for_labs": "Invertir en tecnología puede diferenciar a laboratorios premium en el mercado."
+    }
+  ]
+}

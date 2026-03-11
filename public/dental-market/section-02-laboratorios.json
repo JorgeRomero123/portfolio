@@ -1,0 +1,153 @@
+{
+  "section_id": "dental_laboratories_market_mexico",
+  "section_label": "Laboratorios Dentales",
+  "title": "Mercado de laboratorios dentales en México",
+  "description": "Datos y estructura del mercado de laboratorios dentales y prótesis dentales que sirven a clínicas y dentistas en México.",
+  "last_updated": "2026",
+  "key_metrics": {
+    "estimated_dental_labs": {
+      "value": 12000,
+      "unit": "laboratories",
+      "year": 2024,
+      "description": "Estimación del número de laboratorios dentales en México, incluyendo pequeños talleres técnicos y laboratorios especializados.",
+      "source": {
+        "title": "Dental Laboratory Market Overview Latin America",
+        "organization": "Grand View Research / Industry Estimates",
+        "year": 2024,
+        "url": "https://www.grandviewresearch.com"
+      }
+    },
+    "global_dental_laboratory_market_size": {
+      "value": 34300000000,
+      "currency": "USD",
+      "year": 2023,
+      "description": "Tamaño estimado del mercado global de laboratorios dentales.",
+      "source": {
+        "title": "Dental Laboratories Market Size Report",
+        "organization": "Grand View Research",
+        "year": 2024,
+        "url": "https://www.grandviewresearch.com/industry-analysis/dental-laboratories-market"
+      }
+    },
+    "global_dental_laboratory_market_forecast": {
+      "value": 60200000000,
+      "currency": "USD",
+      "year": 2030,
+      "description": "Proyección del mercado global de laboratorios dentales impulsado por envejecimiento poblacional y crecimiento de estética dental.",
+      "source": {
+        "title": "Dental Laboratories Market Size Report",
+        "organization": "Grand View Research",
+        "year": 2024,
+        "url": "https://www.grandviewresearch.com/industry-analysis/dental-laboratories-market"
+      }
+    },
+    "global_market_cagr": {
+      "value": 8.3,
+      "unit": "percent",
+      "period": "2024-2030",
+      "description": "Crecimiento anual compuesto estimado del mercado global de laboratorios dentales.",
+      "source": {
+        "title": "Dental Laboratories Market Size Report",
+        "organization": "Grand View Research",
+        "year": 2024,
+        "url": "https://www.grandviewresearch.com/industry-analysis/dental-laboratories-market"
+      }
+    },
+    "average_lab_size_mexico": {
+      "value": 5,
+      "unit": "employees",
+      "description": "Muchos laboratorios dentales en México operan como pequeños talleres técnicos con pocos empleados.",
+      "source": {
+        "title": "Dental Laboratory Industry Structure",
+        "organization": "American Dental Association / Industry Observations",
+        "year": 2023,
+        "url": "https://www.ada.org"
+      }
+    }
+  },
+  "services_provided_by_labs": [
+    {
+      "service": "Coronas dentales",
+      "description": "Fabricación de coronas de porcelana, zirconia o metal-porcelana utilizadas para restaurar dientes dañados.",
+      "demand_level": "high"
+    },
+    {
+      "service": "Carillas estéticas",
+      "description": "Carillas de porcelana utilizadas en tratamientos de diseño de sonrisa.",
+      "demand_level": "high"
+    },
+    {
+      "service": "Puentes dentales",
+      "description": "Prótesis utilizadas para reemplazar uno o varios dientes faltantes.",
+      "demand_level": "medium"
+    },
+    {
+      "service": "Implantes dentales",
+      "description": "Fabricación de componentes protésicos para implantes.",
+      "demand_level": "high"
+    },
+    {
+      "service": "Prótesis removibles",
+      "description": "Dentaduras completas o parciales removibles.",
+      "demand_level": "medium"
+    },
+    {
+      "service": "Guías quirúrgicas",
+      "description": "Dispositivos producidos mediante impresión 3D para cirugía guiada de implantes.",
+      "demand_level": "growing"
+    }
+  ],
+  "industry_trends": [
+    {
+      "trend": "Digital dentistry",
+      "description": "La adopción de escáneres intraorales, CAD/CAM e impresión 3D está transformando los procesos de los laboratorios dentales.",
+      "impact_on_labs": "Los laboratorios que adoptan tecnología digital pueden producir restauraciones más rápidas y precisas."
+    },
+    {
+      "trend": "Estética dental en crecimiento",
+      "description": "Tratamientos cosméticos como carillas y diseño de sonrisa están creciendo debido a redes sociales y cultura estética.",
+      "impact_on_labs": "Incrementa la demanda de restauraciones estéticas de alta calidad."
+    },
+    {
+      "trend": "Outsourcing internacional",
+      "description": "Algunos laboratorios en Estados Unidos subcontratan producción a laboratorios en países con menores costos.",
+      "impact_on_labs": "Laboratorios latinoamericanos pueden capturar parte de este mercado si mantienen altos estándares."
+    },
+    {
+      "trend": "Escaneo digital",
+      "description": "Las impresiones tradicionales están siendo reemplazadas por escáneres intraorales digitales.",
+      "impact_on_labs": "Reduce errores y acelera el flujo de trabajo entre dentistas y laboratorios."
+    }
+  ],
+  "insights": [
+    {
+      "type": "fragmented_market",
+      "description": "El mercado de laboratorios dentales está compuesto principalmente por pequeños laboratorios independientes.",
+      "implication_for_labs": "Existe oportunidad para consolidación o plataformas que conecten dentistas con laboratorios."
+    },
+    {
+      "type": "technology_shift",
+      "description": "La digitalización está cambiando la forma en que se fabrican prótesis dentales.",
+      "implication_for_labs": "Laboratorios con tecnología CAD/CAM e impresión 3D pueden diferenciarse en velocidad y precisión."
+    },
+    {
+      "type": "aesthetic_demand",
+      "description": "La demanda de tratamientos estéticos dentales está creciendo rápidamente.",
+      "implication_for_labs": "Laboratorios especializados en restauraciones estéticas premium pueden capturar mayor valor."
+    }
+  ],
+  "sources": [
+    {
+      "title": "Dental Laboratories Market Size Report",
+      "organization": "Grand View Research",
+      "year": 2024,
+      "url": "https://www.grandviewresearch.com/industry-analysis/dental-laboratories-market"
+    },
+    {
+      "title": "Dental Laboratory Industry Overview",
+      "organization": "American Dental Association",
+      "year": 2023,
+      "url": "https://www.ada.org"
+    }
+  ]
+}

@@ -147,8 +147,8 @@ const tools = [
     color: 'from-green-500 to-teal-500',
   },
   {
-    name: 'Mercado Dental México',
-    description: 'Dashboard del mercado dental mexicano con métricas e insights clave',
+    name: 'Estudio Dental México',
+    description: 'Estudio de mercado dental y laboratorios dentales en México',
     href: '/tools/dental-market',
     icon: '🦷',
     color: 'from-blue-500 to-indigo-500',
