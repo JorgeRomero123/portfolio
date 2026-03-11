@@ -48,6 +48,7 @@ import {
   LoadingSpinner,
   ErrorMessage,
   collectAllSources,
+  ChatWidget,
 } from './dental-market/shared';
 
 const ACCENT = '#2563eb';
@@ -382,6 +383,8 @@ export default function DentalMarketDashboard() {
       <div id="sources" className="scroll-mt-20">
         <SourcesSection sources={allSources} />
       </div>
+
+      <ChatWidget sections={sections} />
     </DashboardWrapper>
   );
 }
