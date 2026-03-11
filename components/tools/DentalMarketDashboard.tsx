@@ -17,10 +17,11 @@ import {
   type SectionData,
   formatNumber,
   formatMetricLabel,
+  formatMetricValue,
   DashboardWrapper,
   DashboardHeader,
   SectionTitle,
-  SectionBadge,
+  SectionHeader,
   SectionDivider,
   MetricsGrid,
   InsightsSection,
@@ -55,20 +56,56 @@ const ACCENT = '#2563eb';
 const MUTED = '#6b7280';
 const PIE_COLORS = ['#2563eb', '#e5e7eb'];
 
+function buildHeroMetrics(sections: SectionData[]): { value: string; label: string }[] {
+  const metrics: { value: string; label: string }[] = [];
+
+  // Find key metrics across sections
+  for (const section of sections) {
+    if (section.key_metrics) {
+      const km = section.key_metrics;
+      if (km.dentists_total_estimated) {
+        metrics.push({ value: formatMetricValue(km.dentists_total_estimated), label: 'Dentistas en México' });
+      }
+      if (km.industry_revenue) {
+        metrics.push({ value: formatMetricValue(km.industry_revenue), label: 'Ingresos de la Industria' });
+      }
+    }
+    if (section.market_calculation) {
+      const mc = section.market_calculation;
+      if (mc.total_market_value_mxn) {
+        metrics.push({
+          value: mc.total_market_value_mxn.currency
+            ? formatNumber(mc.total_market_value_mxn.value, mc.total_market_value_mxn.currency)
+            : formatNumber(mc.total_market_value_mxn.value),
+          label: 'Mercado de Laboratorios',
+        });
+      }
+    }
+    if (section.industry_metrics) {
+      const im = section.industry_metrics;
+      if (im.estimated_dental_labs) {
+        metrics.push({ value: formatMetricValue(im.estimated_dental_labs), label: 'Laboratorios Dentales' });
+      }
+    }
+  }
+
+  return metrics.slice(0, 4);
+}
+
 function GeographicSection({ data }: { data: SectionData }) {
   const geo = data.geographic_distribution!;
   const states = geo.top_states_by_dental_activity;
   const maxUnits = Math.max(...states.map((s) => s.economic_units));
 
   return (
-    <section className="mb-16">
-      <h2 className="text-2xl font-semibold text-[#111111] mb-2">
+    <section className="mb-12">
+      <h3 className="text-xl font-bold text-[#111111] mb-2">
         Principales Estados por Actividad Dental
-      </h2>
-      <p className="text-sm text-[#6b7280] mb-6">{geo.note}</p>
+      </h3>
+      <p className="text-sm text-[#6b7280] mb-8">{geo.note}</p>
 
-      <div className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 mb-6">
-        <div className="h-64">
+      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 mb-8">
+        <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={states}
@@ -80,9 +117,9 @@ function GeographicSection({ data }: { data: SectionData }) {
               <YAxis type="category" dataKey="state" width={130} tick={{ fill: '#111', fontSize: 13 }} />
               <Tooltip
                 formatter={(value) => [formatNumber(value as number), 'Unidades Económicas']}
-                contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px' }}
+                contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb', fontSize: '13px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
               />
-              <Bar dataKey="economic_units" fill={ACCENT} radius={[0, 6, 6, 0]} />
+              <Bar dataKey="economic_units" fill={ACCENT} radius={[0, 8, 8, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -119,10 +156,10 @@ function MarketStructureSection({ data }: { data: SectionData }) {
   }));
 
   return (
-    <section className="mb-16">
+    <section className="mb-12">
       <SectionTitle>Estructura del Mercado</SectionTitle>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 flex items-center justify-center">
+        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 flex items-center justify-center">
           <div className="w-64 h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -142,7 +179,7 @@ function MarketStructureSection({ data }: { data: SectionData }) {
                 </Pie>
                 <Tooltip
                   formatter={(value) => [`${value}%`]}
-                  contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px' }}
+                  contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb', fontSize: '13px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -151,9 +188,9 @@ function MarketStructureSection({ data }: { data: SectionData }) {
 
         <div className="space-y-4">
           {entries.map(([key, entry]) => (
-            <div key={key} className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
-              <p className="text-4xl font-bold text-[#111111] mb-1">{entry.value}%</p>
-              <p className="text-sm font-semibold text-[#2563eb] uppercase tracking-wide mb-2">
+            <div key={key} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
+              <p className="text-4xl font-extrabold text-[#111111] mb-1">{entry.value}%</p>
+              <p className="text-sm font-bold text-[#2563eb] uppercase tracking-wider mb-2">
                 {formatMetricLabel(key)}
               </p>
               <p className="text-sm text-[#6b7280] leading-relaxed">{entry.description}</p>
@@ -165,14 +202,19 @@ function MarketStructureSection({ data }: { data: SectionData }) {
   );
 }
 
-function SectionRenderer({ section }: { section: SectionData }) {
+function SectionRenderer({ section, index }: { section: SectionData; index: number }) {
   const metrics = section.key_metrics ? Object.entries(section.key_metrics) : [];
   const industryMetrics = section.industry_metrics ? Object.entries(section.industry_metrics) : [];
   const workflowSteps = section.workflow || section.workflow_between_dentists_and_labs?.steps;
 
   return (
     <>
-      {section.section_label && <SectionBadge label={section.section_label} />}
+      <SectionHeader
+        number={index + 1}
+        label={section.section_label}
+        title={section.title}
+        description={section.description}
+      />
 
       {metrics.length > 0 && <MetricsGrid metrics={metrics} />}
       {industryMetrics.length > 0 && <MetricsGrid metrics={industryMetrics} title="Indicadores de la Industria" />}
@@ -203,6 +245,28 @@ function SectionRenderer({ section }: { section: SectionData }) {
       {section.demand_drivers && <DemandDriversSection drivers={section.demand_drivers} />}
       {section.patient_behavior_changes && <PatientBehaviorSection changes={section.patient_behavior_changes} />}
       {section.opportunities && <OpportunitiesSection opportunities={section.opportunities} />}
+
+      {/* Per-section insights */}
+      {section.insights && section.insights.length > 0 && (
+        <section className="mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {section.insights.map((insight, i) => (
+              <div key={i} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+                <span className="inline-block text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-3 py-1 rounded-full mb-3">
+                  {insight.type.replace(/_/g, ' ')}
+                </span>
+                <p className="text-sm text-[#111111] leading-relaxed mb-3">{insight.description}</p>
+                {insight.implication_for_labs && (
+                  <div className="bg-white/80 border-l-4 border-blue-600 rounded-r-xl p-4">
+                    <p className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-1">Implicación para Laboratorios</p>
+                    <p className="text-sm text-[#111111] leading-relaxed">{insight.implication_for_labs}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </>
   );
 }
@@ -280,7 +344,6 @@ function SideNav({ items, activeId }: { items: NavItem[]; activeId: string }) {
               }}
               className="group relative flex items-center"
             >
-              {/* Label — always visible when active, tooltip on hover when inactive */}
               <span
                 className={`absolute right-full mr-3 text-xs font-medium whitespace-nowrap transition-all duration-300 ${
                   isActive
@@ -290,7 +353,6 @@ function SideNav({ items, activeId }: { items: NavItem[]; activeId: string }) {
               >
                 {item.label}
               </span>
-              {/* Dot */}
               <span
                 className={`block rounded-full transition-all duration-300 ${
                   isActive
@@ -357,6 +419,7 @@ export default function DentalMarketDashboard() {
 
   const allInsights = sections.flatMap((s) => s.insights || []);
   const allSources = collectAllSources(sections);
+  const heroMetrics = buildHeroMetrics(sections);
 
   return (
     <DashboardWrapper>
@@ -364,6 +427,7 @@ export default function DentalMarketDashboard() {
         title="Estudio de Mercado Dental en México"
         subtitle="Panorama del mercado dental y de laboratorios dentales — métricas, estructura, servicios y tendencias"
         lastUpdated={sections[0]?.last_updated || '2026'}
+        heroMetrics={heroMetrics}
       />
 
       <TopNav items={getNavItems(sections)} activeId={activeId} />
@@ -372,7 +436,7 @@ export default function DentalMarketDashboard() {
       {sections.map((section, i) => (
         <div key={section.section_id} id={section.section_id} className="scroll-mt-20">
           {i > 0 && <SectionDivider />}
-          <SectionRenderer section={section} />
+          <SectionRenderer section={section} index={i} />
         </div>
       ))}
 

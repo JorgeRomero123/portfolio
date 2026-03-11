@@ -340,22 +340,37 @@ export function DashboardHeader({
   title,
   subtitle,
   lastUpdated,
+  heroMetrics,
 }: {
   title: string;
   subtitle: string;
   lastUpdated: string;
+  heroMetrics?: { value: string; label: string }[];
 }) {
   return (
-    <header className="text-center mb-16">
-      <h1 className="text-4xl md:text-5xl font-bold text-[#111111] mb-3 tracking-tight">
-        {title}
-      </h1>
-      <p className="text-lg text-[#6b7280] max-w-2xl mx-auto mb-2">
-        {subtitle}
-      </p>
-      <p className="text-sm text-[#6b7280]">
-        Última actualización: {lastUpdated}
-      </p>
+    <header className="relative mb-20 pt-8 pb-12">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 rounded-3xl -mx-4 sm:-mx-6" />
+      <div className="relative z-10 text-center px-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-300 mb-4">
+          Estudio de Mercado {lastUpdated}
+        </p>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
+          {title}
+        </h1>
+        <p className="text-base sm:text-lg text-blue-200/80 max-w-2xl mx-auto mb-10 leading-relaxed">
+          {subtitle}
+        </p>
+        {heroMetrics && heroMetrics.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            {heroMetrics.map((m, i) => (
+              <div key={i} className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/10">
+                <p className="text-2xl sm:text-3xl font-bold text-white mb-1">{m.value}</p>
+                <p className="text-xs sm:text-sm text-blue-200/70 leading-snug">{m.label}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </header>
   );
 }
@@ -376,24 +391,43 @@ export function SectionBadge({ label }: { label: string }) {
   );
 }
 
+export function SectionHeader({ number, label, title, description }: { number: number; label?: string; title: string; description: string }) {
+  return (
+    <div className="mb-10">
+      <div className="flex items-center gap-3 mb-3">
+        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-bold">
+          {number}
+        </span>
+        {label && (
+          <span className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+            {label}
+          </span>
+        )}
+      </div>
+      <h2 className="text-2xl sm:text-3xl font-bold text-[#111111] mb-2 tracking-tight">{title}</h2>
+      <p className="text-base text-[#6b7280] leading-relaxed max-w-3xl">{description}</p>
+    </div>
+  );
+}
+
 export function SectionDivider() {
-  return <hr className="border-gray-200 mb-12" />;
+  return <div className="py-8"><hr className="border-gray-200" /></div>;
 }
 
 export function MetricCard({ metricKey, metric }: { metricKey: string; metric: Metric }) {
   return (
-    <div className="bg-[#f9fafb] rounded-xl p-6 hover:shadow-md transition-shadow border border-gray-100">
-      <p className="text-3xl md:text-4xl font-bold text-[#111111] mb-1">
+    <div className="bg-white rounded-2xl p-6 sm:p-8 hover:shadow-lg transition-all duration-300 border border-gray-100 group">
+      <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#111111] mb-2 tracking-tight">
         {formatMetricValue(metric)}
       </p>
-      <p className="text-sm font-semibold text-[#2563eb] uppercase tracking-wide mb-2">
+      <p className="text-sm font-bold text-blue-600 uppercase tracking-wider mb-3">
         {formatMetricLabel(metricKey)}
       </p>
-      <p className="text-sm text-[#6b7280] mb-3 leading-relaxed">
+      <p className="text-sm text-[#6b7280] leading-relaxed">
         {metric.description}
       </p>
       {metric.source && (
-        <div className="flex items-center gap-1.5 text-xs text-[#9ca3af]">
+        <div className="flex items-center gap-1.5 text-xs text-[#9ca3af] mt-4 pt-4 border-t border-gray-100">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -407,8 +441,8 @@ export function MetricCard({ metricKey, metric }: { metricKey: string; metric: M
 export function MetricsGrid({ metrics, title }: { metrics: [string, Metric][]; title?: string }) {
   if (!metrics.length) return null;
   return (
-    <section className="mb-16">
-      <SectionTitle>{title || 'Métricas Clave'}</SectionTitle>
+    <section className="mb-12">
+      {title && <h3 className="text-xl font-bold text-[#111111] mb-6">{title}</h3>}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {metrics.map(([key, metric]) => (
           <MetricCard key={key} metricKey={key} metric={metric} />
@@ -420,15 +454,15 @@ export function MetricsGrid({ metrics, title }: { metrics: [string, Metric][]; t
 
 export function InsightCard({ insight }: { insight: Insight }) {
   return (
-    <div className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
-      <span className="inline-block text-xs font-semibold uppercase tracking-wider text-[#2563eb] bg-blue-50 px-3 py-1 rounded-full mb-3">
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 sm:p-8 border border-blue-100 hover:shadow-lg transition-all duration-300">
+      <span className="inline-block text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-3 py-1 rounded-full mb-4">
         {formatInsightType(insight.type)}
       </span>
-      <p className="text-[#111111] leading-relaxed mb-4">
+      <p className="text-[#111111] leading-relaxed mb-5 text-base">
         {insight.description}
       </p>
-      <div className="bg-blue-50 border-l-4 border-[#2563eb] rounded-r-lg p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[#2563eb] mb-1">
+      <div className="bg-white/80 backdrop-blur-sm border-l-4 border-blue-600 rounded-r-xl p-5">
+        <p className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2">
           Implicación para Laboratorios
         </p>
         <p className="text-sm text-[#111111] leading-relaxed">
@@ -443,8 +477,11 @@ export function InsightsSection({ insights }: { insights: Insight[] }) {
   if (!insights.length) return null;
   return (
     <section className="mb-16">
-      <SectionTitle>Hallazgos Clave del Mercado</SectionTitle>
-      <div className="space-y-5">
+      <div className="mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-[#111111] mb-2 tracking-tight">Hallazgos Clave del Mercado</h2>
+        <p className="text-base text-[#6b7280]">Principales conclusiones del análisis con implicaciones directas para laboratorios dentales</p>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {insights.map((insight, i) => (
           <InsightCard key={i} insight={insight} />
         ))}
@@ -457,26 +494,29 @@ export function SourcesSection({ sources }: { sources: Source[] }) {
   if (!sources.length) return null;
   return (
     <section className="mb-8">
-      <SectionTitle>Fuentes</SectionTitle>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-[#111111] mb-2 tracking-tight">Fuentes</h2>
+        <p className="text-base text-[#6b7280]">{sources.length} fuentes utilizadas en este estudio</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {sources.map((source, i) => (
-          <div
-            key={i}
-            className="bg-[#f9fafb] rounded-xl p-5 border border-gray-100"
-          >
-            <p className="font-medium text-[#111111] text-sm mb-1">
+          <div key={i} className="bg-white rounded-xl p-5 border border-gray-100 hover:shadow-md transition-all duration-300 group">
+            <p className="font-semibold text-[#111111] text-sm mb-1 group-hover:text-blue-600 transition-colors">
               {source.title}
             </p>
-            <p className="text-xs text-[#6b7280] mb-2">
+            <p className="text-xs text-[#6b7280] mb-3">
               {source.organization} &middot; {source.year}
             </p>
             <a
               href={source.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-[#2563eb] hover:underline break-all"
+              className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
             >
-              {source.url}
+              Ver fuente
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
             </a>
           </div>
         ))}
@@ -509,7 +549,7 @@ export function ServicesGrid({ services }: { services: Service[] }) {
         {services.map((svc) => (
           <div
             key={svc.service}
-            className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow"
+            className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-[#111111]">{svc.service}</h3>
@@ -558,7 +598,7 @@ export function WorkflowTimeline({ steps }: { steps: WorkflowStep[] }) {
                   <div className="w-0.5 flex-1 bg-gray-200 mt-2" />
                 )}
               </div>
-              <div className="bg-[#f9fafb] rounded-xl p-5 border border-gray-100 flex-1 hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-2xl p-5 border border-gray-100 flex-1 hover:shadow-lg transition-all duration-300">
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span className={`inline-block text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${colors.badge}`}>
                     {ACTOR_LABELS[step.actor] || step.actor}
@@ -601,7 +641,7 @@ export function TrendsSection({ trends }: { trends: Trend[] }) {
         {trends.map((trend, i) => (
           <div
             key={i}
-            className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow"
+            className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300"
           >
             <h3 className="font-semibold text-[#111111] mb-2">
               {trend.trend}
@@ -648,7 +688,7 @@ export function CommunicationMethodsSection({ methods }: { methods: Communicatio
         {methods.map((m) => (
           <div
             key={m.method}
-            className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow"
+            className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-[#111111]">{m.method}</h3>
@@ -676,7 +716,7 @@ export function PainPointsSection({ painPoints }: { painPoints: PainPoint[] }) {
         {painPoints.map((pp, i) => (
           <div
             key={i}
-            className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow"
+            className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300"
           >
             <h3 className="font-semibold text-[#111111] mb-2">{pp.problem}</h3>
             <p className="text-sm text-[#6b7280] leading-relaxed mb-3">
@@ -703,7 +743,7 @@ export function MarketModelSection({ model }: { model: MarketModel }) {
   return (
     <section className="mb-16">
       <SectionTitle>Metodología de Estimación</SectionTitle>
-      <div className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100">
+      <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
         <p className="text-sm text-[#6b7280] leading-relaxed mb-4">
           {model.description}
         </p>
@@ -722,7 +762,7 @@ export function AssumptionsSection({ assumptions }: { assumptions: Record<string
       <SectionTitle>Supuestos del Modelo</SectionTitle>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {entries.map(([key, a]) => (
-          <div key={key} className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
+          <div key={key} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
             <p className="text-3xl md:text-4xl font-bold text-[#111111] mb-1">
               {a.unit === 'percent' ? `${a.value}%` : a.currency ? formatNumber(a.value, a.currency) : formatNumber(a.value)}
             </p>
@@ -750,7 +790,7 @@ export function MarketCalculationSection({ calculation }: { calculation: Record<
       <SectionTitle>Resultado de la Estimación</SectionTitle>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {entries.map(([key, c]) => (
-          <div key={key} className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
+          <div key={key} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
             <p className="text-3xl md:text-4xl font-bold text-[#111111] mb-1">
               {c.currency ? formatNumber(c.value, c.currency) : formatNumber(c.value)}
             </p>
@@ -774,7 +814,7 @@ export function MarketSegmentsSection({ segments }: { segments: MarketSegment[] 
       <SectionTitle>Segmentos del Mercado</SectionTitle>
       <div className="space-y-4">
         {segments.map((seg) => (
-          <div key={seg.segment} className="bg-[#f9fafb] rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
+          <div key={seg.segment} className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-semibold text-[#111111]">{seg.segment}</h3>
               <span className="text-lg font-bold text-[#2563eb]">{seg.share_estimate_percent}%</span>
@@ -853,7 +893,7 @@ export function TechnologyTrendsSection({ trends }: { trends: TechnologyTrend[] 
       <SectionTitle>Tecnologías Clave</SectionTitle>
       <div className="space-y-5">
         {trends.map((t, i) => (
-          <div key={i} className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
+          <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
               <h3 className="font-semibold text-[#111111]">{t.technology}</h3>
               <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${ADOPTION_COLORS[t.adoption_level] || 'bg-gray-100 text-gray-600'}`}>
@@ -888,7 +928,7 @@ export function IndustryShiftSection({ shift }: { shift: IndustryShift }) {
   return (
     <section className="mb-16">
       <SectionTitle>Cambio en la Industria</SectionTitle>
-      <div className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100">
+      <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
         <p className="text-[#111111] leading-relaxed mb-4">{shift.description}</p>
         <div className="bg-blue-50 border-l-4 border-[#2563eb] rounded-r-lg p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-[#2563eb] mb-1">
@@ -923,7 +963,7 @@ export function CompetitorsSection({ competitors }: { competitors: Competitor[] 
       <SectionTitle>Competidores</SectionTitle>
       <div className="space-y-5">
         {competitors.map((c) => (
-          <div key={c.name} className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
+          <div key={c.name} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
               <div>
                 <h3 className="font-semibold text-[#111111] text-lg">{c.name}</h3>
@@ -983,7 +1023,7 @@ export function CompetitiveDimensionsSection({ dimensions }: { dimensions: Compe
       <SectionTitle>Dimensiones Competitivas</SectionTitle>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {dimensions.map((d) => (
-          <div key={d.dimension} className="bg-[#f9fafb] rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
+          <div key={d.dimension} className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all duration-300">
             <h3 className="font-semibold text-[#111111] capitalize mb-1">{d.dimension}</h3>
             <p className="text-sm text-[#6b7280] leading-relaxed">{d.description}</p>
           </div>
@@ -1003,7 +1043,7 @@ export function ClientSegmentsSection({ segments }: { segments: ClientSegment[] 
       <SectionTitle>Segmentos de Clientes</SectionTitle>
       <div className="space-y-5">
         {segments.map((seg) => (
-          <div key={seg.segment} className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
+          <div key={seg.segment} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
               <h3 className="font-semibold text-[#111111]">{seg.segment}</h3>
               <span className="text-lg font-bold text-[#2563eb]">{seg.estimated_share_percent}%</span>
@@ -1052,17 +1092,16 @@ export function ClientSegmentsSection({ segments }: { segments: ClientSegment[] 
 
 export function KeyFindingsSection({ findings }: { findings: KeyFinding[] }) {
   return (
-    <section className="mb-16">
-      <SectionTitle>Hallazgos Principales</SectionTitle>
+    <section className="mb-12">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {findings.map((f, i) => (
-          <div key={i} className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
-            <div className="flex items-start gap-3">
-              <span className="w-8 h-8 rounded-full bg-[#2563eb] text-white flex items-center justify-center text-sm font-bold shrink-0 mt-0.5">
+          <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-start gap-4">
+              <span className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-base font-bold shrink-0">
                 {i + 1}
               </span>
               <div>
-                <h3 className="font-semibold text-[#111111] mb-1">{f.finding}</h3>
+                <h3 className="font-bold text-[#111111] text-base mb-1">{f.finding}</h3>
                 <p className="text-sm text-[#6b7280] leading-relaxed">{f.description}</p>
               </div>
             </div>
@@ -1075,15 +1114,14 @@ export function KeyFindingsSection({ findings }: { findings: KeyFinding[] }) {
 
 export function StrategicTakeawaysSection({ takeaways }: { takeaways: StrategicTakeaway[] }) {
   return (
-    <section className="mb-16">
-      <SectionTitle>Recomendaciones Estratégicas</SectionTitle>
-      <div className="space-y-4">
+    <section className="mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         {takeaways.map((t, i) => (
-          <div key={i} className="bg-[#f9fafb] rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
-            <span className="inline-block text-xs font-semibold uppercase tracking-wider text-[#2563eb] bg-blue-50 px-2.5 py-1 rounded-full mb-2 capitalize">
+          <div key={i} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 hover:shadow-lg transition-all duration-300">
+            <span className="inline-block text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-3 py-1 rounded-full mb-3 capitalize">
               {t.theme}
             </span>
-            <p className="text-sm text-[#111111] leading-relaxed">{t.recommendation}</p>
+            <p className="text-sm text-[#111111] leading-relaxed font-medium">{t.recommendation}</p>
           </div>
         ))}
       </div>
@@ -1099,7 +1137,7 @@ export function DemandDriversSection({ drivers }: { drivers: DemandDriver[] }) {
       <SectionTitle>Impulsores de Demanda</SectionTitle>
       <div className="space-y-5">
         {drivers.map((d, i) => (
-          <div key={i} className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
+          <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
             <h3 className="font-semibold text-[#111111] text-lg mb-2">{d.driver}</h3>
             <p className="text-sm text-[#6b7280] leading-relaxed mb-3">{d.description}</p>
             <div className="flex flex-wrap gap-1.5 mb-3">
@@ -1130,7 +1168,7 @@ export function PatientBehaviorSection({ changes }: { changes: PatientBehaviorCh
       <SectionTitle>Cambios en el Comportamiento del Paciente</SectionTitle>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         {changes.map((c, i) => (
-          <div key={i} className="bg-[#f9fafb] rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
+          <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all duration-300">
             <h3 className="font-semibold text-[#111111] capitalize mb-2">{c.trend}</h3>
             <p className="text-sm text-[#6b7280] leading-relaxed">{c.description}</p>
           </div>
@@ -1144,23 +1182,36 @@ export function PatientBehaviorSection({ changes }: { changes: PatientBehaviorCh
 
 export function OpportunitiesSection({ opportunities }: { opportunities: StrategicOpportunity[] }) {
   return (
-    <section className="mb-16">
-      <SectionTitle>Oportunidades Estratégicas</SectionTitle>
-      <div className="space-y-5">
+    <section className="mb-12">
+      <div className="space-y-6">
         {opportunities.map((o, i) => (
-          <div key={i} className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
-            <h3 className="font-semibold text-[#111111] text-lg mb-2">{o.opportunity}</h3>
-            <p className="text-sm text-[#6b7280] leading-relaxed mb-3">{o.description}</p>
-            <div className="bg-blue-50 border-l-4 border-[#2563eb] rounded-r-lg p-3 mb-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#2563eb] mb-1">Motor del Mercado</p>
-              <p className="text-sm text-[#111111] leading-relaxed">{o.market_driver}</p>
+          <div key={i} className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-start gap-4 mb-5">
+              <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-600 text-white text-lg font-bold shrink-0">
+                {i + 1}
+              </span>
+              <div>
+                <h3 className="text-xl font-bold text-[#111111] mb-1">{o.opportunity}</h3>
+                <p className="text-sm text-[#6b7280] leading-relaxed">{o.description}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#6b7280] mb-2">Beneficios Potenciales</p>
-              <div className="flex flex-wrap gap-1.5">
-                {o.potential_benefits.map((b) => (
-                  <span key={b} className="text-xs bg-green-50 text-green-700 px-2.5 py-1 rounded-full">{b}</span>
-                ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-blue-50 rounded-xl p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-blue-700 mb-2">Motor del Mercado</p>
+                <p className="text-sm text-[#111111] leading-relaxed">{o.market_driver}</p>
+              </div>
+              <div className="bg-emerald-50 rounded-xl p-5">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-3">Beneficios Potenciales</p>
+                <ul className="space-y-1.5">
+                  {o.potential_benefits.map((b) => (
+                    <li key={b} className="text-sm text-[#111111] flex items-start gap-2">
+                      <svg className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      {b}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
