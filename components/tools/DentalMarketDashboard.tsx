@@ -37,6 +37,9 @@ import {
   RegionalOpportunitySection,
   TechnologyTrendsSection,
   IndustryShiftSection,
+  CompetitorsSection,
+  CompetitiveDimensionsSection,
+  ClientSegmentsSection,
   LoadingSpinner,
   ErrorMessage,
   collectAllSources,
@@ -184,6 +187,10 @@ function SectionRenderer({ section }: { section: SectionData }) {
 
       {section.technology_trends && <TechnologyTrendsSection trends={section.technology_trends} />}
       {section.industry_shift && <IndustryShiftSection shift={section.industry_shift} />}
+
+      {section.competitors && <CompetitorsSection competitors={section.competitors} />}
+      {section.competitive_dimensions && <CompetitiveDimensionsSection dimensions={section.competitive_dimensions} />}
+      {section.segments && <ClientSegmentsSection segments={section.segments} />}
     </>
   );
 }

@@ -1,0 +1,65 @@
+{
+  "section_id": "dental_client_segments",
+  "section_label": "Segmentos de Clientes",
+  "title": "Segmentos de clientes para laboratorios dentales",
+  "description": "Tipos de clientes que contratan servicios de laboratorio dental y sus características principales.",
+  "last_updated": "2026",
+  "segments": [
+    {
+      "segment": "Clínicas dentales independientes",
+      "description": "Consultorios operados por uno o pocos dentistas que subcontratan la fabricación de prótesis dentales.",
+      "estimated_share_percent": 60,
+      "needs": [
+        "precios accesibles",
+        "entrega rápida",
+        "soporte técnico"
+      ],
+      "typical_case_volume_per_month": 10
+    },
+    {
+      "segment": "Clínicas estéticas premium",
+      "description": "Clínicas enfocadas en tratamientos cosméticos y diseño de sonrisa.",
+      "estimated_share_percent": 20,
+      "needs": [
+        "alta calidad estética",
+        "materiales premium",
+        "colaboración estrecha con el laboratorio"
+      ],
+      "typical_case_volume_per_month": 20
+    },
+    {
+      "segment": "Especialistas en implantología",
+      "description": "Dentistas especializados en implantes dentales que requieren restauraciones protésicas complejas.",
+      "estimated_share_percent": 10,
+      "needs": [
+        "precisión técnica",
+        "compatibilidad con sistemas de implantes",
+        "guías quirúrgicas"
+      ],
+      "typical_case_volume_per_month": 15
+    },
+    {
+      "segment": "Cadenas dentales",
+      "description": "Redes de clínicas dentales que operan múltiples sucursales.",
+      "estimated_share_percent": 10,
+      "needs": [
+        "capacidad de producción",
+        "precios negociados",
+        "estandarización de procesos"
+      ],
+      "typical_case_volume_per_month": 50
+    }
+  ],
+  "insights": [
+    {
+      "type": "premium_segment_growth",
+      "description": "Las clínicas estéticas están creciendo rápidamente debido a la demanda por tratamientos cosméticos.",
+      "implication_for_labs": "Laboratorios que se posicionen como especialistas en estética pueden capturar mayor valor."
+    },
+    {
+      "type": "relationship_driven_market",
+      "description": "Las relaciones personales entre dentistas y laboratorios siguen siendo un factor clave en la selección de proveedor.",
+      "implication_for_labs": "Invertir en relaciones con dentistas puede aumentar la fidelidad del cliente."
+    }
+  ]
+}

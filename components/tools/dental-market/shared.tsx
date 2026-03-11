@@ -118,6 +118,31 @@ export interface IndustryShift {
   implication_for_labs: string;
 }
 
+export interface Competitor {
+  name: string;
+  type: string;
+  headquarters: string;
+  presence_in_mexico?: string;
+  positioning: string;
+  key_services: string[];
+  strengths: string[];
+  weaknesses: string[];
+  source: Source;
+}
+
+export interface CompetitiveDimension {
+  dimension: string;
+  description: string;
+}
+
+export interface ClientSegment {
+  segment: string;
+  description: string;
+  estimated_share_percent: number;
+  needs: string[];
+  typical_case_volume_per_month: number;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface SectionData extends Record<string, any> {
   section_id: string;
@@ -145,6 +170,9 @@ export interface SectionData extends Record<string, any> {
   regional_opportunity?: RegionalOpportunity[];
   technology_trends?: TechnologyTrend[];
   industry_shift?: IndustryShift;
+  competitors?: Competitor[];
+  competitive_dimensions?: CompetitiveDimension[];
+  segments?: ClientSegment[];
   insights?: Insight[];
   sources?: Source[];
 }
@@ -225,6 +253,10 @@ const INSIGHT_LABELS: Record<string, string> = {
   esthetic_growth: 'Crecimiento Estético',
   automation_opportunity: 'Oportunidad de Automatización',
   competitive_advantage: 'Ventaja Competitiva',
+  technology_gap: 'Brecha Tecnológica',
+  premium_opportunity: 'Oportunidad Premium',
+  premium_segment_growth: 'Crecimiento del Segmento Premium',
+  relationship_driven_market: 'Mercado Basado en Relaciones',
 };
 
 export function formatMetricLabel(key: string): string {
@@ -831,6 +863,151 @@ export function IndustryShiftSection({ shift }: { shift: IndustryShift }) {
   );
 }
 
+// ── Section 06: Competitors ──
+
+const COMPETITOR_TYPE_LABELS: Record<string, string> = {
+  international_lab: 'Internacional',
+  mexican_lab: 'Nacional',
+  regional_lab: 'Regional',
+};
+
+const COMPETITOR_TYPE_COLORS: Record<string, string> = {
+  international_lab: 'bg-purple-100 text-purple-700',
+  mexican_lab: 'bg-green-100 text-green-700',
+  regional_lab: 'bg-yellow-100 text-yellow-700',
+};
+
+export function CompetitorsSection({ competitors }: { competitors: Competitor[] }) {
+  return (
+    <section className="mb-16">
+      <SectionTitle>Competidores</SectionTitle>
+      <div className="space-y-5">
+        {competitors.map((c) => (
+          <div key={c.name} className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <div>
+                <h3 className="font-semibold text-[#111111] text-lg">{c.name}</h3>
+                <p className="text-xs text-[#6b7280]">{c.headquarters}</p>
+              </div>
+              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${COMPETITOR_TYPE_COLORS[c.type] || 'bg-gray-100 text-gray-600'}`}>
+                {COMPETITOR_TYPE_LABELS[c.type] || c.type}
+              </span>
+            </div>
+
+            <p className="text-sm text-[#6b7280] leading-relaxed mb-4">{c.positioning}</p>
+
+            {c.presence_in_mexico && (
+              <p className="text-xs text-[#6b7280] mb-4">
+                <span className="font-semibold text-[#111111]">Presencia en México:</span> {c.presence_in_mexico}
+              </p>
+            )}
+
+            <div className="flex flex-wrap gap-1.5 mb-4">
+              {c.key_services.map((s) => (
+                <span key={s} className="text-xs bg-blue-50 text-[#2563eb] px-2 py-0.5 rounded">{s}</span>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="bg-green-50 rounded-lg p-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-green-700 mb-1.5">Fortalezas</p>
+                <ul className="space-y-1">
+                  {c.strengths.map((s) => (
+                    <li key={s} className="text-xs text-[#111111] flex items-start gap-1.5">
+                      <span className="text-green-500 mt-0.5">+</span> {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-red-50 rounded-lg p-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-red-600 mb-1.5">Debilidades</p>
+                <ul className="space-y-1">
+                  {c.weaknesses.map((w) => (
+                    <li key={w} className="text-xs text-[#111111] flex items-start gap-1.5">
+                      <span className="text-red-400 mt-0.5">−</span> {w}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function CompetitiveDimensionsSection({ dimensions }: { dimensions: CompetitiveDimension[] }) {
+  return (
+    <section className="mb-16">
+      <SectionTitle>Dimensiones Competitivas</SectionTitle>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {dimensions.map((d) => (
+          <div key={d.dimension} className="bg-[#f9fafb] rounded-xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
+            <h3 className="font-semibold text-[#111111] capitalize mb-1">{d.dimension}</h3>
+            <p className="text-sm text-[#6b7280] leading-relaxed">{d.description}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ── Section 07: Client Segments ──
+
+export function ClientSegmentsSection({ segments }: { segments: ClientSegment[] }) {
+  const maxVolume = Math.max(...segments.map((s) => s.typical_case_volume_per_month));
+
+  return (
+    <section className="mb-16">
+      <SectionTitle>Segmentos de Clientes</SectionTitle>
+      <div className="space-y-5">
+        {segments.map((seg) => (
+          <div key={seg.segment} className="bg-[#f9fafb] rounded-xl p-6 border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+              <h3 className="font-semibold text-[#111111]">{seg.segment}</h3>
+              <span className="text-lg font-bold text-[#2563eb]">{seg.estimated_share_percent}%</span>
+            </div>
+
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden mb-3">
+              <div
+                className="h-full bg-[#2563eb] rounded-full transition-all"
+                style={{ width: `${seg.estimated_share_percent}%` }}
+              />
+            </div>
+
+            <p className="text-sm text-[#6b7280] leading-relaxed mb-4">{seg.description}</p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#6b7280] mb-2">Necesidades</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {seg.needs.map((n) => (
+                    <span key={n} className="text-xs bg-blue-50 text-[#2563eb] px-2 py-0.5 rounded">{n}</span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#6b7280] mb-2">Volumen Mensual</p>
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl font-bold text-[#111111]">{seg.typical_case_volume_per_month}</span>
+                  <span className="text-xs text-[#6b7280]">casos/mes</span>
+                </div>
+                <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden mt-2">
+                  <div
+                    className="h-full bg-[#111111] rounded-full transition-all"
+                    style={{ width: `${(seg.typical_case_volume_per_month / maxVolume) * 100}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center py-20">
@@ -874,6 +1051,10 @@ export function collectAllSources(sections: SectionData[]): Source[] {
     // technology_trends
     if (section.technology_trends) {
       section.technology_trends.forEach((t: TechnologyTrend) => add(t.source));
+    }
+    // competitors
+    if (section.competitors) {
+      section.competitors.forEach((c: Competitor) => add(c.source));
     }
     // explicit sources array
     if (section.sources) {

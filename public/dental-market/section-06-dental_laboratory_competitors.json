@@ -1,0 +1,148 @@
+{
+  "section_id": "dental_laboratory_competitors",
+  "section_label": "Competidores",
+  "title": "Competidores en el mercado de laboratorios dentales en México",
+  "description": "Análisis de laboratorios dentales relevantes en México que ofrecen servicios similares a los de Fusion Dental Lab, incluyendo posicionamiento, especialización y capacidades tecnológicas.",
+  "last_updated": "2026",
+  "competitors": [
+    {
+      "name": "Glidewell Dental",
+      "type": "international_lab",
+      "headquarters": "California, USA",
+      "presence_in_mexico": "servicios a clínicas mexicanas y turismo dental",
+      "positioning": "laboratorio dental de gran escala con alta automatización",
+      "key_services": [
+        "coronas de zirconia",
+        "implantes dentales",
+        "restauraciones CAD/CAM",
+        "alineadores"
+      ],
+      "strengths": [
+        "producción a gran escala",
+        "tecnología avanzada",
+        "precios competitivos"
+      ],
+      "weaknesses": [
+        "menor personalización",
+        "distancia logística para algunos clientes"
+      ],
+      "source": {
+        "title": "Glidewell Dental Company Overview",
+        "organization": "Glidewell",
+        "year": 2024,
+        "url": "https://glidewelldental.com"
+      }
+    },
+    {
+      "name": "DenTech Dental Lab",
+      "type": "mexican_lab",
+      "headquarters": "Ciudad de México, México",
+      "positioning": "laboratorio especializado en restauraciones estéticas y prótesis implantosoportadas",
+      "key_services": [
+        "coronas de zirconia",
+        "carillas estéticas",
+        "prótesis sobre implante",
+        "diseño digital"
+      ],
+      "strengths": [
+        "especialización estética",
+        "proximidad a clínicas de alto nivel",
+        "uso de tecnología CAD/CAM"
+      ],
+      "weaknesses": [
+        "capacidad limitada comparada con grandes laboratorios internacionales"
+      ],
+      "source": {
+        "title": "Dental Laboratory Listings Mexico",
+        "organization": "Dental Directory Mexico",
+        "year": 2024,
+        "url": "https://dentallabdirectory.com"
+      }
+    },
+    {
+      "name": "DDS Lab",
+      "type": "international_lab",
+      "headquarters": "Florida, USA",
+      "positioning": "laboratorio dental digital con producción centralizada y flujos de trabajo completamente digitales",
+      "key_services": [
+        "coronas digitales",
+        "implantes",
+        "alineadores",
+        "restauraciones estéticas"
+      ],
+      "strengths": [
+        "flujo digital completo",
+        "alta eficiencia operativa",
+        "integración con escáneres intraorales"
+      ],
+      "weaknesses": [
+        "servicio menos personalizado para dentistas pequeños"
+      ],
+      "source": {
+        "title": "DDS Lab Corporate Overview",
+        "organization": "DDS Lab",
+        "year": 2024,
+        "url": "https://ddslab.com"
+      }
+    },
+    {
+      "name": "Laboratorio Dental Odontotec",
+      "type": "mexican_lab",
+      "headquarters": "Guadalajara, México",
+      "positioning": "laboratorio dental regional con enfoque en prótesis y restauraciones tradicionales",
+      "key_services": [
+        "coronas metal porcelana",
+        "prótesis removibles",
+        "puentes dentales"
+      ],
+      "strengths": [
+        "relaciones locales con clínicas",
+        "precios competitivos"
+      ],
+      "weaknesses": [
+        "menor adopción de tecnología digital"
+      ],
+      "source": {
+        "title": "Dental Laboratories Mexico Directory",
+        "organization": "Dental Lab Network",
+        "year": 2023,
+        "url": "https://dentallabnetwork.com"
+      }
+    }
+  ],
+  "competitive_dimensions": [
+    {
+      "dimension": "tecnología",
+      "description": "Uso de CAD/CAM, impresión 3D y flujos digitales."
+    },
+    {
+      "dimension": "especialización estética",
+      "description": "Capacidad de producir restauraciones estéticas de alta calidad."
+    },
+    {
+      "dimension": "capacidad de producción",
+      "description": "Volumen de casos que el laboratorio puede manejar."
+    },
+    {
+      "dimension": "relación con dentistas",
+      "description": "Nivel de colaboración directa con clínicas dentales."
+    }
+  ],
+  "insights": [
+    {
+      "type": "fragmented_market",
+      "description": "El mercado de laboratorios dentales está altamente fragmentado con muchos laboratorios pequeños y medianos.",
+      "implication_for_labs": "Laboratorios con diferenciación tecnológica o estética pueden destacar fácilmente."
+    },
+    {
+      "type": "technology_gap",
+      "description": "Muchos laboratorios regionales aún no han adoptado tecnologías digitales avanzadas.",
+      "implication_for_labs": "Invertir en tecnología puede crear una ventaja competitiva significativa."
+    },
+    {
+      "type": "premium_opportunity",
+      "description": "Existe demanda creciente por restauraciones estéticas premium.",
+      "implication_for_labs": "Laboratorios especializados en estética pueden cobrar precios más altos por caso."
+    }
+  ]
+}
