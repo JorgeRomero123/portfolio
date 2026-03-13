@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import ParallaxHero from '@/components/ParallaxHero';
+import { AnimateIn, StaggerChildren, StaggerItem } from '@/components/AnimateIn';
 
 export default function Home() {
   return (
@@ -9,46 +10,54 @@ export default function Home() {
 
       {/* Featured Sections */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <FeatureCard
-            title="Photo Gallery"
-            description="A collection of my favorite shots"
-            href="/gallery"
-            icon="📸"
-          />
-          <FeatureCard
-            title="Videos"
-            description="Creative content on YouTube"
-            href="/videos"
-            icon="🎥"
-          />
-          <FeatureCard
-            title="360° Tours"
-            description="Immersive virtual experiences"
-            href="/tours"
-            icon="🌐"
-          />
-          <FeatureCard
-            title="Interactive Tools"
-            description="Fun projects and experiments"
-            href="/tools"
-            icon="🛠️"
-          />
-        </div>
+        <StaggerChildren className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <StaggerItem>
+            <FeatureCard
+              title="Photo Gallery"
+              description="A collection of my favorite shots"
+              href="/gallery"
+              icon="📸"
+            />
+          </StaggerItem>
+          <StaggerItem>
+            <FeatureCard
+              title="Videos"
+              description="Creative content on YouTube"
+              href="/videos"
+              icon="🎥"
+            />
+          </StaggerItem>
+          <StaggerItem>
+            <FeatureCard
+              title="360° Tours"
+              description="Immersive virtual experiences"
+              href="/tours"
+              icon="🌐"
+            />
+          </StaggerItem>
+          <StaggerItem>
+            <FeatureCard
+              title="Interactive Tools"
+              description="Fun projects and experiments"
+              href="/tools"
+              icon="🛠️"
+            />
+          </StaggerItem>
+        </StaggerChildren>
       </section>
 
       {/* Drone Footage Showcase */}
       <section className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <AnimateIn className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Aerial Videography
             </h2>
             <p className="text-lg text-gray-600">
               Stunning drone footage capturing unique perspectives
             </p>
-          </div>
-          <div className="max-w-4xl mx-auto">
+          </AnimateIn>
+          <AnimateIn delay={0.15} className="max-w-4xl mx-auto">
             <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
               <iframe
                 className="absolute top-0 left-0 w-full h-full rounded-lg shadow-xl"
@@ -63,107 +72,115 @@ export default function Home() {
             <p className="text-center text-gray-500 mt-4">
               Weekend house aerial tour
             </p>
-          </div>
+          </AnimateIn>
         </div>
       </section>
 
       {/* Projects I've Worked On */}
       <section className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <AnimateIn className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Projects I&apos;ve Worked On
             </h2>
             <p className="text-lg text-gray-600">
               Professional and independent web applications
             </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            <a
-              href="https://fastlane.paypal.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-white rounded-lg shadow-md p-8 hover:shadow-xl transition-shadow"
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-xl font-semibold text-gray-900">Fastlane by PayPal</h3>
-                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">PayPal</span>
-              </div>
-              <p className="text-gray-600">
-                Technical co-leader for the profile management portal from repo creation through
-                production launch. Maintained the Next.js application serving 200k+ monthly users
-                and led its international expansion across continents.
-              </p>
-              <span className="inline-block mt-4 text-blue-600 font-semibold">
-                fastlane.paypal.com →
-              </span>
-            </a>
-            <a
-              href="https://www.bing.com/images?FORM=Z9LH"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-white rounded-lg shadow-md p-8 hover:shadow-xl transition-shadow"
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-xl font-semibold text-gray-900">Bing Image Inspiration Feed</h3>
-                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">Microsoft</span>
-              </div>
-              <p className="text-gray-600">
-                Drove UX development for a 0-to-1 recommendation feed for Bing Multimedia.
-                Built and shipped features using C#, TypeScript, and React that contributed to a
-                400% increase in daily active users over 9 months.
-              </p>
-              <span className="inline-block mt-4 text-blue-600 font-semibold">
-                bing.com/images →
-              </span>
-            </a>
-            <div className="bg-white rounded-lg shadow-md p-8 hover:shadow-xl transition-shadow">
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">MyAlbumLink</h3>
-              <p className="text-gray-600">
-                A multi-tenant SaaS platform for creating shareable media albums via a single link.
-                Features photo/video uploads with automatic compression, 360° content, watermarking,
-                passcode protection, per-album analytics, and tiered Stripe subscriptions.
-              </p>
+          </AnimateIn>
+          <StaggerChildren className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <StaggerItem>
               <a
-                href="https://myalbumlink.com"
+                href="https://fastlane.paypal.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block mt-4 text-blue-600 font-semibold hover:text-blue-700"
+                className="block bg-white rounded-lg shadow-md p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full"
               >
-                myalbumlink.com →
+                <div className="flex items-center gap-2 mb-3">
+                  <h3 className="text-xl font-semibold text-gray-900">Fastlane by PayPal</h3>
+                  <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">PayPal</span>
+                </div>
+                <p className="text-gray-600">
+                  Technical co-leader for the profile management portal from repo creation through
+                  production launch. Maintained the Next.js application serving 200k+ monthly users
+                  and led its international expansion across continents.
+                </p>
+                <span className="inline-block mt-4 text-blue-600 font-semibold">
+                  fastlane.paypal.com →
+                </span>
               </a>
+            </StaggerItem>
+            <StaggerItem>
               <a
-                href="https://myalbumlink.com/albums/jorge-fotografia-aerea"
+                href="https://www.bing.com/images?FORM=Z9LH"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block mt-2 text-sm text-blue-500 hover:text-blue-700"
+                className="block bg-white rounded-lg shadow-md p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full"
               >
-                See an example album →
+                <div className="flex items-center gap-2 mb-3">
+                  <h3 className="text-xl font-semibold text-gray-900">Bing Image Inspiration Feed</h3>
+                  <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">Microsoft</span>
+                </div>
+                <p className="text-gray-600">
+                  Drove UX development for a 0-to-1 recommendation feed for Bing Multimedia.
+                  Built and shipped features using C#, TypeScript, and React that contributed to a
+                  400% increase in daily active users over 9 months.
+                </p>
+                <span className="inline-block mt-4 text-blue-600 font-semibold">
+                  bing.com/images →
+                </span>
               </a>
-            </div>
-            <a
-              href="https://www.labwiselink.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-white rounded-lg shadow-md p-8 hover:shadow-xl transition-shadow"
-            >
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">LabWiseLink</h3>
-              <p className="text-gray-600">
-                A multi-tenant dental lab order management platform connecting a laboratory with
-                multiple clinics. Features 5-role RBAC, an order state machine with audit logging,
-                real-time SSE alerts, file storage, and multi-clinic doctor support.
-              </p>
-              <span className="inline-block mt-4 text-blue-600 font-semibold">
-                labwiselink.com →
-              </span>
-            </a>
-          </div>
+            </StaggerItem>
+            <StaggerItem>
+              <div className="bg-white rounded-lg shadow-md p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full">
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">MyAlbumLink</h3>
+                <p className="text-gray-600">
+                  A multi-tenant SaaS platform for creating shareable media albums via a single link.
+                  Features photo/video uploads with automatic compression, 360° content, watermarking,
+                  passcode protection, per-album analytics, and tiered Stripe subscriptions.
+                </p>
+                <a
+                  href="https://myalbumlink.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block mt-4 text-blue-600 font-semibold hover:text-blue-700"
+                >
+                  myalbumlink.com →
+                </a>
+                <a
+                  href="https://myalbumlink.com/albums/jorge-fotografia-aerea"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block mt-2 text-sm text-blue-500 hover:text-blue-700"
+                >
+                  See an example album →
+                </a>
+              </div>
+            </StaggerItem>
+            <StaggerItem>
+              <a
+                href="https://www.labwiselink.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block bg-white rounded-lg shadow-md p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full"
+              >
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">LabWiseLink</h3>
+                <p className="text-gray-600">
+                  A multi-tenant dental lab order management platform connecting a laboratory with
+                  multiple clinics. Features 5-role RBAC, an order state machine with audit logging,
+                  real-time SSE alerts, file storage, and multi-clinic doctor support.
+                </p>
+                <span className="inline-block mt-4 text-blue-600 font-semibold">
+                  labwiselink.com →
+                </span>
+              </a>
+            </StaggerItem>
+          </StaggerChildren>
         </div>
       </section>
 
       {/* About Preview */}
       <section className="bg-white py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <AnimateIn className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             About Me
           </h2>
@@ -178,12 +195,12 @@ export default function Home() {
           >
             Learn more about me →
           </Link>
-        </div>
+        </AnimateIn>
       </section>
 
       {/* Contact Section */}
       <section className="bg-gray-50 py-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <AnimateIn className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             Contact Me
           </h2>
@@ -192,7 +209,7 @@ export default function Home() {
           </p>
           <a
             href="mailto:jorgeromanis@yahoo.com.mx"
-            className="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg"
+            className="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200 shadow-lg"
           >
             <svg
               className="w-5 h-5 mr-2"
@@ -209,7 +226,7 @@ export default function Home() {
             </svg>
             jorgeromanis@yahoo.com.mx
           </a>
-        </div>
+        </AnimateIn>
       </section>
     </div>
   );
@@ -225,7 +242,7 @@ interface FeatureCardProps {
 function FeatureCard({ title, description, href, icon }: FeatureCardProps) {
   return (
     <Link href={href}>
-      <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-shadow cursor-pointer h-full">
+      <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer h-full">
         <div className="text-4xl mb-4">{icon}</div>
         <h3 className="text-xl font-semibold text-gray-900 mb-2">{title}</h3>
         <p className="text-gray-600">{description}</p>
