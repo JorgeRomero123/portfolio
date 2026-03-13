@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
+import { Analytics } from "@vercel/analytics/next";
 import { headers } from 'next/headers';
 
 const geistSans = Geist({
@@ -37,6 +38,7 @@ export default async function RootLayout({
         <main className={isAdminRoute ? '' : 'min-h-screen bg-gray-50'}>
           {children}
         </main>
+        <Analytics />
         {!isAdminRoute && (
           <footer className="bg-gray-100 border-t border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
