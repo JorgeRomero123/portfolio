@@ -1,34 +1,104 @@
 {
   "section_id": "regulatory_and_official_data",
   "section_label": "Datos Oficiales y Regulación",
-  "title": "Datos oficiales y regulación del sector",
-  "description": "El sector dental en México está regulado por diversas instituciones y cuenta con datos oficiales que permiten dimensionar la industria.",
+  "title": "Datos oficiales y regulación del sector dental en México",
+  "description": "El sector dental en México cuenta con datos oficiales provenientes de organismos como INEGI y está regulado por COFEPRIS, lo que permite dimensionar su tamaño, estructura y requisitos operativos.",
   "last_updated": "2026",
   "institutions": [
     {
       "name": "INEGI",
-      "role": "Estadísticas económicas y unidades dentales"
+      "role": "Generación de estadísticas económicas y censos de unidades dentales.",
+      "relevance": "Fuente principal para medir el tamaño del mercado dental en México."
     },
     {
       "name": "COFEPRIS",
-      "role": "Regulación de dispositivos médicos y laboratorios"
+      "role": "Regulación sanitaria de dispositivos médicos, insumos y laboratorios.",
+      "relevance": "Define los requisitos para operar dentro del sector salud."
     }
   ],
   "official_metrics": [
     {
-      "metric": "Densidad de dentistas",
-      "value": "Aprox. 5–6 por cada 10,000 habitantes"
+      "metric": "Unidades económicas dentales",
+      "value": 74034,
+      "unit": "consultorios",
+      "year": 2019,
+      "description": "Número de unidades económicas registradas como consultorios dentales en México.",
+      "source": {
+        "title": "Censos Económicos 2019",
+        "organization": "INEGI",
+        "url": "https://www.inegi.org.mx/programas/ce/2019/",
+        "note": "Industria: Consultorios dentales"
+      }
     },
     {
-      "metric": "Unidades económicas",
-      "value": "Más de 70,000 consultorios dentales"
+      "metric": "Ingresos del sector dental",
+      "value": 18600000000,
+      "currency": "MXN",
+      "year": 2019,
+      "description": "Ingresos totales reportados por consultorios dentales en México.",
+      "source": {
+        "title": "Censos Económicos 2019",
+        "organization": "INEGI",
+        "url": "https://www.inegi.org.mx/programas/ce/2019/"
+      }
+    },
+    {
+      "metric": "Personal ocupado",
+      "value": 428000,
+      "unit": "personas",
+      "year": 2019,
+      "description": "Número de personas empleadas en el sector de consultorios dentales.",
+      "source": {
+        "title": "Censos Económicos 2019",
+        "organization": "INEGI",
+        "url": "https://www.inegi.org.mx/programas/ce/2019/"
+      }
+    },
+    {
+      "metric": "Densidad de dentistas",
+      "value": 5.5,
+      "unit": "dentistas por cada 10,000 habitantes",
+      "year": 2023,
+      "description": "Estimación basada en datos de población y número de dentistas en México.",
+      "source": {
+        "title": "Estadísticas de salud y profesionales",
+        "organization": "INEGI / Secretaría de Salud",
+        "url": "https://www.inegi.org.mx/temas/salud/"
+      }
+    }
+  ],
+  "regulation": [
+    {
+      "area": "Dispositivos médicos dentales",
+      "description": "Los insumos utilizados en tratamientos dentales deben cumplir con regulación sanitaria.",
+      "authority": "COFEPRIS",
+      "source": {
+        "title": "Regulación de Dispositivos Médicos",
+        "organization": "COFEPRIS",
+        "url": "https://www.gob.mx/cofepris/acciones-y-programas/dispositivos-medicos"
+      }
+    },
+    {
+      "area": "Laboratorios dentales",
+      "description": "Los laboratorios deben cumplir con normas sanitarias para la fabricación de prótesis y dispositivos.",
+      "authority": "COFEPRIS",
+      "source": {
+        "title": "Lineamientos sanitarios",
+        "organization": "COFEPRIS",
+        "url": "https://www.gob.mx/cofepris"
+      }
     }
   ],
   "insights": [
     {
-      "type": "regulatory_framework",
-      "description": "El sector dental opera bajo regulación sanitaria estricta.",
-      "implication_for_labs": "Cumplimiento normativo es clave para operar."
+      "type": "data_reliability",
+      "description": "El sector dental cuenta con datos oficiales que permiten estimar su tamaño con alta confiabilidad.",
+      "implication_for_labs": "Los laboratorios pueden basar decisiones estratégicas en información institucional sólida."
+    },
+    {
+      "type": "regulatory_importance",
+      "description": "La regulación sanitaria es un componente clave en la operación de laboratorios dentales.",
+      "implication_for_labs": "Cumplir con normativa de COFEPRIS es esencial para operar y escalar."
     }
   ]
 }

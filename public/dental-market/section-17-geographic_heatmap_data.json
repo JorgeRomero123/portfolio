@@ -1,0 +1,133 @@
+{
+  "section_id": "geographic_heatmap_data",
+  "section_label": "Mapa de Calor Dental",
+  "title": "Mapa de calor del mercado dental en México",
+  "description": "Distribución geográfica del mercado dental en México según tipo de actividad dominante: turismo dental, volumen clínico y especialización en laboratorios.",
+  "last_updated": "2026",
+  "states": [
+    {
+      "state": "Baja California",
+      "code": "BCN",
+      "region": "Norte",
+      "dominant_activity": "turismo_dental",
+      "intensity": 5,
+      "key_cities": ["Tijuana", "Los Algodones"],
+      "insight": "Alta concentración de turismo dental con pacientes de Estados Unidos."
+    },
+    {
+      "state": "Sonora",
+      "code": "SON",
+      "region": "Norte",
+      "dominant_activity": "turismo_dental",
+      "intensity": 4,
+      "key_cities": ["Nogales"],
+      "insight": "Actividad relevante de turismo dental fronterizo."
+    },
+    {
+      "state": "Chihuahua",
+      "code": "CHH",
+      "region": "Norte",
+      "dominant_activity": "turismo_dental",
+      "intensity": 4,
+      "key_cities": ["Ciudad Juárez"],
+      "insight": "Flujo constante de pacientes internacionales."
+    },
+    {
+      "state": "Nuevo León",
+      "code": "NLE",
+      "region": "Norte",
+      "dominant_activity": "clinicas_privadas",
+      "intensity": 4,
+      "key_cities": ["Monterrey"],
+      "insight": "Alta concentración de clínicas privadas de alto nivel."
+    },
+    {
+      "state": "Jalisco",
+      "code": "JAL",
+      "region": "Centro-Occidente",
+      "dominant_activity": "clinicas_y_labs",
+      "intensity": 4,
+      "key_cities": ["Guadalajara"],
+      "insight": "Mercado fuerte de clínicas y laboratorios."
+    },
+    {
+      "state": "Ciudad de México",
+      "code": "CMX",
+      "region": "Centro",
+      "dominant_activity": "especializacion",
+      "intensity": 5,
+      "key_cities": ["CDMX"],
+      "insight": "Alta especialización en estética dental y laboratorios premium."
+    },
+    {
+      "state": "Estado de México",
+      "code": "MEX",
+      "region": "Centro",
+      "dominant_activity": "volumen",
+      "intensity": 5,
+      "key_cities": ["Toluca", "Naucalpan"],
+      "insight": "Alta densidad de pacientes y clínicas."
+    },
+    {
+      "state": "Puebla",
+      "code": "PUE",
+      "region": "Centro",
+      "dominant_activity": "clinicas",
+      "intensity": 3,
+      "key_cities": ["Puebla"],
+      "insight": "Crecimiento en clínicas privadas."
+    },
+    {
+      "state": "Querétaro",
+      "code": "QUE",
+      "region": "Bajío",
+      "dominant_activity": "crecimiento",
+      "intensity": 4,
+      "key_cities": ["Querétaro"],
+      "insight": "Expansión de clínicas privadas y demanda creciente."
+    },
+    {
+      "state": "Guanajuato",
+      "code": "GUA",
+      "region": "Bajío",
+      "dominant_activity": "crecimiento",
+      "intensity": 3,
+      "key_cities": ["León"],
+      "insight": "Crecimiento sostenido del sector dental."
+    },
+    {
+      "state": "Yucatán",
+      "code": "YUC",
+      "region": "Sureste",
+      "dominant_activity": "turismo_dental",
+      "intensity": 3,
+      "key_cities": ["Mérida"],
+      "insight": "Turismo dental combinado con mercado local."
+    },
+    {
+      "state": "Quintana Roo",
+      "code": "ROO",
+      "region": "Sureste",
+      "dominant_activity": "turismo_dental",
+      "intensity": 4,
+      "key_cities": ["Cancún"],
+      "insight": "Fuerte componente de turismo internacional."
+    }
+  ],
+  "legend": [
+    { "type": "turismo_dental", "color": "#ef4444", "label": "Turismo dental" },
+    { "type": "clinicas", "color": "#3b82f6", "label": "Clínicas locales" },
+    { "type": "clinicas_privadas", "color": "#3b82f6", "label": "Clínicas privadas" },
+    { "type": "clinicas_y_labs", "color": "#8b5cf6", "label": "Clínicas + laboratorios" },
+    { "type": "especializacion", "color": "#10b981", "label": "Alta especialización" },
+    { "type": "crecimiento", "color": "#f59e0b", "label": "Mercado en crecimiento" },
+    { "type": "volumen", "color": "#6b7280", "label": "Alto volumen" }
+  ],
+  "insights": [
+    {
+      "type": "geographic_concentration",
+      "description": "La actividad dental se concentra en ciudades fronterizas del norte y en las grandes zonas metropolitanas del centro.",
+      "implication_for_labs": "Los laboratorios pueden segmentar su estrategia comercial por tipo de actividad regional."
+    }
+  ]
+}

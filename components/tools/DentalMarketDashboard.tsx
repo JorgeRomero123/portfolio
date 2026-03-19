@@ -54,6 +54,7 @@ import {
   GeographicRegionsSection,
   MarketEvolutionTimeline,
   RegulatorySection,
+  DetailedHeatmapSection,
   LoadingSpinner,
   ErrorMessage,
   collectAllSources,
@@ -81,6 +82,7 @@ const SECTION_INTROS: Record<string, string> = {
   geographic_market_distribution: 'La distribución geográfica del mercado dental en México presenta dinámicas regionales distintas, desde el turismo dental en el norte hasta la alta densidad de clínicas en el centro del país. Estas diferencias regionales definen oportunidades específicas para los laboratorios.',
   market_evolution_timeline: 'La industria dental ha atravesado una transformación significativa en la última década, migrando de procesos completamente manuales hacia flujos digitales integrados. Esta evolución marca el rumbo de la inversión tecnológica para laboratorios que buscan mantenerse competitivos.',
   regulatory_and_official_data: 'El sector dental en México opera bajo un marco regulatorio definido por instituciones como COFEPRIS e INEGI. Los datos oficiales permiten dimensionar la industria y entender los requisitos normativos que los laboratorios deben cumplir.',
+  geographic_heatmap_data: 'Este mapa de calor detalla la actividad dental predominante en cada estado clave de México, diferenciando entre turismo dental, clínicas locales, especialización y mercados en crecimiento. La intensidad refleja el nivel de actividad relativo en cada zona.',
 };
 
 function buildHeroMetrics(sections: SectionData[]): { value: string; label: string }[] {
@@ -280,7 +282,8 @@ function SectionRenderer({ section, index }: { section: SectionData; index: numb
       {section.spending_segments && <SpendingSegmentsSection segments={section.spending_segments} />}
       {section.regions && <GeographicRegionsSection regions={section.regions} />}
       {section.timeline && <MarketEvolutionTimeline timeline={section.timeline} />}
-      {section.institutions && section.official_metrics && <RegulatorySection institutions={section.institutions} keyMetrics={section.official_metrics} />}
+      {section.institutions && section.official_metrics && <RegulatorySection institutions={section.institutions} officialMetrics={section.official_metrics} regulation={section.regulation} />}
+      {section.states && section.legend && <DetailedHeatmapSection states={section.states} legend={section.legend} />}
 
       {/* Per-section insights */}
       {section.insights && section.insights.length > 0 && (

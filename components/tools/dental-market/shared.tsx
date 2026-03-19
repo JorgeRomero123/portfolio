@@ -1586,12 +1586,13 @@ export function MarketEvolutionTimeline({ timeline }: { timeline: { period: stri
   );
 }
 
-export function RegulatorySection({ institutions, keyMetrics }: { institutions: { name: string; role: string }[]; keyMetrics: { metric: string; value: string }[] }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function RegulatorySection({ institutions, officialMetrics, regulation }: { institutions: any[]; officialMetrics: any[]; regulation?: any[] }) {
   return (
     <section className="mb-14">
       <SectionTitle>Instituciones Reguladoras</SectionTitle>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-10">
-        {institutions.map((inst) => (
+        {institutions.map((inst: { name: string; role: string; relevance?: string }) => (
           <div key={inst.name} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-start gap-4">
             <span className="w-12 h-12 rounded-xl bg-gray-900 text-white flex items-center justify-center text-sm font-bold shrink-0">
               {inst.name}
@@ -1599,19 +1600,167 @@ export function RegulatorySection({ institutions, keyMetrics }: { institutions: 
             <div>
               <h4 className="font-bold text-[#111111] mb-1">{inst.name}</h4>
               <p className="text-sm text-[#6b7280] leading-relaxed">{inst.role}</p>
+              {inst.relevance && (
+                <p className="text-xs text-blue-600 mt-2 font-medium">{inst.relevance}</p>
+              )}
             </div>
           </div>
         ))}
       </div>
 
       <SectionTitle>Métricas Oficiales</SectionTitle>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {keyMetrics.map((km) => (
-          <div key={km.metric} className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 rounded-2xl p-6 border border-blue-100/80">
-            <p className="text-xs font-bold uppercase tracking-wider text-blue-700 mb-2">{km.metric}</p>
-            <p className="text-lg font-extrabold text-[#111111]">{km.value}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-10">
+        {officialMetrics.map((km: { metric: string; value: number | string; unit?: string; currency?: string; description?: string; year?: number }) => {
+          const displayValue = typeof km.value === 'number'
+            ? km.currency ? formatNumber(km.value, km.currency) : formatNumber(km.value)
+            : km.value;
+          return (
+            <div key={km.metric} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+              <p className="text-3xl sm:text-4xl font-extrabold text-[#111111] mb-1 tracking-tight">{displayValue}</p>
+              <p className="text-sm font-bold text-blue-600 uppercase tracking-wider mb-2">{km.metric}</p>
+              {km.unit && <p className="text-xs text-[#9ca3af] mb-1">{km.unit}</p>}
+              {km.description && <p className="text-sm text-[#6b7280] leading-relaxed">{km.description}</p>}
+              {km.year && <p className="text-xs text-[#9ca3af] mt-2">Año: {km.year}</p>}
+            </div>
+          );
+        })}
+      </div>
+
+      {regulation && regulation.length > 0 && (
+        <>
+          <SectionTitle>Regulación</SectionTitle>
+          <div className="space-y-4">
+            {regulation.map((reg: { area: string; description: string; authority: string }) => (
+              <div key={reg.area} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+                <div className="flex items-center gap-2 mb-2">
+                  <h4 className="font-bold text-[#111111]">{reg.area}</h4>
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-gray-100 text-[#6b7280]">{reg.authority}</span>
+                </div>
+                <p className="text-sm text-[#6b7280] leading-relaxed">{reg.description}</p>
+              </div>
+            ))}
           </div>
-        ))}
+        </>
+      )}
+    </section>
+  );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function DetailedHeatmapSection({ states, legend }: { states: any[]; legend: any[] }) {
+  const [hoveredState, setHoveredState] = React.useState<string | null>(null);
+
+  // Build color lookup from legend
+  const activityColors: Record<string, string> = {};
+  for (const item of legend) {
+    activityColors[item.type] = item.color;
+  }
+
+  // Build state data lookup by code
+  const stateDataMap = new Map<string, { dominant_activity: string; intensity: number; state: string; insight: string; key_cities: string[] }>();
+  for (const s of states) {
+    if (s.code) stateDataMap.set(s.code, s);
+  }
+
+  return (
+    <section className="mb-14">
+      <SectionTitle>Mapa de Calor por Tipo de Actividad</SectionTitle>
+
+      <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 mb-8">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          <div className="flex-1 w-full">
+            <svg viewBox="0 0 1000 700" className="w-full h-auto" style={{ maxHeight: '420px' }}>
+              {Object.entries(MEXICO_STATES).map(([code, state]) => {
+                const data = stateDataMap.get(code);
+                const color = data ? (activityColors[data.dominant_activity] || '#e5e7eb') : '#f3f4f6';
+                const opacity = data ? (0.4 + data.intensity * 0.12) : 0.3;
+                const isHovered = hoveredState === code;
+                return (
+                  <path
+                    key={code}
+                    d={state.d}
+                    fill={color}
+                    fillOpacity={isHovered ? 1 : opacity}
+                    stroke="white"
+                    strokeWidth="1.5"
+                    className="transition-all duration-200 cursor-pointer"
+                    onMouseEnter={() => setHoveredState(code)}
+                    onMouseLeave={() => setHoveredState(null)}
+                  >
+                    <title>{state.name}{data ? ` — ${data.insight}` : ''}</title>
+                  </path>
+                );
+              })}
+              {/* City labels for highlighted states */}
+              {states.filter((s: { code: string }) => s.code).map((s: { code: string; key_cities: string[]; dominant_activity: string }) => {
+                // Use approximate center positions for labels
+                const cityPositions: Record<string, { x: number; y: number }> = {
+                  BCN: { x: 124, y: 50 }, SON: { x: 280, y: 120 }, CHH: { x: 370, y: 150 },
+                  NLE: { x: 580, y: 270 }, JAL: { x: 440, y: 440 }, CMX: { x: 608, y: 510 },
+                  MEX: { x: 590, y: 495 }, PUE: { x: 650, y: 520 }, QUE: { x: 575, y: 455 },
+                  GUA: { x: 530, y: 435 }, YUC: { x: 880, y: 440 }, ROO: { x: 920, y: 480 },
+                };
+                const pos = cityPositions[s.code];
+                if (!pos) return null;
+                const color = activityColors[s.dominant_activity] || '#111';
+                return (
+                  <g key={s.code}>
+                    <circle cx={pos.x} cy={pos.y} r="5" fill="white" stroke={color} strokeWidth="2" />
+                    <text
+                      x={pos.x} y={pos.y - 10}
+                      textAnchor="middle"
+                      className="text-[10px] font-bold fill-[#111111]"
+                      style={{ paintOrder: 'stroke', stroke: 'white', strokeWidth: '3px' }}
+                    >
+                      {s.key_cities[0]}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+
+          <div className="lg:w-56 w-full">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-3">Leyenda</p>
+            <div className="flex flex-row lg:flex-col flex-wrap gap-2">
+              {legend.map((item: { type: string; color: string; label: string }) => (
+                <div key={item.type} className="flex items-center gap-2 p-2">
+                  <span className="w-3.5 h-3.5 rounded-sm shrink-0" style={{ backgroundColor: item.color }} />
+                  <span className="text-xs text-[#111111] font-medium">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* State detail cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {states.map((s: { state: string; dominant_activity: string; intensity: number; key_cities: string[]; insight: string }) => {
+          const color = activityColors[s.dominant_activity] || '#6b7280';
+          const activityLabel = legend.find((l: { type: string }) => l.type === s.dominant_activity)?.label || s.dominant_activity;
+          return (
+            <div key={s.state} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-bold text-[#111111] text-sm">{s.state}</h4>
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="w-2 h-2 rounded-full" style={{ backgroundColor: i < s.intensity ? color : '#e5e7eb' }} />
+                  ))}
+                </div>
+              </div>
+              <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-2" style={{ backgroundColor: `${color}20`, color }}>
+                {activityLabel}
+              </span>
+              <p className="text-xs text-[#6b7280] leading-relaxed mb-2">{s.insight}</p>
+              <div className="flex flex-wrap gap-1">
+                {s.key_cities.map((c: string) => (
+                  <span key={c} className="text-[10px] bg-gray-50 text-[#111111] px-2 py-0.5 rounded-full">{c}</span>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
