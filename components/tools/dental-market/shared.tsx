@@ -1339,12 +1339,30 @@ export function SectionKeyTakeaways({ takeaways }: { takeaways: string[] }) {
 
 // ── New Section Renderers (sections 12–16) ──
 
-export function DentalTourismSection({ destinations, drivers }: { destinations: { city: string; region: string; characteristics: string; main_treatments: string[] }[]; drivers: string[] }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function DentalTourismSection({ destinations, drivers, keyData }: { destinations: any[]; drivers: string[]; keyData?: any[] }) {
   return (
     <section className="mb-14">
+      {/* Key data metrics */}
+      {keyData && keyData.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-10">
+          {keyData.map((kd: { metric: string; value: string; description: string; source?: { organization: string; year?: number } }) => (
+            <div key={kd.metric} className="bg-gradient-to-br from-slate-900 to-blue-950 rounded-2xl p-7 shadow-lg overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-28 h-28 bg-blue-500/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <p className="text-3xl sm:text-4xl font-extrabold text-white mb-1 tracking-tight relative z-10">{kd.value}</p>
+              <p className="text-sm font-bold text-blue-300 uppercase tracking-wider mb-2 relative z-10">{kd.metric}</p>
+              <p className="text-sm text-blue-200/60 leading-relaxed relative z-10">{kd.description}</p>
+              {kd.source && (
+                <p className="text-xs text-blue-300/40 mt-3 relative z-10">{kd.source.organization}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
       <SectionTitle>Destinos Principales</SectionTitle>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-10">
-        {destinations.map((d) => (
+        {destinations.map((d: { city: string; region: string; characteristics?: string; main_treatments: string[]; source?: { organization: string; url: string } }) => (
           <div key={d.city} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-center gap-3 mb-3">
               <span className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg font-bold shrink-0">
@@ -1355,39 +1373,54 @@ export function DentalTourismSection({ destinations, drivers }: { destinations: 
                 <span className="text-xs text-[#6b7280] uppercase tracking-wider">{d.region}</span>
               </div>
             </div>
-            <p className="text-sm text-[#6b7280] leading-relaxed mb-4">{d.characteristics}</p>
+            {d.characteristics && (
+              <p className="text-sm text-[#6b7280] leading-relaxed mb-4">{d.characteristics}</p>
+            )}
             <div className="flex flex-wrap gap-1.5">
-              {d.main_treatments.map((t) => (
+              {d.main_treatments.map((t: string) => (
                 <span key={t} className="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full font-medium">{t}</span>
               ))}
             </div>
+            {d.source && (
+              <div className="flex items-center gap-1.5 text-xs text-[#9ca3af] mt-4 pt-3 border-t border-gray-100">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{d.source.organization}</span>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      <SectionTitle>Factores Impulsores</SectionTitle>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {drivers.map((driver, i) => (
-          <div key={i} className="flex items-start gap-3 bg-gradient-to-br from-blue-50/80 to-indigo-50/80 rounded-xl p-5 border border-blue-100/80">
-            <svg className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-            <p className="text-sm text-[#111111] leading-relaxed font-medium">{driver}</p>
+      {drivers && drivers.length > 0 && (
+        <>
+          <SectionTitle>Factores Impulsores</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {drivers.map((driver: string, i: number) => (
+              <div key={i} className="flex items-start gap-3 bg-gradient-to-br from-blue-50/80 to-indigo-50/80 rounded-xl p-5 border border-blue-100/80">
+                <svg className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                <p className="text-sm text-[#111111] leading-relaxed font-medium">{driver}</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
     </section>
   );
 }
 
-export function SpendingSegmentsSection({ segments }: { segments: { segment: string; monthly_income_range: string; average_ticket_mxn: number; treatments: string[] }[] }) {
-  const maxTicket = Math.max(...segments.map((s) => s.average_ticket_mxn));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function SpendingSegmentsSection({ segments }: { segments: any[] }) {
+  const maxTicket = Math.max(...segments.map((s: { average_ticket_mxn: number }) => s.average_ticket_mxn));
 
   return (
     <section className="mb-14">
       <SectionTitle>Segmentos de Gasto</SectionTitle>
       <div className="space-y-5">
-        {segments.map((s) => (
+        {segments.map((s: { segment: string; monthly_income_range?: string; average_ticket_mxn: number; treatments: string[]; source?: { organization: string } }) => (
           <div key={s.segment} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
@@ -1398,7 +1431,7 @@ export function SpendingSegmentsSection({ segments }: { segments: { segment: str
                 </span>
                 <div>
                   <h4 className="font-bold text-[#111111]">{s.segment}</h4>
-                  <span className="text-xs text-[#6b7280]">Ingreso: {s.monthly_income_range}</span>
+                  {s.monthly_income_range && <span className="text-xs text-[#6b7280]">Ingreso: {s.monthly_income_range}</span>}
                 </div>
               </div>
               <span className="text-xl font-extrabold text-[#111111]">${s.average_ticket_mxn.toLocaleString('es-MX')} MXN</span>
@@ -1406,10 +1439,15 @@ export function SpendingSegmentsSection({ segments }: { segments: { segment: str
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-4">
               <div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${(s.average_ticket_mxn / maxTicket) * 100}%` }} />
             </div>
-            <div className="flex flex-wrap gap-1.5">
-              {s.treatments.map((t) => (
-                <span key={t} className="text-xs bg-gray-50 text-[#6b7280] px-2.5 py-1 rounded-full">{t}</span>
-              ))}
+            <div className="flex items-center justify-between">
+              <div className="flex flex-wrap gap-1.5">
+                {s.treatments.map((t: string) => (
+                  <span key={t} className="text-xs bg-gray-50 text-[#6b7280] px-2.5 py-1 rounded-full">{t}</span>
+                ))}
+              </div>
+              {s.source && (
+                <span className="text-[10px] text-[#9ca3af] shrink-0 ml-2">{s.source.organization}</span>
+              )}
             </div>
           </div>
         ))}

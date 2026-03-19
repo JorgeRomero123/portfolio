@@ -2,32 +2,50 @@
   "section_id": "dental_tourism_mexico",
   "section_label": "Turismo Dental en México",
   "title": "Turismo dental en México",
-  "description": "México es uno de los principales destinos de turismo dental a nivel global, impulsado por precios competitivos, proximidad geográfica y alta calidad en tratamientos especializados.",
+  "description": "México es uno de los principales destinos globales de turismo dental debido a sus costos competitivos y cercanía con Estados Unidos.",
   "last_updated": "2026",
   "key_destinations": [
     {
       "city": "Tijuana",
       "region": "Norte",
-      "characteristics": "Alta concentración de clínicas orientadas a pacientes de Estados Unidos.",
-      "main_treatments": ["Implantes", "Rehabilitación completa", "Coronas", "Carillas"]
+      "main_treatments": ["Implantes", "Coronas", "Carillas"],
+      "source": {
+        "title": "Dental Tourism Overview",
+        "organization": "Patients Beyond Borders",
+        "url": "https://patientsbeyondborders.com"
+      }
     },
     {
       "city": "Los Algodones",
       "region": "Norte",
-      "characteristics": "Conocida como 'Molar City', con una de las mayores densidades de dentistas por habitante.",
-      "main_treatments": ["Implantes", "Dentaduras", "Coronas"]
-    },
-    {
-      "city": "Ciudad Juárez",
-      "region": "Norte",
-      "characteristics": "Atiende pacientes fronterizos con enfoque en precio.",
-      "main_treatments": ["Coronas", "Implantes"]
+      "main_treatments": ["Implantes", "Dentaduras"],
+      "source": {
+        "title": "Molar City Profile",
+        "organization": "Dental Departures",
+        "url": "https://www.dentaldepartures.com"
+      }
     },
     {
       "city": "Cancún",
       "region": "Sureste",
-      "characteristics": "Turismo dental combinado con turismo vacacional.",
-      "main_treatments": ["Carillas", "Diseño de sonrisa", "Implantes"]
+      "main_treatments": ["Carillas", "Diseño de sonrisa"],
+      "source": {
+        "title": "Medical Tourism in Mexico",
+        "organization": "IMTJ",
+        "url": "https://www.imtj.com"
+      }
+    }
+  ],
+  "key_data": [
+    {
+      "metric": "Ahorro promedio",
+      "value": "50%–70%",
+      "description": "Ahorro frente a tratamientos en Estados Unidos.",
+      "source": {
+        "title": "Dental Tourism Report",
+        "organization": "Patients Beyond Borders",
+        "url": "https://patientsbeyondborders.com"
+      }
     }
   ],
   "drivers": [
@@ -38,14 +56,9 @@
   ],
   "insights": [
     {
-      "type": "geographic_concentration",
-      "description": "El turismo dental se concentra principalmente en ciudades del norte de México.",
-      "implication_for_labs": "Laboratorios pueden beneficiarse colaborando con clínicas orientadas a pacientes internacionales."
-    },
-    {
       "type": "high_value_cases",
-      "description": "Los tratamientos asociados al turismo dental suelen ser de alto valor.",
-      "implication_for_labs": "Mayor ticket promedio por caso para laboratorios que atienden este segmento."
+      "description": "El turismo dental se enfoca en tratamientos de alto valor como implantes y rehabilitación completa.",
+      "implication_for_labs": "Mayor ticket promedio por caso para laboratorios asociados a clínicas internacionales."
     }
   ]
 }

@@ -2,38 +2,45 @@
   "section_id": "patient_spending_analysis",
   "section_label": "Gasto en Tratamientos Dentales",
   "title": "Gasto promedio en tratamientos dentales",
-  "description": "El gasto en tratamientos dentales varía significativamente dependiendo del tipo de procedimiento y el segmento del paciente.",
+  "description": "El gasto dental varía por tipo de tratamiento y segmento socioeconómico.",
   "last_updated": "2026",
   "spending_segments": [
     {
       "segment": "Básico",
-      "monthly_income_range": "Bajo",
       "average_ticket_mxn": 800,
-      "treatments": ["Limpiezas", "Resinas", "Extracciones"]
+      "treatments": ["Limpiezas", "Resinas"],
+      "source": {
+        "title": "Dental Cost Estimates Mexico",
+        "organization": "Dentaly.org",
+        "url": "https://www.dentaly.org"
+      }
     },
     {
       "segment": "Medio",
-      "monthly_income_range": "Medio",
       "average_ticket_mxn": 3500,
-      "treatments": ["Coronas", "Endodoncias", "Puentes"]
+      "treatments": ["Coronas", "Endodoncia"],
+      "source": {
+        "title": "Dental Treatment Pricing",
+        "organization": "Dental Departures",
+        "url": "https://www.dentaldepartures.com"
+      }
     },
     {
       "segment": "Premium",
-      "monthly_income_range": "Alto",
       "average_ticket_mxn": 12000,
-      "treatments": ["Carillas", "Implantes", "Diseño de sonrisa"]
+      "treatments": ["Carillas", "Implantes"],
+      "source": {
+        "title": "Cosmetic Dentistry Costs",
+        "organization": "American Academy of Cosmetic Dentistry",
+        "url": "https://www.aacd.com"
+      }
     }
   ],
   "insights": [
     {
       "type": "premium_growth",
-      "description": "El segmento premium muestra mayor crecimiento impulsado por estética dental.",
-      "implication_for_labs": "Laboratorios especializados pueden capturar mayor margen por caso."
-    },
-    {
-      "type": "price_sensitivity",
-      "description": "Segmentos básicos son altamente sensibles al precio.",
-      "implication_for_labs": "Estrategias diferenciadas por segmento son clave."
+      "description": "Los tratamientos estéticos tienen el mayor crecimiento y ticket promedio.",
+      "implication_for_labs": "Laboratorios premium pueden capturar mayor valor por caso."
     }
   ]
 }

@@ -278,7 +278,7 @@ function SectionRenderer({ section, index }: { section: SectionData; index: numb
       {section.strategic_implications && <StrategicImplicationsSection implications={section.strategic_implications} />}
       {section.key_takeaways && <SectionKeyTakeaways takeaways={section.key_takeaways} />}
 
-      {section.key_destinations && section.drivers && <DentalTourismSection destinations={section.key_destinations} drivers={section.drivers} />}
+      {section.key_destinations && <DentalTourismSection destinations={section.key_destinations} drivers={section.drivers || []} keyData={section.key_data} />}
       {section.spending_segments && <SpendingSegmentsSection segments={section.spending_segments} />}
       {section.regions && <GeographicRegionsSection regions={section.regions} />}
       {section.timeline && <MarketEvolutionTimeline timeline={section.timeline} />}
