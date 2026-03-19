@@ -393,10 +393,10 @@ function SideNav({ items, activeId }: { items: NavItem[]; activeId: string }) {
               className="group relative flex items-center"
             >
               <span
-                className={`absolute right-full mr-3 text-xs font-medium whitespace-nowrap transition-all duration-300 ${
+                className={`absolute right-full mr-3 text-[11px] font-medium whitespace-nowrap transition-all duration-300 ${
                   isActive
-                    ? 'opacity-100 text-[#2563eb]'
-                    : 'opacity-0 group-hover:opacity-100 text-[#6b7280]'
+                    ? 'text-[#2563eb] font-semibold'
+                    : 'text-[#9ca3af]'
                 }`}
               >
                 {item.label}
