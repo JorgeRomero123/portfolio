@@ -345,7 +345,7 @@ export function formatMetricValue(metric: Metric): string {
 export function DashboardWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="max-w-6xl mx-auto"
+      className="max-w-6xl mx-auto scroll-smooth"
       style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}
     >
       {children}
@@ -358,11 +358,13 @@ export function DashboardHeader({
   subtitle,
   lastUpdated,
   heroMetrics,
+  onDownloadPDF,
 }: {
   title: string;
   subtitle: string;
   lastUpdated: string;
   heroMetrics?: { value: string; label: string }[];
+  onDownloadPDF?: () => void;
 }) {
   return (
     <header className="relative mb-24 pt-12 pb-16">
@@ -374,9 +376,20 @@ export function DashboardHeader({
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-5 tracking-tight leading-[1.1]">
           {title}
         </h1>
-        <p className="text-base sm:text-lg text-blue-200/70 max-w-2xl mx-auto mb-14 leading-relaxed">
+        <p className="text-base sm:text-lg text-blue-200/70 max-w-2xl mx-auto mb-8 leading-relaxed">
           {subtitle}
         </p>
+        {onDownloadPDF && (
+          <button
+            onClick={onDownloadPDF}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-sm font-medium text-white hover:bg-white/20 transition-all duration-200 mb-10 print:hidden"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Descargar PDF
+          </button>
+        )}
         {heroMetrics && heroMetrics.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 max-w-5xl mx-auto">
             {heroMetrics.map((m, i) => (
@@ -410,8 +423,8 @@ export function SectionBadge({ label }: { label: string }) {
 
 export function SectionHeader({ number, label, title, description, intro }: { number: number; label?: string; title: string; description: string; intro?: string }) {
   return (
-    <div className="mb-12">
-      <div className="flex items-center gap-3 mb-4">
+    <div className="mb-14">
+      <div className="flex items-center gap-3 mb-5">
         <span className="flex items-center justify-center w-9 h-9 rounded-full bg-blue-600 text-white text-sm font-bold shadow-sm">
           {number}
         </span>
@@ -421,24 +434,24 @@ export function SectionHeader({ number, label, title, description, intro }: { nu
           </span>
         )}
       </div>
-      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#111111] mb-3 tracking-tight leading-tight">{title}</h2>
+      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#111111] mb-4 tracking-tight leading-tight">{title}</h2>
       <p className="text-base sm:text-lg text-[#6b7280] leading-relaxed max-w-3xl">{description}</p>
       {intro && (
         <p className="text-base text-[#374151] leading-[1.8] max-w-4xl mt-5">{intro}</p>
       )}
-      <div className="mt-8 border-b border-gray-200" />
+      <div className="mt-10 border-b border-gray-100" />
     </div>
   );
 }
 
 export function SectionDivider() {
-  return <div className="py-10"><hr className="border-gray-200" /></div>;
+  return <div className="py-16"><hr className="border-gray-100" /></div>;
 }
 
 export function MetricCard({ metricKey, metric }: { metricKey: string; metric: Metric }) {
   return (
-    <div className="bg-white rounded-2xl p-6 sm:p-8 hover:shadow-lg transition-all duration-300 border border-gray-100 group">
-      <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#111111] mb-2 tracking-tight">
+    <div className="bg-white rounded-2xl p-6 sm:p-7 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 border border-gray-100 group">
+      <p className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#111111] mb-2 tracking-tight">
         {formatMetricValue(metric)}
       </p>
       <p className="text-sm font-bold text-blue-600 uppercase tracking-wider mb-3">
@@ -491,7 +504,7 @@ export function InsightCard({ insight }: { insight: Insight }) {
       <p className="text-[#111111] leading-[1.7] mb-6 text-[15px]">
         {insight.description}
       </p>
-      <div className="bg-white/90 backdrop-blur-sm border-l-4 border-blue-600 rounded-r-xl p-5">
+      <div className="bg-white/90 backdrop-blur-sm border-l-[5px] border-blue-600 rounded-r-xl p-5 shadow-sm">
         <p className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2">
           Implicación para Laboratorios
         </p>
@@ -530,7 +543,7 @@ export function SourcesSection({ sources }: { sources: Source[] }) {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {sources.map((source, i) => (
-          <div key={i} className="bg-white rounded-xl p-5 border border-gray-100 hover:shadow-md transition-all duration-300 group">
+          <div key={i} className="bg-white rounded-xl p-5 border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group">
             <p className="font-semibold text-[#111111] text-sm mb-1 group-hover:text-blue-600 transition-colors">
               {source.title}
             </p>
@@ -579,7 +592,7 @@ export function ServicesGrid({ services }: { services: Service[] }) {
         {services.map((svc) => (
           <div
             key={svc.service}
-            className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300"
+            className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-[#111111]">{svc.service}</h3>
@@ -628,7 +641,7 @@ export function WorkflowTimeline({ steps }: { steps: WorkflowStep[] }) {
                   <div className="w-0.5 flex-1 bg-gray-200 mt-2" />
                 )}
               </div>
-              <div className="bg-white rounded-2xl p-5 border border-gray-100 flex-1 hover:shadow-lg transition-all duration-300">
+              <div className="bg-white rounded-2xl p-5 border border-gray-100 flex-1 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span className={`inline-block text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${colors.badge}`}>
                     {ACTOR_LABELS[step.actor] || step.actor}
@@ -671,7 +684,7 @@ export function TrendsSection({ trends }: { trends: Trend[] }) {
         {trends.map((trend, i) => (
           <div
             key={i}
-            className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300"
+            className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
           >
             <h3 className="font-semibold text-[#111111] mb-2">
               {trend.trend}
@@ -718,7 +731,7 @@ export function CommunicationMethodsSection({ methods }: { methods: Communicatio
         {methods.map((m) => (
           <div
             key={m.method}
-            className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300"
+            className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-[#111111]">{m.method}</h3>
@@ -746,7 +759,7 @@ export function PainPointsSection({ painPoints }: { painPoints: PainPoint[] }) {
         {painPoints.map((pp, i) => (
           <div
             key={i}
-            className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300"
+            className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
           >
             <h3 className="font-semibold text-[#111111] mb-2">{pp.problem}</h3>
             <p className="text-sm text-[#6b7280] leading-relaxed mb-3">
@@ -773,7 +786,7 @@ export function MarketModelSection({ model }: { model: MarketModel }) {
   return (
     <section className="mb-16">
       <SectionTitle>Metodología de Estimación</SectionTitle>
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
+      <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
         <p className="text-sm text-[#6b7280] leading-relaxed mb-4">
           {model.description}
         </p>
@@ -792,7 +805,7 @@ export function AssumptionsSection({ assumptions }: { assumptions: Record<string
       <SectionTitle>Supuestos del Modelo</SectionTitle>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {entries.map(([key, a]) => (
-          <div key={key} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
+          <div key={key} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <p className="text-3xl md:text-4xl font-bold text-[#111111] mb-1">
               {a.unit === 'percent' ? `${a.value}%` : a.currency ? formatNumber(a.value, a.currency) : formatNumber(a.value)}
             </p>
@@ -853,7 +866,7 @@ export function MarketSegmentsSection({ segments }: { segments: MarketSegment[] 
       <SectionTitle>Segmentos del Mercado</SectionTitle>
       <div className="space-y-4">
         {segments.map((seg) => (
-          <div key={seg.segment} className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all duration-300">
+          <div key={seg.segment} className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-semibold text-[#111111]">{seg.segment}</h3>
               <span className="text-lg font-bold text-[#2563eb]">{seg.share_estimate_percent}%</span>
@@ -932,7 +945,7 @@ export function TechnologyTrendsSection({ trends }: { trends: TechnologyTrend[] 
       <SectionTitle>Tecnologías Clave</SectionTitle>
       <div className="space-y-5">
         {trends.map((t, i) => (
-          <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
+          <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
               <h3 className="font-semibold text-[#111111]">{t.technology}</h3>
               <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${ADOPTION_COLORS[t.adoption_level] || 'bg-gray-100 text-gray-600'}`}>
@@ -967,7 +980,7 @@ export function IndustryShiftSection({ shift }: { shift: IndustryShift }) {
   return (
     <section className="mb-16">
       <SectionTitle>Cambio en la Industria</SectionTitle>
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
+      <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
         <p className="text-[#111111] leading-relaxed mb-4">{shift.description}</p>
         <div className="bg-blue-50 border-l-4 border-[#2563eb] rounded-r-lg p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-[#2563eb] mb-1">
@@ -1002,7 +1015,7 @@ export function CompetitorsSection({ competitors }: { competitors: Competitor[] 
       <SectionTitle>Competidores</SectionTitle>
       <div className="space-y-5">
         {competitors.map((c) => (
-          <div key={c.name} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
+          <div key={c.name} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
               <div>
                 <h3 className="font-semibold text-[#111111] text-lg">{c.name}</h3>
@@ -1062,7 +1075,7 @@ export function CompetitiveDimensionsSection({ dimensions }: { dimensions: Compe
       <SectionTitle>Dimensiones Competitivas</SectionTitle>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {dimensions.map((d) => (
-          <div key={d.dimension} className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all duration-300">
+          <div key={d.dimension} className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <h3 className="font-semibold text-[#111111] capitalize mb-1">{d.dimension}</h3>
             <p className="text-sm text-[#6b7280] leading-relaxed">{d.description}</p>
           </div>
@@ -1082,7 +1095,7 @@ export function ClientSegmentsSection({ segments }: { segments: ClientSegment[] 
       <SectionTitle>Segmentos de Clientes</SectionTitle>
       <div className="space-y-5">
         {segments.map((seg) => (
-          <div key={seg.segment} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
+          <div key={seg.segment} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
               <h3 className="font-semibold text-[#111111]">{seg.segment}</h3>
               <span className="text-lg font-bold text-[#2563eb]">{seg.estimated_share_percent}%</span>
@@ -1134,7 +1147,7 @@ export function KeyFindingsSection({ findings }: { findings: KeyFinding[] }) {
     <section className="mb-12">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {findings.map((f, i) => (
-          <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
+          <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex items-start gap-4">
               <span className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-base font-bold shrink-0">
                 {i + 1}
@@ -1156,7 +1169,7 @@ export function StrategicTakeawaysSection({ takeaways }: { takeaways: StrategicT
     <section className="mb-12">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         {takeaways.map((t, i) => (
-          <div key={i} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 hover:shadow-lg transition-all duration-300">
+          <div key={i} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <span className="inline-block text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-3 py-1 rounded-full mb-3 capitalize">
               {t.theme}
             </span>
@@ -1176,7 +1189,7 @@ export function DemandDriversSection({ drivers }: { drivers: DemandDriver[] }) {
       <SectionTitle>Impulsores de Demanda</SectionTitle>
       <div className="space-y-5">
         {drivers.map((d, i) => (
-          <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
+          <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <h3 className="font-semibold text-[#111111] text-lg mb-2">{d.driver}</h3>
             <p className="text-sm text-[#6b7280] leading-relaxed mb-3">{d.description}</p>
             <div className="flex flex-wrap gap-1.5 mb-3">
@@ -1207,7 +1220,7 @@ export function PatientBehaviorSection({ changes }: { changes: PatientBehaviorCh
       <SectionTitle>Cambios en el Comportamiento del Paciente</SectionTitle>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         {changes.map((c, i) => (
-          <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all duration-300">
+          <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
             <h3 className="font-semibold text-[#111111] capitalize mb-2">{c.trend}</h3>
             <p className="text-sm text-[#6b7280] leading-relaxed">{c.description}</p>
           </div>
@@ -1224,7 +1237,7 @@ export function OpportunitiesSection({ opportunities }: { opportunities: Strateg
     <section className="mb-12">
       <div className="space-y-6">
         {opportunities.map((o, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden flex">
+          <div key={i} className="bg-white rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden flex">
             <div className="w-1.5 bg-blue-600 shrink-0" />
             <div className="p-7 sm:p-9 flex-1">
               <div className="flex items-start gap-4 mb-6">
@@ -1270,7 +1283,7 @@ export function StrategicImplicationsSection({ implications }: { implications: S
     <section className="mb-12">
       <div className="space-y-6">
         {implications.map((imp, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden flex">
+          <div key={i} className="bg-white rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden flex">
             <div className="w-1.5 bg-blue-600 shrink-0" />
             <div className="p-7 sm:p-9 flex-1">
               <div className="flex items-start gap-4 mb-5">
@@ -1316,6 +1329,167 @@ export function SectionKeyTakeaways({ takeaways }: { takeaways: string[] }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <p className="text-[15px] text-[#111111] leading-[1.7] font-medium">{t}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ── New Section Renderers (sections 12–16) ──
+
+export function DentalTourismSection({ destinations, drivers }: { destinations: { city: string; region: string; characteristics: string; main_treatments: string[] }[]; drivers: string[] }) {
+  return (
+    <section className="mb-14">
+      <SectionTitle>Destinos Principales</SectionTitle>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-10">
+        {destinations.map((d) => (
+          <div key={d.city} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg font-bold shrink-0">
+                {d.city[0]}
+              </span>
+              <div>
+                <h4 className="font-bold text-[#111111]">{d.city}</h4>
+                <span className="text-xs text-[#6b7280] uppercase tracking-wider">{d.region}</span>
+              </div>
+            </div>
+            <p className="text-sm text-[#6b7280] leading-relaxed mb-4">{d.characteristics}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {d.main_treatments.map((t) => (
+                <span key={t} className="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full font-medium">{t}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <SectionTitle>Factores Impulsores</SectionTitle>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {drivers.map((driver, i) => (
+          <div key={i} className="flex items-start gap-3 bg-gradient-to-br from-blue-50/80 to-indigo-50/80 rounded-xl p-5 border border-blue-100/80">
+            <svg className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+            <p className="text-sm text-[#111111] leading-relaxed font-medium">{driver}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function SpendingSegmentsSection({ segments }: { segments: { segment: string; monthly_income_range: string; average_ticket_mxn: number; treatments: string[] }[] }) {
+  const maxTicket = Math.max(...segments.map((s) => s.average_ticket_mxn));
+
+  return (
+    <section className="mb-14">
+      <SectionTitle>Segmentos de Gasto</SectionTitle>
+      <div className="space-y-5">
+        {segments.map((s) => (
+          <div key={s.segment} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0 ${
+                  s.segment === 'Premium' ? 'bg-amber-500' : s.segment === 'Medio' ? 'bg-blue-600' : 'bg-gray-500'
+                }`}>
+                  {s.segment[0]}
+                </span>
+                <div>
+                  <h4 className="font-bold text-[#111111]">{s.segment}</h4>
+                  <span className="text-xs text-[#6b7280]">Ingreso: {s.monthly_income_range}</span>
+                </div>
+              </div>
+              <span className="text-xl font-extrabold text-[#111111]">${s.average_ticket_mxn.toLocaleString('es-MX')} MXN</span>
+            </div>
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-4">
+              <div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${(s.average_ticket_mxn / maxTicket) * 100}%` }} />
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {s.treatments.map((t) => (
+                <span key={t} className="text-xs bg-gray-50 text-[#6b7280] px-2.5 py-1 rounded-full">{t}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function GeographicRegionsSection({ regions }: { regions: { region: string; characteristics: string; dominant_activity: string; key_cities: string[] }[] }) {
+  return (
+    <section className="mb-14">
+      <SectionTitle>Regiones del Mercado</SectionTitle>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {regions.map((r) => (
+          <div key={r.region} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <h4 className="text-lg font-extrabold text-[#111111] mb-1">{r.region}</h4>
+            <span className="inline-block text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-3 py-1 rounded-full mb-3">
+              {r.dominant_activity}
+            </span>
+            <p className="text-sm text-[#6b7280] leading-relaxed mb-4">{r.characteristics}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {r.key_cities.map((c) => (
+                <span key={c} className="text-xs bg-gray-50 text-[#111111] px-2.5 py-1 rounded-full font-medium">{c}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function MarketEvolutionTimeline({ timeline }: { timeline: { period: string; stage: string; description: string }[] }) {
+  return (
+    <section className="mb-14">
+      <SectionTitle>Línea de Tiempo</SectionTitle>
+      <div className="relative">
+        <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gray-200" />
+        <div className="space-y-8">
+          {timeline.map((t, i) => (
+            <div key={i} className="relative pl-14">
+              <div className={`absolute left-3 w-5 h-5 rounded-full border-2 ${
+                i === timeline.length - 1 ? 'bg-blue-600 border-blue-600' : 'bg-white border-blue-600'
+              }`} />
+              <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-3 py-1 rounded-full">{t.period}</span>
+                <h4 className="font-bold text-[#111111] mt-3 mb-1">{t.stage}</h4>
+                <p className="text-sm text-[#6b7280] leading-relaxed">{t.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function RegulatorySection({ institutions, keyMetrics }: { institutions: { name: string; role: string }[]; keyMetrics: { metric: string; value: string }[] }) {
+  return (
+    <section className="mb-14">
+      <SectionTitle>Instituciones Reguladoras</SectionTitle>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-10">
+        {institutions.map((inst) => (
+          <div key={inst.name} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-start gap-4">
+            <span className="w-12 h-12 rounded-xl bg-gray-900 text-white flex items-center justify-center text-sm font-bold shrink-0">
+              {inst.name}
+            </span>
+            <div>
+              <h4 className="font-bold text-[#111111] mb-1">{inst.name}</h4>
+              <p className="text-sm text-[#6b7280] leading-relaxed">{inst.role}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <SectionTitle>Métricas Oficiales</SectionTitle>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {keyMetrics.map((km) => (
+          <div key={km.metric} className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 rounded-2xl p-6 border border-blue-100/80">
+            <p className="text-xs font-bold uppercase tracking-wider text-blue-700 mb-2">{km.metric}</p>
+            <p className="text-lg font-extrabold text-[#111111]">{km.value}</p>
           </div>
         ))}
       </div>

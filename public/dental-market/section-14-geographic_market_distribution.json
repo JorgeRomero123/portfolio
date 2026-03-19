@@ -1,0 +1,40 @@
+{
+  "section_id": "geographic_market_distribution",
+  "section_label": "Distribución Geográfica del Mercado",
+  "title": "Distribución geográfica del mercado dental en México",
+  "description": "El mercado dental en México presenta diferencias regionales importantes en función de tipo de demanda y especialización.",
+  "last_updated": "2026",
+  "regions": [
+    {
+      "region": "Norte",
+      "characteristics": "Alta concentración de turismo dental.",
+      "dominant_activity": "Pacientes internacionales",
+      "key_cities": ["Tijuana", "Ciudad Juárez", "Los Algodones"]
+    },
+    {
+      "region": "Centro",
+      "characteristics": "Alta densidad de clínicas y laboratorios especializados.",
+      "dominant_activity": "Volumen de pacientes locales",
+      "key_cities": ["CDMX", "Estado de México", "Puebla"]
+    },
+    {
+      "region": "Bajío",
+      "characteristics": "Crecimiento acelerado de clínicas privadas.",
+      "dominant_activity": "Expansión de servicios dentales",
+      "key_cities": ["Querétaro", "León"]
+    },
+    {
+      "region": "Sureste",
+      "characteristics": "Combinación de turismo y mercado local.",
+      "dominant_activity": "Turismo dental",
+      "key_cities": ["Cancún", "Mérida"]
+    }
+  ],
+  "insights": [
+    {
+      "type": "regional_specialization",
+      "description": "Cada región presenta dinámicas distintas de demanda dental.",
+      "implication_for_labs": "Estrategias regionales pueden maximizar oportunidades."
+    }
+  ]
+}

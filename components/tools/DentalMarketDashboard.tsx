@@ -49,6 +49,11 @@ import {
   OpportunitiesSection,
   StrategicImplicationsSection,
   SectionKeyTakeaways,
+  DentalTourismSection,
+  SpendingSegmentsSection,
+  GeographicRegionsSection,
+  MarketEvolutionTimeline,
+  RegulatorySection,
   LoadingSpinner,
   ErrorMessage,
   collectAllSources,
@@ -71,6 +76,11 @@ const SECTION_INTROS: Record<string, string> = {
   patient_demand_trends: 'La demanda de tratamientos dentales está influenciada por factores demográficos, económicos y culturales. Tendencias como el crecimiento de la estética dental, el envejecimiento poblacional y el turismo dental están impulsando un mayor volumen de tratamientos que requieren servicios de laboratorio.',
   strategic_opportunities: 'A partir del análisis del mercado, la estructura de la industria y las tendencias tecnológicas, se pueden identificar varias oportunidades estratégicas para los laboratorios dentales. Estas oportunidades reflejan áreas donde los laboratorios pueden diferenciarse, expandir su alcance y capturar mayor valor dentro del mercado.',
   fusion_strategic_implications: 'A partir del análisis del mercado dental mexicano, las tendencias tecnológicas y la estructura del sector, se identifican implicaciones estratégicas relevantes para laboratorios dentales con posicionamiento premium y capacidades digitales avanzadas como Fusion Dental Lab.',
+  dental_tourism_mexico: 'México se ha posicionado como uno de los principales destinos de turismo dental a nivel global. La proximidad con Estados Unidos, los costos significativamente menores y la alta calidad de los tratamientos han generado un flujo constante de pacientes internacionales que representan una oportunidad para laboratorios dentales.',
+  patient_spending_analysis: 'El análisis del gasto en tratamientos dentales revela segmentos diferenciados con comportamientos de compra distintos. Comprender estos patrones permite a los laboratorios dentales diseñar estrategias de precio y servicio alineadas con cada tipo de paciente.',
+  geographic_market_distribution: 'La distribución geográfica del mercado dental en México presenta dinámicas regionales distintas, desde el turismo dental en el norte hasta la alta densidad de clínicas en el centro del país. Estas diferencias regionales definen oportunidades específicas para los laboratorios.',
+  market_evolution_timeline: 'La industria dental ha atravesado una transformación significativa en la última década, migrando de procesos completamente manuales hacia flujos digitales integrados. Esta evolución marca el rumbo de la inversión tecnológica para laboratorios que buscan mantenerse competitivos.',
+  regulatory_and_official_data: 'El sector dental en México opera bajo un marco regulatorio definido por instituciones como COFEPRIS e INEGI. Los datos oficiales permiten dimensionar la industria y entender los requisitos normativos que los laboratorios deben cumplir.',
 };
 
 function buildHeroMetrics(sections: SectionData[]): { value: string; label: string }[] {
@@ -205,7 +215,7 @@ function MarketStructureSection({ data }: { data: SectionData }) {
 
         <div className="space-y-4">
           {entries.map(([key, entry]) => (
-            <div key={key} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300">
+            <div key={key} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
               <p className="text-4xl font-extrabold text-[#111111] mb-1">{entry.value}%</p>
               <p className="text-sm font-bold text-[#2563eb] uppercase tracking-wider mb-2">
                 {formatMetricLabel(key)}
@@ -265,6 +275,12 @@ function SectionRenderer({ section, index }: { section: SectionData; index: numb
       {section.opportunities && <OpportunitiesSection opportunities={section.opportunities} />}
       {section.strategic_implications && <StrategicImplicationsSection implications={section.strategic_implications} />}
       {section.key_takeaways && <SectionKeyTakeaways takeaways={section.key_takeaways} />}
+
+      {section.key_destinations && section.drivers && <DentalTourismSection destinations={section.key_destinations} drivers={section.drivers} />}
+      {section.spending_segments && <SpendingSegmentsSection segments={section.spending_segments} />}
+      {section.regions && <GeographicRegionsSection regions={section.regions} />}
+      {section.timeline && <MarketEvolutionTimeline timeline={section.timeline} />}
+      {section.institutions && section.official_metrics && <RegulatorySection institutions={section.institutions} keyMetrics={section.official_metrics} />}
 
       {/* Per-section insights */}
       {section.insights && section.insights.length > 0 && (
@@ -329,7 +345,7 @@ function TopNav({ items, activeId }: { items: NavItem[]; activeId: string }) {
   }, [activeId]);
 
   return (
-    <nav className="xl:hidden sticky top-0 z-30 bg-white/90 backdrop-blur-sm border-b border-gray-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 mb-12">
+    <nav className="xl:hidden sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 mb-12 print:hidden">
       <div
         ref={navRef}
         className="flex gap-1 overflow-x-auto py-3 scrollbar-hide max-w-6xl mx-auto"
@@ -343,9 +359,9 @@ function TopNav({ items, activeId }: { items: NavItem[]; activeId: string }) {
               e.preventDefault();
               scrollToSection(item.id);
             }}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
               activeId === item.id
-                ? 'bg-[#2563eb] text-white'
+                ? 'bg-[#2563eb] text-white shadow-sm shadow-blue-200'
                 : 'text-[#6b7280] hover:bg-gray-100 hover:text-[#111111]'
             }`}
           >
@@ -359,7 +375,7 @@ function TopNav({ items, activeId }: { items: NavItem[]; activeId: string }) {
 
 function SideNav({ items, activeId }: { items: NavItem[]; activeId: string }) {
   return (
-    <nav className="hidden xl:block fixed right-6 top-1/2 -translate-y-1/2 z-30">
+    <nav className="hidden xl:block fixed right-6 top-1/2 -translate-y-1/2 z-30 print:!hidden">
       <div className="flex flex-col items-end gap-3 py-4">
         {items.map((item) => {
           const isActive = activeId === item.id;
@@ -401,6 +417,7 @@ export default function DentalMarketDashboard() {
   const [sections, setSections] = useState<SectionData[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string>('');
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
     fetch('/dental-market/manifest.json')
@@ -434,6 +451,7 @@ export default function DentalMarketDashboard() {
       }
     }
     setActiveId(current);
+    setShowBackToTop(window.scrollY > 400);
   }, [sections]);
 
   useEffect(() => {
@@ -450,27 +468,51 @@ export default function DentalMarketDashboard() {
   const allSources = collectAllSources(sections);
   const heroMetrics = buildHeroMetrics(sections);
 
+  const handleDownloadPDF = useCallback(() => {
+    document.body.classList.add('printing-report');
+    setTimeout(() => {
+      window.print();
+      document.body.classList.remove('printing-report');
+    }, 100);
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   return (
     <DashboardWrapper>
+      {/* Print styles */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          body.printing-report nav,
+          body.printing-report .print\\:hidden,
+          body.printing-report button[aria-label],
+          body.printing-report #back-to-top-btn { display: none !important; }
+          body.printing-report { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+      ` }} />
+
       <DashboardHeader
         title="Estudio de Mercado Dental en México"
         subtitle="Panorama del mercado dental y de laboratorios dentales — métricas, estructura, servicios y tendencias"
         lastUpdated={sections[0]?.last_updated || '2026'}
         heroMetrics={heroMetrics}
+        onDownloadPDF={handleDownloadPDF}
       />
 
       <TopNav items={getNavItems(sections)} activeId={activeId} />
       <SideNav items={getNavItems(sections)} activeId={activeId} />
 
       {sections.map((section, i) => (
-        <div key={section.section_id} id={section.section_id} className="scroll-mt-20">
+        <div key={section.section_id} id={section.section_id} className="scroll-mt-24">
           {i > 0 && <SectionDivider />}
           <SectionRenderer section={section} index={i} />
         </div>
       ))}
 
       <SectionDivider />
-      <div id="insights" className="scroll-mt-20">
+      <div id="insights" className="scroll-mt-24">
         <InsightsSection insights={allInsights} />
       </div>
 
@@ -485,7 +527,7 @@ export default function DentalMarketDashboard() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {allInsights.slice(0, 4).map((insight, i) => (
-                <div key={i} className="relative bg-white rounded-2xl border border-gray-100 overflow-hidden flex hover:shadow-lg transition-all duration-300">
+                <div key={i} className="relative bg-white rounded-2xl border border-gray-100 overflow-hidden flex hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
                   <div className="w-1.5 bg-blue-600 shrink-0" />
                   <div className="p-6">
                     <span className="inline-block text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-3">
@@ -504,9 +546,23 @@ export default function DentalMarketDashboard() {
       )}
 
       <SectionDivider />
-      <div id="sources" className="scroll-mt-20">
+      <div id="sources" className="scroll-mt-24">
         <SourcesSection sources={allSources} />
       </div>
+
+      {/* Back to top button */}
+      {showBackToTop && (
+        <button
+          id="back-to-top-btn"
+          onClick={scrollToTop}
+          className="fixed bottom-24 right-6 z-40 w-11 h-11 rounded-full bg-white text-gray-600 shadow-lg border border-gray-200 hover:bg-gray-50 hover:shadow-xl hover:text-[#2563eb] transition-all duration-200 flex items-center justify-center print:hidden"
+          aria-label="Volver arriba"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
+      )}
 
       <ChatWidget sections={sections} />
     </DashboardWrapper>

@@ -1,0 +1,39 @@
+{
+  "section_id": "patient_spending_analysis",
+  "section_label": "Gasto en Tratamientos Dentales",
+  "title": "Gasto promedio en tratamientos dentales",
+  "description": "El gasto en tratamientos dentales varía significativamente dependiendo del tipo de procedimiento y el segmento del paciente.",
+  "last_updated": "2026",
+  "spending_segments": [
+    {
+      "segment": "Básico",
+      "monthly_income_range": "Bajo",
+      "average_ticket_mxn": 800,
+      "treatments": ["Limpiezas", "Resinas", "Extracciones"]
+    },
+    {
+      "segment": "Medio",
+      "monthly_income_range": "Medio",
+      "average_ticket_mxn": 3500,
+      "treatments": ["Coronas", "Endodoncias", "Puentes"]
+    },
+    {
+      "segment": "Premium",
+      "monthly_income_range": "Alto",
+      "average_ticket_mxn": 12000,
+      "treatments": ["Carillas", "Implantes", "Diseño de sonrisa"]
+    }
+  ],
+  "insights": [
+    {
+      "type": "premium_growth",
+      "description": "El segmento premium muestra mayor crecimiento impulsado por estética dental.",
+      "implication_for_labs": "Laboratorios especializados pueden capturar mayor margen por caso."
+    },
+    {
+      "type": "price_sensitivity",
+      "description": "Segmentos básicos son altamente sensibles al precio.",
+      "implication_for_labs": "Estrategias diferenciadas por segmento son clave."
+    }
+  ]
+}

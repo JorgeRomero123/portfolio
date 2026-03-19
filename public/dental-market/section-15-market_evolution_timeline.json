@@ -1,0 +1,36 @@
+{
+  "section_id": "market_evolution_timeline",
+  "section_label": "Evolución del Mercado",
+  "title": "Evolución del mercado dental",
+  "description": "La industria dental ha evolucionado significativamente en la última década con la adopción de nuevas tecnologías y cambios en la demanda.",
+  "last_updated": "2026",
+  "timeline": [
+    {
+      "period": "2010–2015",
+      "stage": "Modelo tradicional",
+      "description": "Procesos manuales y uso de impresiones físicas."
+    },
+    {
+      "period": "2015–2020",
+      "stage": "Introducción digital",
+      "description": "Adopción inicial de CAD/CAM y escáneres."
+    },
+    {
+      "period": "2020–2025",
+      "stage": "Digitalización acelerada",
+      "description": "Incremento en uso de impresión 3D y flujos digitales."
+    },
+    {
+      "period": "2025+",
+      "stage": "Odontología digital avanzada",
+      "description": "Integración de IA y automatización."
+    }
+  ],
+  "insights": [
+    {
+      "type": "technology_shift",
+      "description": "La industria está migrando hacia procesos completamente digitales.",
+      "implication_for_labs": "Laboratorios que adopten tecnología tendrán ventaja competitiva."
+    }
+  ]
+}

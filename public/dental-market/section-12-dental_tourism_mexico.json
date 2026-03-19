@@ -1,0 +1,51 @@
+{
+  "section_id": "dental_tourism_mexico",
+  "section_label": "Turismo Dental en México",
+  "title": "Turismo dental en México",
+  "description": "México es uno de los principales destinos de turismo dental a nivel global, impulsado por precios competitivos, proximidad geográfica y alta calidad en tratamientos especializados.",
+  "last_updated": "2026",
+  "key_destinations": [
+    {
+      "city": "Tijuana",
+      "region": "Norte",
+      "characteristics": "Alta concentración de clínicas orientadas a pacientes de Estados Unidos.",
+      "main_treatments": ["Implantes", "Rehabilitación completa", "Coronas", "Carillas"]
+    },
+    {
+      "city": "Los Algodones",
+      "region": "Norte",
+      "characteristics": "Conocida como 'Molar City', con una de las mayores densidades de dentistas por habitante.",
+      "main_treatments": ["Implantes", "Dentaduras", "Coronas"]
+    },
+    {
+      "city": "Ciudad Juárez",
+      "region": "Norte",
+      "characteristics": "Atiende pacientes fronterizos con enfoque en precio.",
+      "main_treatments": ["Coronas", "Implantes"]
+    },
+    {
+      "city": "Cancún",
+      "region": "Sureste",
+      "characteristics": "Turismo dental combinado con turismo vacacional.",
+      "main_treatments": ["Carillas", "Diseño de sonrisa", "Implantes"]
+    }
+  ],
+  "drivers": [
+    "Costos 50–70% menores comparados con Estados Unidos",
+    "Proximidad geográfica a mercados internacionales",
+    "Alta especialización en tratamientos complejos",
+    "Reducción de tiempos de espera"
+  ],
+  "insights": [
+    {
+      "type": "geographic_concentration",
+      "description": "El turismo dental se concentra principalmente en ciudades del norte de México.",
+      "implication_for_labs": "Laboratorios pueden beneficiarse colaborando con clínicas orientadas a pacientes internacionales."
+    },
+    {
+      "type": "high_value_cases",
+      "description": "Los tratamientos asociados al turismo dental suelen ser de alto valor.",
+      "implication_for_labs": "Mayor ticket promedio por caso para laboratorios que atienden este segmento."
+    }
+  ]
+}
