@@ -454,6 +454,18 @@ export default function DentalMarketDashboard() {
     setShowBackToTop(window.scrollY > 400);
   }, [sections]);
 
+  const handleDownloadPDF = useCallback(() => {
+    document.body.classList.add('printing-report');
+    setTimeout(() => {
+      window.print();
+      document.body.classList.remove('printing-report');
+    }, 100);
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   useEffect(() => {
     if (!sections) return;
     handleScroll();
@@ -467,18 +479,6 @@ export default function DentalMarketDashboard() {
   const allInsights = sections.flatMap((s) => s.insights || []);
   const allSources = collectAllSources(sections);
   const heroMetrics = buildHeroMetrics(sections);
-
-  const handleDownloadPDF = useCallback(() => {
-    document.body.classList.add('printing-report');
-    setTimeout(() => {
-      window.print();
-      document.body.classList.remove('printing-report');
-    }, 100);
-  }, []);
-
-  const scrollToTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
 
   return (
     <DashboardWrapper>
