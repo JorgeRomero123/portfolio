@@ -1,46 +1,123 @@
 {
   "section_id": "patient_spending_analysis",
   "section_label": "Gasto en Tratamientos Dentales",
-  "title": "Gasto promedio en tratamientos dentales",
-  "description": "El gasto dental varía por tipo de tratamiento y segmento socioeconómico.",
+  "title": "Gasto promedio en tratamientos dentales en México",
+  "description": "El gasto en tratamientos dentales en México varía según el tipo de procedimiento, la complejidad del caso, la ubicación geográfica y el segmento socioeconómico del paciente.",
   "last_updated": "2026",
-  "spending_segments": [
+  "methodology_note": "Los rangos de precios se estiman a partir de información pública de clínicas dentales en México, plataformas de turismo dental y referencias internacionales. Los valores pueden variar según ubicación, clínica, materiales utilizados y complejidad del tratamiento.",
+  "spending_ranges": [
     {
       "segment": "Básico",
-      "average_ticket_mxn": 800,
-      "treatments": ["Limpiezas", "Resinas"],
-      "source": {
-        "title": "Dental Cost Estimates Mexico",
-        "organization": "Dentaly.org",
-        "url": "https://www.dentaly.org"
-      }
+      "treatments": ["Limpieza", "Resinas", "Extracciones"],
+      "price_range_mxn": {
+        "min": 500,
+        "max": 1500
+      },
+      "description": "Tratamientos preventivos o de baja complejidad, altamente sensibles al precio y con alta frecuencia en la población.",
+      "sources": [
+        {
+          "title": "Precios de tratamientos dentales en México",
+          "organization": "Dentaly.org",
+          "url": "https://www.dentaly.org/es/mexico/"
+        },
+        {
+          "title": "Comparativa de precios dentales",
+          "organization": "Clínicas dentales privadas en México",
+          "note": "Rangos obtenidos de precios publicados en clínicas urbanas (CDMX, Guadalajara, Monterrey)"
+        }
+      ]
     },
     {
       "segment": "Medio",
-      "average_ticket_mxn": 3500,
-      "treatments": ["Coronas", "Endodoncia"],
-      "source": {
-        "title": "Dental Treatment Pricing",
-        "organization": "Dental Departures",
-        "url": "https://www.dentaldepartures.com"
-      }
+      "treatments": ["Coronas", "Endodoncia", "Puentes"],
+      "price_range_mxn": {
+        "min": 3000,
+        "max": 8000
+      },
+      "description": "Tratamientos restaurativos comunes, con variación en precio según materiales (zirconia, metal-porcelana) y ubicación.",
+      "sources": [
+        {
+          "title": "Dental Treatment Costs in Mexico",
+          "organization": "Dental Departures",
+          "url": "https://www.dentaldepartures.com"
+        },
+        {
+          "title": "Dental Pricing Comparison",
+          "organization": "WhatClinic",
+          "url": "https://www.whatclinic.com"
+        }
+      ]
     },
     {
       "segment": "Premium",
-      "average_ticket_mxn": 12000,
-      "treatments": ["Carillas", "Implantes"],
-      "source": {
-        "title": "Cosmetic Dentistry Costs",
-        "organization": "American Academy of Cosmetic Dentistry",
-        "url": "https://www.aacd.com"
-      }
+      "treatments": ["Carillas", "Implantes", "Diseño de sonrisa"],
+      "price_range_mxn": {
+        "min": 10000,
+        "max": 30000
+      },
+      "description": "Tratamientos estéticos o de alta complejidad con menor sensibilidad al precio y mayor valor percibido por el paciente.",
+      "sources": [
+        {
+          "title": "Cosmetic Dentistry Pricing",
+          "organization": "American Academy of Cosmetic Dentistry",
+          "url": "https://www.aacd.com"
+        },
+        {
+          "title": "Dental Tourism Cost Comparison",
+          "organization": "Patients Beyond Borders",
+          "url": "https://patientsbeyondborders.com"
+        }
+      ]
+    }
+  ],
+  "geographic_variation": [
+    {
+      "region": "CDMX y zonas metropolitanas",
+      "price_multiplier": 1.2,
+      "description": "Precios más altos debido a mayor especialización y demanda."
+    },
+    {
+      "region": "Ciudades medianas",
+      "price_multiplier": 1.0,
+      "description": "Precios promedio del mercado nacional."
+    },
+    {
+      "region": "Turismo dental (norte y destinos turísticos)",
+      "price_multiplier": 1.1,
+      "description": "Precios competitivos internacionalmente, pero mayores que el promedio local en algunos tratamientos premium."
+    }
+  ],
+  "spending_key_metrics": [
+    {
+      "metric": "Ticket promedio estimado (mezcla de tratamientos)",
+      "value_range_mxn": {
+        "min": 2000,
+        "max": 7000
+      },
+      "description": "Estimación del gasto promedio considerando la combinación de tratamientos básicos, restaurativos y estéticos.",
+      "sources": [
+        {
+          "title": "Industry Estimates",
+          "organization": "Síntesis de Dentaly, Dental Departures y benchmarks de clínicas privadas en México"
+        }
+      ]
     }
   ],
   "insights": [
     {
-      "type": "premium_growth",
-      "description": "Los tratamientos estéticos tienen el mayor crecimiento y ticket promedio.",
-      "implication_for_labs": "Laboratorios premium pueden capturar mayor valor por caso."
+      "type": "value_concentration",
+      "description": "Una proporción significativa del valor del mercado proviene de tratamientos premium.",
+      "implication_for_labs": "Laboratorios especializados en estética e implantología pueden capturar mayor valor por caso."
+    },
+    {
+      "type": "price_variability",
+      "description": "Existe alta variabilidad en precios dependiendo de la ubicación y tipo de clínica.",
+      "implication_for_labs": "Es necesario adaptar la oferta de servicios según el segmento de cliente."
+    },
+    {
+      "type": "urban_premium_growth",
+      "description": "Las zonas urbanas concentran mayor demanda de tratamientos estéticos de alto valor.",
+      "implication_for_labs": "El enfoque en clínicas urbanas premium puede incrementar ingresos por caso."
     }
   ]
 }

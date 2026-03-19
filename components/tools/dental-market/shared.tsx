@@ -1413,45 +1413,108 @@ export function DentalTourismSection({ destinations, drivers, keyData }: { desti
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function SpendingSegmentsSection({ segments }: { segments: any[] }) {
-  const maxTicket = Math.max(...segments.map((s: { average_ticket_mxn: number }) => s.average_ticket_mxn));
+export function SpendingSegmentsSection({ segments, geoVariation, spendingMetrics, methodologyNote }: { segments: any[]; geoVariation?: any[]; spendingMetrics?: any[]; methodologyNote?: string }) {
+  const keyMetrics = Array.isArray(spendingMetrics) ? spendingMetrics : [];
+  // Handle both old (average_ticket_mxn) and new (price_range_mxn) formats
+  const getMax = (s: { average_ticket_mxn?: number; price_range_mxn?: { max: number } }) =>
+    s.price_range_mxn?.max || s.average_ticket_mxn || 0;
+  const maxTicket = Math.max(...segments.map(getMax));
+
+  const formatPrice = (s: { average_ticket_mxn?: number; price_range_mxn?: { min: number; max: number } }) => {
+    if (s.price_range_mxn) return `$${s.price_range_mxn.min.toLocaleString('es-MX')} – $${s.price_range_mxn.max.toLocaleString('es-MX')}`;
+    if (s.average_ticket_mxn) return `$${s.average_ticket_mxn.toLocaleString('es-MX')}`;
+    return '';
+  };
 
   return (
     <section className="mb-14">
-      <SectionTitle>Segmentos de Gasto</SectionTitle>
-      <div className="space-y-5">
-        {segments.map((s: { segment: string; monthly_income_range?: string; average_ticket_mxn: number; treatments: string[]; source?: { organization: string } }) => (
-          <div key={s.segment} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0 ${
-                  s.segment === 'Premium' ? 'bg-amber-500' : s.segment === 'Medio' ? 'bg-blue-600' : 'bg-gray-500'
-                }`}>
-                  {s.segment[0]}
-                </span>
-                <div>
+      <SectionTitle>Rangos de Gasto por Segmento</SectionTitle>
+
+      {methodologyNote && (
+        <div className="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100">
+          <div className="flex items-start gap-2">
+            <svg className="w-4 h-4 text-[#9ca3af] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-xs text-[#6b7280] leading-relaxed">{methodologyNote}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Key metrics */}
+      {keyMetrics && keyMetrics.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
+          {keyMetrics.map((km: { metric: string; value_range_mxn?: { min: number; max: number }; description: string; sources?: { organization: string }[] }) => (
+            <div key={km.metric} className="bg-gradient-to-br from-slate-900 to-blue-950 rounded-2xl p-7 shadow-lg overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-28 h-28 bg-blue-500/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <p className="text-3xl sm:text-4xl font-extrabold text-white mb-1 tracking-tight relative z-10">
+                {km.value_range_mxn ? `$${km.value_range_mxn.min.toLocaleString('es-MX')} – $${km.value_range_mxn.max.toLocaleString('es-MX')}` : ''}
+              </p>
+              <p className="text-sm font-bold text-blue-300 uppercase tracking-wider mb-2 relative z-10">{km.metric}</p>
+              <p className="text-sm text-blue-200/60 leading-relaxed relative z-10">{km.description}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="space-y-5 mb-10">
+        {segments.map((s: { segment: string; description?: string; treatments: string[]; average_ticket_mxn?: number; price_range_mxn?: { min: number; max: number }; sources?: { organization: string }[]; source?: { organization: string } }) => {
+          const barWidth = maxTicket > 0 ? (getMax(s) / maxTicket) * 100 : 0;
+          return (
+            <div key={s.segment} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0 ${
+                    s.segment === 'Premium' ? 'bg-amber-500' : s.segment === 'Medio' ? 'bg-blue-600' : 'bg-gray-500'
+                  }`}>
+                    {s.segment[0]}
+                  </span>
                   <h4 className="font-bold text-[#111111]">{s.segment}</h4>
-                  {s.monthly_income_range && <span className="text-xs text-[#6b7280]">Ingreso: {s.monthly_income_range}</span>}
+                </div>
+                <span className="text-lg font-extrabold text-[#111111]">{formatPrice(s)} MXN</span>
+              </div>
+              {s.description && (
+                <p className="text-sm text-[#6b7280] leading-relaxed mb-3">{s.description}</p>
+              )}
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-4">
+                <div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${barWidth}%` }} />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex flex-wrap gap-1.5">
+                  {s.treatments.map((t: string) => (
+                    <span key={t} className="text-xs bg-gray-50 text-[#6b7280] px-2.5 py-1 rounded-full">{t}</span>
+                  ))}
+                </div>
+                <div className="flex gap-1 shrink-0 ml-2">
+                  {(s.sources || (s.source ? [s.source] : [])).map((src: { organization: string }, i: number) => (
+                    <span key={i} className="text-[10px] text-[#9ca3af]">{src.organization}{i < (s.sources?.length || 1) - 1 ? ',' : ''}</span>
+                  ))}
                 </div>
               </div>
-              <span className="text-xl font-extrabold text-[#111111]">${s.average_ticket_mxn.toLocaleString('es-MX')} MXN</span>
             </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-4">
-              <div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${(s.average_ticket_mxn / maxTicket) * 100}%` }} />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex flex-wrap gap-1.5">
-                {s.treatments.map((t: string) => (
-                  <span key={t} className="text-xs bg-gray-50 text-[#6b7280] px-2.5 py-1 rounded-full">{t}</span>
-                ))}
-              </div>
-              {s.source && (
-                <span className="text-[10px] text-[#9ca3af] shrink-0 ml-2">{s.source.organization}</span>
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      {/* Geographic variation */}
+      {geoVariation && geoVariation.length > 0 && (
+        <>
+          <SectionTitle>Variación Geográfica de Precios</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {geoVariation.map((g: { region: string; price_multiplier: number; description: string }) => (
+              <div key={g.region} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-bold text-[#111111] text-sm">{g.region}</h4>
+                  <span className={`text-sm font-extrabold ${g.price_multiplier > 1 ? 'text-amber-600' : 'text-[#111111]'}`}>
+                    {g.price_multiplier > 1 ? `+${Math.round((g.price_multiplier - 1) * 100)}%` : 'Base'}
+                  </span>
+                </div>
+                <p className="text-xs text-[#6b7280] leading-relaxed">{g.description}</p>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </section>
   );
 }
