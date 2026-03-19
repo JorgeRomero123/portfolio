@@ -36,6 +36,7 @@ const categories: { label: string; tools: Tool[] }[] = [
       { name: 'CFDI Excel Processor', description: 'Clean CFDI files, filter columns, calculate totals', href: '/tools/cfdi-excel-processor', icon: '📊', color: 'from-emerald-500 to-teal-500' },
       { name: 'Ficha Técnica', description: 'Generate real estate property listing PDFs', href: '/tools/ficha-tecnica', icon: '🏠', color: 'from-amber-500 to-orange-500' },
       { name: 'YouTube Transcript', description: 'Extract transcripts from any YouTube video', href: '/tools/youtube-transcript', icon: '📝', color: 'from-red-500 to-rose-600' },
+      { name: 'Client Intake', description: 'AI-assisted intake form for web projects', href: '/tools/client-intake', icon: '📋', color: 'from-purple-500 to-indigo-500' },
       { name: 'Travel Time Calculator', description: 'Calculate driving times from multiple origins', href: '/tools/travel-time-calculator', icon: '🗺️', color: 'from-green-500 to-teal-500' },
       { name: 'Estudio Dental México', description: 'Estudio de mercado dental en México', href: '/tools/dental-market', icon: '🦷', color: 'from-blue-500 to-indigo-500' },
     ],
