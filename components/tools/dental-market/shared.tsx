@@ -1646,34 +1646,81 @@ export function RegulatorySection({ institutions, officialMetrics, regulation }:
   );
 }
 
+// Strategic implications derived from region data
+const STRATEGIC_IMPLICATIONS: Record<string, { icon: string; title: string; description: string }> = {
+  Norte: { icon: '💎', title: 'Norte — Casos premium de alto valor', description: 'La concentración de turismo dental genera demanda de tratamientos complejos (implantes, rehabilitación completa). Laboratorios deben priorizar calidad, tiempos rápidos y comunicación bilingüe.' },
+  Centro: { icon: '🏥', title: 'Centro — Volumen y relaciones con clínicas', description: 'La mayor densidad de clínicas y laboratorios requiere estrategias de diferenciación, especialización en estética dental y relaciones de largo plazo con dentistas de alto volumen.' },
+  Bajío: { icon: '📈', title: 'Bajío — Expansión estratégica', description: 'El crecimiento acelerado de clínicas privadas representa una ventana de oportunidad para laboratorios que establezcan presencia temprana y capturen participación de mercado.' },
+  Sureste: { icon: '🌴', title: 'Sureste — Turismo + mercado local', description: 'La combinación de turismo dental internacional y demanda local crea un mercado dual que requiere capacidad de atender tanto casos estéticos premium como volumen regular.' },
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function DetailedHeatmapSection({ states, legend }: { states: any[]; legend: any[] }) {
   const [hoveredState, setHoveredState] = React.useState<string | null>(null);
+  const [tooltipData, setTooltipData] = React.useState<{ x: number; y: number; state: string; activity: string; cities: string[]; insight: string; intensity: number } | null>(null);
 
   // Build color lookup from legend
   const activityColors: Record<string, string> = {};
+  const activityLabels: Record<string, string> = {};
   for (const item of legend) {
     activityColors[item.type] = item.color;
+    activityLabels[item.type] = item.label;
   }
 
   // Build state data lookup by code
-  const stateDataMap = new Map<string, { dominant_activity: string; intensity: number; state: string; insight: string; key_cities: string[] }>();
+  const stateDataMap = new Map<string, { dominant_activity: string; intensity: number; state: string; insight: string; key_cities: string[]; region: string }>();
   for (const s of states) {
     if (s.code) stateDataMap.set(s.code, s);
   }
+
+  // City positions for labels
+  const cityPositions: Record<string, { x: number; y: number }> = {
+    BCN: { x: 124, y: 50 }, SON: { x: 280, y: 120 }, CHH: { x: 370, y: 150 },
+    NLE: { x: 580, y: 270 }, JAL: { x: 440, y: 440 }, CMX: { x: 608, y: 510 },
+    MEX: { x: 590, y: 495 }, PUE: { x: 650, y: 520 }, QUE: { x: 575, y: 455 },
+    GUA: { x: 530, y: 435 }, YUC: { x: 880, y: 440 }, ROO: { x: 920, y: 480 },
+  };
+
+  // Build dynamic summary from data
+  const regionGroups: Record<string, string[]> = {};
+  for (const s of states) {
+    const r = s.region || 'Otro';
+    if (!regionGroups[r]) regionGroups[r] = [];
+    regionGroups[r].push(s.state);
+  }
+
+  // Count activity types
+  const activityCounts: Record<string, number> = {};
+  for (const s of states) {
+    activityCounts[s.dominant_activity] = (activityCounts[s.dominant_activity] || 0) + 1;
+  }
+  const topActivity = Object.entries(activityCounts).sort((a, b) => b[1] - a[1])[0];
+  const highIntensityStates = states.filter((s: { intensity: number }) => s.intensity >= 5);
 
   return (
     <section className="mb-14">
       <SectionTitle>Mapa de Calor por Tipo de Actividad</SectionTitle>
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 mb-8">
+      {/* Dynamic summary above map */}
+      <div className="bg-gradient-to-r from-slate-50 to-blue-50/50 rounded-2xl p-6 mb-8 border border-gray-100">
+        <p className="text-[15px] text-[#111111] leading-[1.8]">
+          El mercado dental en México presenta <strong>{states.length} estados con actividad significativa</strong> distribuidos en {Object.keys(regionGroups).length} regiones.
+          {topActivity && <> La actividad dominante es <strong>{activityLabels[topActivity[0]] || topActivity[0]}</strong>, presente en {topActivity[1]} estados.</>}
+          {highIntensityStates.length > 0 && <> Los mercados de mayor intensidad son <strong>{highIntensityStates.map((s: { state: string }) => s.state).join(', ')}</strong>, donde la concentración de demanda representa las mayores oportunidades para laboratorios dentales.</>}
+        </p>
+      </div>
+
+      {/* Map card */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8 mb-8 relative">
         <div className="flex flex-col lg:flex-row gap-6 items-start">
-          <div className="flex-1 w-full">
-            <svg viewBox="0 0 1000 700" className="w-full h-auto" style={{ maxHeight: '420px' }}>
+          <div className="flex-1 w-full relative"
+            onMouseLeave={() => setTooltipData(null)}
+          >
+            <svg viewBox="0 0 1000 700" className="w-full h-auto" style={{ maxHeight: '450px' }}>
               {Object.entries(MEXICO_STATES).map(([code, state]) => {
                 const data = stateDataMap.get(code);
                 const color = data ? (activityColors[data.dominant_activity] || '#e5e7eb') : '#f3f4f6';
-                const opacity = data ? (0.4 + data.intensity * 0.12) : 0.3;
+                const opacity = data ? (0.35 + data.intensity * 0.13) : 0.2;
                 const isHovered = hoveredState === code;
                 return (
                   <path
@@ -1681,36 +1728,48 @@ export function DetailedHeatmapSection({ states, legend }: { states: any[]; lege
                     d={state.d}
                     fill={color}
                     fillOpacity={isHovered ? 1 : opacity}
-                    stroke="white"
-                    strokeWidth="1.5"
+                    stroke={isHovered ? '#111111' : 'white'}
+                    strokeWidth={isHovered ? '2.5' : '1.5'}
                     className="transition-all duration-200 cursor-pointer"
-                    onMouseEnter={() => setHoveredState(code)}
-                    onMouseLeave={() => setHoveredState(null)}
-                  >
-                    <title>{state.name}{data ? ` — ${data.insight}` : ''}</title>
-                  </path>
+                    style={isHovered ? { filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' } : undefined}
+                    onMouseEnter={(e) => {
+                      setHoveredState(code);
+                      if (data) {
+                        const svg = (e.target as SVGPathElement).closest('svg');
+                        if (svg) {
+                          const rect = svg.getBoundingClientRect();
+                          const pos = cityPositions[code];
+                          if (pos) {
+                            const px = (pos.x / 1000) * rect.width;
+                            const py = (pos.y / 700) * rect.height;
+                            setTooltipData({ x: px, y: py, state: data.state, activity: activityLabels[data.dominant_activity] || data.dominant_activity, cities: data.key_cities, insight: data.insight, intensity: data.intensity });
+                          }
+                        }
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      setHoveredState(null);
+                      setTooltipData(null);
+                    }}
+                  />
                 );
               })}
-              {/* City labels for highlighted states */}
-              {states.filter((s: { code: string }) => s.code).map((s: { code: string; key_cities: string[]; dominant_activity: string }) => {
-                // Use approximate center positions for labels
-                const cityPositions: Record<string, { x: number; y: number }> = {
-                  BCN: { x: 124, y: 50 }, SON: { x: 280, y: 120 }, CHH: { x: 370, y: 150 },
-                  NLE: { x: 580, y: 270 }, JAL: { x: 440, y: 440 }, CMX: { x: 608, y: 510 },
-                  MEX: { x: 590, y: 495 }, PUE: { x: 650, y: 520 }, QUE: { x: 575, y: 455 },
-                  GUA: { x: 530, y: 435 }, YUC: { x: 880, y: 440 }, ROO: { x: 920, y: 480 },
-                };
+              {/* City markers */}
+              {states.filter((s: { code: string }) => s.code).map((s: { code: string; key_cities: string[]; dominant_activity: string; intensity: number }) => {
                 const pos = cityPositions[s.code];
                 if (!pos) return null;
-                const color = activityColors[s.dominant_activity] || '#111';
+                const clr = activityColors[s.dominant_activity] || '#111';
+                const isHov = hoveredState === s.code;
                 return (
-                  <g key={s.code}>
-                    <circle cx={pos.x} cy={pos.y} r="5" fill="white" stroke={color} strokeWidth="2" />
+                  <g key={s.code} className="pointer-events-none">
+                    {/* Intensity ring */}
+                    <circle cx={pos.x} cy={pos.y} r={8 + s.intensity * 2} fill={clr} fillOpacity={isHov ? 0.2 : 0.08} className="transition-all duration-200" />
+                    <circle cx={pos.x} cy={pos.y} r="5" fill="white" stroke={clr} strokeWidth="2.5" />
                     <text
-                      x={pos.x} y={pos.y - 10}
+                      x={pos.x} y={pos.y - 14}
                       textAnchor="middle"
                       className="text-[10px] font-bold fill-[#111111]"
-                      style={{ paintOrder: 'stroke', stroke: 'white', strokeWidth: '3px' }}
+                      style={{ paintOrder: 'stroke', stroke: 'white', strokeWidth: '4px' }}
                     >
                       {s.key_cities[0]}
                     </text>
@@ -1718,49 +1777,116 @@ export function DetailedHeatmapSection({ states, legend }: { states: any[]; lege
                 );
               })}
             </svg>
+
+            {/* Rich tooltip */}
+            {tooltipData && (
+              <div
+                className="absolute z-20 bg-white rounded-xl shadow-xl border border-gray-200 p-4 pointer-events-none w-64"
+                style={{
+                  left: Math.min(tooltipData.x, 200),
+                  top: Math.max(tooltipData.y - 120, 0),
+                }}
+              >
+                <p className="font-bold text-[#111111] text-sm mb-1">{tooltipData.state}</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: activityColors[states.find((s: { state: string }) => s.state === tooltipData.state)?.dominant_activity] || '#6b7280' }} />
+                  <span className="text-xs font-semibold text-[#6b7280]">{tooltipData.activity}</span>
+                  <div className="flex gap-0.5 ml-auto">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: i < tooltipData.intensity ? (activityColors[states.find((s: { state: string }) => s.state === tooltipData.state)?.dominant_activity] || '#6b7280') : '#e5e7eb' }} />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-[#6b7280] leading-relaxed mb-2">{tooltipData.insight}</p>
+                <div className="flex flex-wrap gap-1">
+                  {tooltipData.cities.map((c) => (
+                    <span key={c} className="text-[10px] bg-gray-100 text-[#111111] px-2 py-0.5 rounded-full font-medium">{c}</span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="lg:w-56 w-full">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#6b7280] mb-3">Leyenda</p>
-            <div className="flex flex-row lg:flex-col flex-wrap gap-2">
-              {legend.map((item: { type: string; color: string; label: string }) => (
-                <div key={item.type} className="flex items-center gap-2 p-2">
-                  <span className="w-3.5 h-3.5 rounded-sm shrink-0" style={{ backgroundColor: item.color }} />
-                  <span className="text-xs text-[#111111] font-medium">{item.label}</span>
+          {/* Enhanced legend */}
+          <div className="lg:w-64 w-full">
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#6b7280] mb-4">Tipo de Actividad</p>
+            <div className="flex flex-row lg:flex-col flex-wrap gap-1">
+              {legend.map((item: { type: string; color: string; label: string }) => {
+                const count = activityCounts[item.type] || 0;
+                if (count === 0) return null;
+                return (
+                  <div key={item.type} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                    <span className="w-4 h-4 rounded shrink-0 shadow-sm" style={{ backgroundColor: item.color }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-[#111111]">{item.label}</p>
+                      <p className="text-[10px] text-[#9ca3af]">{count} {count === 1 ? 'estado' : 'estados'}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#9ca3af] mb-2">Intensidad</p>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  <div className="w-6 h-3 rounded-sm bg-[#6b7280]" style={{ opacity: 0.3 }} />
+                  <span className="text-[10px] text-[#9ca3af]">Baja</span>
                 </div>
-              ))}
+                <div className="flex-1 h-3 rounded-sm bg-gradient-to-r from-[#6b7280]/30 to-[#6b7280]" />
+                <div className="flex items-center gap-1">
+                  <div className="w-6 h-3 rounded-sm bg-[#6b7280]" />
+                  <span className="text-[10px] text-[#9ca3af]">Alta</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* State detail cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
         {states.map((s: { state: string; dominant_activity: string; intensity: number; key_cities: string[]; insight: string }) => {
           const color = activityColors[s.dominant_activity] || '#6b7280';
-          const activityLabel = legend.find((l: { type: string }) => l.type === s.dominant_activity)?.label || s.dominant_activity;
+          const activityLabel = activityLabels[s.dominant_activity] || s.dominant_activity;
           return (
             <div key={s.state} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-bold text-[#111111] text-sm">{s.state}</h4>
                 <div className="flex gap-0.5">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="w-2 h-2 rounded-full" style={{ backgroundColor: i < s.intensity ? color : '#e5e7eb' }} />
+                    <div key={i} className="w-2 h-2 rounded-full transition-colors" style={{ backgroundColor: i < s.intensity ? color : '#e5e7eb' }} />
                   ))}
                 </div>
               </div>
-              <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-2" style={{ backgroundColor: `${color}20`, color }}>
+              <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full mb-2" style={{ backgroundColor: `${color}18`, color }}>
                 {activityLabel}
               </span>
               <p className="text-xs text-[#6b7280] leading-relaxed mb-2">{s.insight}</p>
               <div className="flex flex-wrap gap-1">
                 {s.key_cities.map((c: string) => (
-                  <span key={c} className="text-[10px] bg-gray-50 text-[#111111] px-2 py-0.5 rounded-full">{c}</span>
+                  <span key={c} className="text-[10px] bg-gray-50 text-[#111111] px-2 py-0.5 rounded-full font-medium">{c}</span>
                 ))}
               </div>
             </div>
           );
         })}
+      </div>
+
+      {/* Strategic implications */}
+      <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 rounded-2xl p-7 sm:p-9">
+        <h4 className="text-lg font-extrabold text-white mb-1 tracking-tight">Implicaciones Estratégicas por Región</h4>
+        <p className="text-sm text-blue-200/60 mb-6">Oportunidades diferenciadas según la dinámica de cada zona del país</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {Object.entries(STRATEGIC_IMPLICATIONS).map(([region, imp]) => (
+            <div key={region} className="bg-white/[0.07] backdrop-blur-sm rounded-xl p-5 border border-white/[0.08]">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">{imp.icon}</span>
+                <h5 className="text-sm font-bold text-white">{imp.title}</h5>
+              </div>
+              <p className="text-xs text-blue-200/70 leading-relaxed">{imp.description}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
