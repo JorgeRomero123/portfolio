@@ -1417,14 +1417,155 @@ export function SpendingSegmentsSection({ segments }: { segments: { segment: str
   );
 }
 
+// ── Mexico Heat Map by Region ──
+
+const REGION_COLORS: Record<string, { fill: string; label: string; text: string }> = {
+  Norte: { fill: '#3b82f6', label: 'bg-blue-500', text: 'Turismo dental internacional' },
+  Centro: { fill: '#8b5cf6', label: 'bg-violet-500', text: 'Clínicas y labs especializados' },
+  Bajío: { fill: '#f59e0b', label: 'bg-amber-500', text: 'Expansión de servicios' },
+  Sureste: { fill: '#10b981', label: 'bg-emerald-500', text: 'Turismo + mercado local' },
+};
+
+const MEXICO_STATES: { id: string; name: string; region: string; d: string }[] = [
+  // Norte
+  { id: 'BC', name: 'Baja California', region: 'Norte', d: 'M48,28 L58,18 L68,22 L72,38 L65,65 L55,78 L45,72 L40,55 L42,40Z' },
+  { id: 'BCS', name: 'Baja California Sur', region: 'Norte', d: 'M55,78 L65,65 L72,80 L78,105 L85,130 L80,155 L68,162 L55,150 L50,130 L48,110 L50,90Z' },
+  { id: 'SON', name: 'Sonora', region: 'Norte', d: 'M68,22 L72,38 L80,55 L88,68 L100,75 L130,72 L145,55 L148,35 L135,18 L110,15 L85,16Z' },
+  { id: 'CHH', name: 'Chihuahua', region: 'Norte', d: 'M130,72 L145,55 L148,35 L165,30 L195,35 L205,55 L200,85 L190,110 L170,115 L150,108 L135,95Z' },
+  { id: 'COA', name: 'Coahuila', region: 'Norte', d: 'M195,35 L205,55 L220,50 L245,55 L260,75 L255,100 L240,110 L220,108 L200,105 L200,85Z' },
+  { id: 'NL', name: 'Nuevo León', region: 'Norte', d: 'M245,55 L260,75 L275,85 L280,105 L270,120 L255,115 L245,108 L240,110 L255,100Z' },
+  { id: 'TAM', name: 'Tamaulipas', region: 'Norte', d: 'M260,75 L275,85 L290,80 L305,95 L310,120 L300,145 L280,155 L265,140 L260,125 L270,120 L280,105Z' },
+  { id: 'SIN', name: 'Sinaloa', region: 'Norte', d: 'M88,68 L100,75 L130,72 L135,95 L140,115 L135,135 L120,140 L105,130 L95,110 L90,90Z' },
+  { id: 'DUR', name: 'Durango', region: 'Norte', d: 'M135,95 L150,108 L170,115 L190,110 L200,105 L200,85 L220,108 L240,110 L220,108 L200,105 L195,120 L185,135 L170,140 L155,138 L140,130 L135,115Z' },
+  // Bajío
+  { id: 'ZAC', name: 'Zacatecas', region: 'Bajío', d: 'M155,138 L170,140 L185,135 L195,120 L210,125 L225,130 L235,140 L225,155 L210,158 L195,155 L180,150 L165,148Z' },
+  { id: 'AGS', name: 'Aguascalientes', region: 'Bajío', d: 'M180,150 L190,148 L195,155 L188,160 L180,158Z' },
+  { id: 'SLP', name: 'San Luis Potosí', region: 'Bajío', d: 'M225,130 L245,108 L255,115 L265,140 L260,155 L250,165 L235,168 L225,160 L225,155 L235,140Z' },
+  { id: 'JAL', name: 'Jalisco', region: 'Bajío', d: 'M105,130 L120,140 L135,135 L140,130 L155,138 L165,148 L180,158 L175,175 L160,185 L140,180 L125,170 L110,160 L100,145Z' },
+  { id: 'GTO', name: 'Guanajuato', region: 'Bajío', d: 'M180,158 L195,155 L210,158 L220,165 L215,178 L200,182 L188,178 L180,172Z' },
+  { id: 'QRO', name: 'Querétaro', region: 'Bajío', d: 'M220,165 L225,160 L235,168 L240,178 L232,185 L222,182 L215,178Z' },
+  { id: 'NAY', name: 'Nayarit', region: 'Bajío', d: 'M95,110 L105,130 L100,145 L90,140 L82,125 L85,115Z' },
+  { id: 'COL', name: 'Colima', region: 'Bajío', d: 'M110,160 L125,170 L120,182 L108,178 L105,168Z' },
+  // Centro
+  { id: 'CDMX', name: 'Ciudad de México', region: 'Centro', d: 'M218,198 L225,195 L228,202 L224,208 L218,205Z' },
+  { id: 'MEX', name: 'Estado de México', region: 'Centro', d: 'M200,182 L215,178 L222,182 L232,185 L235,195 L228,202 L225,195 L218,198 L218,205 L210,210 L200,205 L195,195 L198,188Z' },
+  { id: 'PUE', name: 'Puebla', region: 'Centro', d: 'M235,195 L250,190 L260,198 L262,215 L255,225 L240,222 L232,215 L228,202Z' },
+  { id: 'HID', name: 'Hidalgo', region: 'Centro', d: 'M232,185 L240,178 L250,182 L252,190 L250,190 L235,195Z' },
+  { id: 'TLX', name: 'Tlaxcala', region: 'Centro', d: 'M242,192 L250,190 L252,198 L247,200Z' },
+  { id: 'MOR', name: 'Morelos', region: 'Centro', d: 'M218,205 L224,208 L228,215 L222,220 L215,215Z' },
+  { id: 'MIC', name: 'Michoacán', region: 'Centro', d: 'M125,170 L140,180 L160,185 L175,175 L180,172 L188,178 L200,182 L198,188 L195,195 L200,205 L190,215 L175,220 L158,215 L140,205 L128,195 L120,182Z' },
+  { id: 'GRO', name: 'Guerrero', region: 'Centro', d: 'M140,205 L158,215 L175,220 L190,215 L200,205 L210,210 L218,205 L215,215 L222,220 L220,235 L205,248 L185,255 L165,248 L148,238 L135,225Z' },
+  { id: 'VER', name: 'Veracruz', region: 'Centro', d: 'M250,165 L260,155 L265,140 L280,155 L300,145 L305,160 L298,180 L290,200 L280,215 L270,230 L262,240 L255,235 L260,220 L262,215 L260,198 L250,190 L252,182 L250,182 L240,178 L235,168Z' },
+  { id: 'OAX', name: 'Oaxaca', region: 'Centro', d: 'M205,248 L220,235 L232,240 L255,235 L262,240 L268,250 L265,265 L250,275 L230,278 L210,272 L195,265Z' },
+  // Sureste
+  { id: 'TAB', name: 'Tabasco', region: 'Sureste', d: 'M280,215 L298,210 L310,218 L305,232 L290,238 L278,235 L270,230Z' },
+  { id: 'CHP', name: 'Chiapas', region: 'Sureste', d: 'M268,250 L278,235 L290,238 L305,232 L315,240 L318,260 L310,278 L295,285 L278,280 L265,265Z' },
+  { id: 'CAM', name: 'Campeche', region: 'Sureste', d: 'M310,218 L325,210 L340,205 L348,215 L345,235 L335,248 L320,252 L315,240 L305,232Z' },
+  { id: 'YUC', name: 'Yucatán', region: 'Sureste', d: 'M325,210 L340,205 L355,195 L370,192 L378,198 L375,210 L365,218 L350,222 L348,215 L340,205Z' },
+  { id: 'QROO', name: 'Quintana Roo', region: 'Sureste', d: 'M348,215 L350,222 L365,218 L375,210 L378,198 L385,205 L388,225 L382,248 L370,265 L355,260 L345,250 L345,235Z' },
+];
+
+const KEY_CITY_POSITIONS: { name: string; x: number; y: number; region: string }[] = [
+  { name: 'Tijuana', x: 52, y: 25, region: 'Norte' },
+  { name: 'Cd. Juárez', x: 168, y: 38, region: 'Norte' },
+  { name: 'Los Algodones', x: 72, y: 32, region: 'Norte' },
+  { name: 'CDMX', x: 222, y: 200, region: 'Centro' },
+  { name: 'Puebla', x: 248, y: 208, region: 'Centro' },
+  { name: 'Querétaro', x: 225, y: 172, region: 'Bajío' },
+  { name: 'León', x: 192, y: 165, region: 'Bajío' },
+  { name: 'Cancún', x: 375, y: 210, region: 'Sureste' },
+  { name: 'Mérida', x: 355, y: 200, region: 'Sureste' },
+];
+
+function MexicoRegionMap({ regions }: { regions: { region: string; dominant_activity: string }[] }) {
+  const [hoveredRegion, setHoveredRegion] = React.useState<string | null>(null);
+  const regionMap = new Map(regions.map(r => [r.region, r]));
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 mb-8">
+      <h4 className="text-lg font-extrabold text-[#111111] mb-1 tracking-tight">Mapa de Actividad Dental por Región</h4>
+      <p className="text-sm text-[#6b7280] mb-6">Distribución geográfica de la actividad dental dominante en México</p>
+
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
+        <div className="flex-1 w-full">
+          <svg viewBox="20 5 390 290" className="w-full h-auto" style={{ maxHeight: '400px' }}>
+            {MEXICO_STATES.map((state) => {
+              const color = REGION_COLORS[state.region];
+              const isHovered = hoveredRegion === state.region;
+              return (
+                <path
+                  key={state.id}
+                  d={state.d}
+                  fill={color?.fill || '#e5e7eb'}
+                  fillOpacity={isHovered ? 1 : 0.7}
+                  stroke="white"
+                  strokeWidth="1.5"
+                  className="transition-all duration-200 cursor-pointer"
+                  onMouseEnter={() => setHoveredRegion(state.region)}
+                  onMouseLeave={() => setHoveredRegion(null)}
+                >
+                  <title>{state.name} — {state.region}</title>
+                </path>
+              );
+            })}
+            {KEY_CITY_POSITIONS.map((city) => {
+              const color = REGION_COLORS[city.region];
+              return (
+                <g key={city.name}>
+                  <circle cx={city.x} cy={city.y} r="4" fill="white" stroke={color?.fill || '#111'} strokeWidth="2" />
+                  <text
+                    x={city.x} y={city.y - 8}
+                    textAnchor="middle"
+                    className="text-[7px] font-bold fill-[#111111]"
+                    style={{ paintOrder: 'stroke', stroke: 'white', strokeWidth: '3px' }}
+                  >
+                    {city.name}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+
+        <div className="lg:w-56 w-full flex flex-row lg:flex-col flex-wrap gap-3">
+          {Object.entries(REGION_COLORS).map(([region, config]) => {
+            const data = regionMap.get(region);
+            const isHovered = hoveredRegion === region;
+            return (
+              <div
+                key={region}
+                className={`flex items-start gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer ${isHovered ? 'bg-gray-50 shadow-sm' : ''}`}
+                onMouseEnter={() => setHoveredRegion(region)}
+                onMouseLeave={() => setHoveredRegion(null)}
+              >
+                <span className={`w-4 h-4 rounded-sm ${config.label} shrink-0 mt-0.5`} />
+                <div>
+                  <p className="text-sm font-bold text-[#111111]">{region}</p>
+                  <p className="text-xs text-[#6b7280] leading-snug">{data?.dominant_activity || config.text}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function GeographicRegionsSection({ regions }: { regions: { region: string; characteristics: string; dominant_activity: string; key_cities: string[] }[] }) {
   return (
     <section className="mb-14">
       <SectionTitle>Regiones del Mercado</SectionTitle>
+
+      <MexicoRegionMap regions={regions} />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {regions.map((r) => (
           <div key={r.region} className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-            <h4 className="text-lg font-extrabold text-[#111111] mb-1">{r.region}</h4>
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`w-3 h-3 rounded-sm ${REGION_COLORS[r.region]?.label || 'bg-gray-400'}`} />
+              <h4 className="text-lg font-extrabold text-[#111111]">{r.region}</h4>
+            </div>
             <span className="inline-block text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-3 py-1 rounded-full mb-3">
               {r.dominant_activity}
             </span>
