@@ -86,7 +86,8 @@ export async function POST(req: NextRequest) {
         })
       );
 
-      const publicUrl = getPublicUrl(key);
+      const rawUrl = getPublicUrl(key);
+      const publicUrl = /^https?:\/\//.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
 
       const { data, error } = await supabase
         .from('pedidos')
