@@ -4,7 +4,7 @@ import { PutObjectCommand } from '@aws-sdk/client-s3';
 import r2Client, { R2_BUCKET_NAME } from '@/lib/r2';
 import { getPublicUrl } from '@/lib/r2-upload';
 import { supabase } from '@/lib/supabase';
-import { parseMessage } from '@/lib/parse-message';
+import { parseMessage } from '@/lib/parse-message-llm';
 import { v4 as uuidv4 } from 'uuid';
 
 function validateTwilioSignature(req: NextRequest, params: Record<string, string>): boolean {
@@ -59,12 +59,12 @@ export async function POST(req: NextRequest) {
 
     if (numMedia === 0) {
       return new NextResponse(
-        '<Response><Message>Hola! Mandá el archivo PDF que querés imprimir con un mensaje tipo "5 copias color" o "2 bn".</Message></Response>',
+        '<Response><Message>¡Hola! Mándanos el archivo PDF que quieres imprimir con un mensaje como "5 copias color" o "2 bn".</Message></Response>',
         { headers: { 'Content-Type': 'text/xml' } }
       );
     }
 
-    const { copias, tipo } = parseMessage(body);
+    const { copias, tipo } = await parseMessage(body);
     const createdIds: string[] = [];
 
     for (let i = 0; i < numMedia; i++) {
@@ -107,13 +107,13 @@ export async function POST(req: NextRequest) {
     }
 
     return new NextResponse(
-      `<Response><Message>Recibido! ${createdIds.length} archivo(s) en cola: ${copias} copia(s) ${tipo === 'color' ? 'color' : 'blanco y negro'}.</Message></Response>`,
+      `<Response><Message>¡Recibido! ${createdIds.length} archivo(s) en cola: ${copias} copia(s) ${tipo === 'color' ? 'a color' : 'blanco y negro'}.</Message></Response>`,
       { headers: { 'Content-Type': 'text/xml' } }
     );
   } catch (err) {
     console.error('whatsapp webhook error:', err);
     return new NextResponse(
-      '<Response><Message>Hubo un error procesando tu archivo. Probá de nuevo.</Message></Response>',
+      '<Response><Message>Hubo un error procesando tu archivo. Inténtalo de nuevo, por favor.</Message></Response>',
       { headers: { 'Content-Type': 'text/xml' }, status: 200 }
     );
   }
