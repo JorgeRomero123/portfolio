@@ -5,6 +5,7 @@ import r2Client, { R2_BUCKET_NAME } from '@/lib/r2';
 import { getPublicUrl } from '@/lib/r2-upload';
 import { supabase } from '@/lib/supabase';
 import { parseMessage } from '@/lib/parse-message-llm';
+import { toStorageFormat } from '@/lib/archivo-url';
 import { v4 as uuidv4 } from 'uuid';
 
 function validateTwilioSignature(req: NextRequest, params: Record<string, string>): boolean {
@@ -86,14 +87,13 @@ export async function POST(req: NextRequest) {
         })
       );
 
-      const rawUrl = getPublicUrl(key);
-      const publicUrl = /^https?:\/\//.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+      const archivoUrl = toStorageFormat(getPublicUrl(key));
 
       const { data, error } = await supabase
         .from('pedidos')
         .insert({
           telefono: from,
-          archivo_url: publicUrl,
+          archivo_url: archivoUrl,
           copias,
           tipo,
           status: 'pending',
