@@ -44,14 +44,17 @@ function gridForPerPage(perPage: number): { cols: number; rows: number } {
 
 type Buf = Buffer | Uint8Array;
 
-async function toCoverJpeg(buf: Buf, widthPt: number, heightPt: number): Promise<Buffer> {
+async function toContainJpeg(buf: Buf, widthPt: number, heightPt: number): Promise<Buffer> {
   // Tamaño en píxeles a 300 DPI para impresión limpia
   const widthPx = Math.round(widthPt * PT_TO_PX_300);
   const heightPx = Math.round(heightPt * PT_TO_PX_300);
 
   return await sharp(buf)
     .rotate() // respeta EXIF orientation
-    .resize(widthPx, heightPx, { fit: 'cover', position: 'centre' })
+    .resize(widthPx, heightPx, {
+      fit: 'contain',
+      background: { r: 255, g: 255, b: 255, alpha: 1 },
+    })
     .jpeg({ quality: 88, mozjpeg: true })
     .toBuffer();
 }
@@ -67,6 +70,9 @@ export async function composeImagesToPdf(
 ): Promise<Uint8Array> {
   if (images.length === 0) throw new Error('No hay imágenes para componer');
 
+  const pageW = LETTER_WIDTH;
+  const pageH = LETTER_HEIGHT;
+
   const pdf = await PDFDocument.create();
 
   const { cols, rows } =
@@ -76,13 +82,13 @@ export async function composeImagesToPdf(
   const perPage = cols * rows;
   const totalPages = Math.ceil(images.length / perPage);
 
-  const usableW = LETTER_WIDTH - MARGIN_PT * 2;
-  const usableH = LETTER_HEIGHT - MARGIN_PT * 2;
+  const usableW = pageW - MARGIN_PT * 2;
+  const usableH = pageH - MARGIN_PT * 2;
   const cellW = (usableW - GAP_PT * (cols - 1)) / cols;
   const cellH = (usableH - GAP_PT * (rows - 1)) / rows;
 
   for (let page = 0; page < totalPages; page++) {
-    const pageDoc = pdf.addPage([LETTER_WIDTH, LETTER_HEIGHT]);
+    const pageDoc = pdf.addPage([pageW, pageH]);
     const start = page * perPage;
     const end = Math.min(start + perPage, images.length);
 
@@ -93,9 +99,9 @@ export async function composeImagesToPdf(
 
       // Origen de PDF es bottom-left. Convertimos al sistema top-left para que row=0 sea arriba.
       const x = MARGIN_PT + col * (cellW + GAP_PT);
-      const y = LETTER_HEIGHT - MARGIN_PT - (row + 1) * cellH - row * GAP_PT;
+      const y = pageH - MARGIN_PT - (row + 1) * cellH - row * GAP_PT;
 
-      const jpegBytes = await toCoverJpeg(images[i], cellW, cellH);
+      const jpegBytes = await toContainJpeg(images[i], cellW, cellH);
       const embedded = await pdf.embedJpg(jpegBytes);
       pageDoc.drawImage(embedded, { x, y, width: cellW, height: cellH });
     }
