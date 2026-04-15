@@ -4,7 +4,6 @@ import { PutObjectCommand } from '@aws-sdk/client-s3';
 import r2Client, { R2_BUCKET_NAME } from '@/lib/r2';
 import { getPublicUrl } from '@/lib/r2-upload';
 import { supabase } from '@/lib/supabase';
-import { parseMessage } from '@/lib/parse-message-llm';
 import { toStorageFormat } from '@/lib/archivo-url';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -49,24 +48,12 @@ export async function POST(req: NextRequest) {
     }
 
     const from = params.From || '';
-    const body = params.Body || '';
     const numMedia = parseInt(params.NumMedia || '0', 10);
+    const silent = new NextResponse('<Response></Response>', {
+      headers: { 'Content-Type': 'text/xml' },
+    });
 
-    if (!from) {
-      return new NextResponse('<Response></Response>', {
-        headers: { 'Content-Type': 'text/xml' },
-      });
-    }
-
-    if (numMedia === 0) {
-      return new NextResponse(
-        '<Response><Message>¡Hola! Mándanos el archivo PDF que quieres imprimir con un mensaje como "5 copias color" o "2 bn".</Message></Response>',
-        { headers: { 'Content-Type': 'text/xml' } }
-      );
-    }
-
-    const { copias, tipo } = await parseMessage(body);
-    const createdIds: string[] = [];
+    if (!from || numMedia === 0) return silent;
 
     for (let i = 0; i < numMedia; i++) {
       const mediaUrl = params[`MediaUrl${i}`];
@@ -89,32 +76,24 @@ export async function POST(req: NextRequest) {
 
       const archivoUrl = toStorageFormat(getPublicUrl(key));
 
-      const { data, error } = await supabase
-        .from('pedidos')
-        .insert({
-          telefono: from,
-          archivo_url: archivoUrl,
-          copias,
-          tipo,
-          status: 'pending',
-          processing: false,
-        })
-        .select()
-        .single();
+      const { error } = await supabase.from('pedidos').insert({
+        telefono: from,
+        archivo_url: archivoUrl,
+        copias: 1,
+        tipo: 'bn',
+        status: 'pending',
+        processing: false,
+      });
 
       if (error) throw error;
-      createdIds.push(data.id);
     }
 
-    return new NextResponse(
-      `<Response><Message>¡Recibido! ${createdIds.length} archivo(s) en cola: ${copias} copia(s) ${tipo === 'color' ? 'a color' : 'blanco y negro'}.</Message></Response>`,
-      { headers: { 'Content-Type': 'text/xml' } }
-    );
+    return silent;
   } catch (err) {
     console.error('whatsapp webhook error:', err);
-    return new NextResponse(
-      '<Response><Message>Hubo un error procesando tu archivo. Inténtalo de nuevo, por favor.</Message></Response>',
-      { headers: { 'Content-Type': 'text/xml' }, status: 200 }
-    );
+    return new NextResponse('<Response></Response>', {
+      headers: { 'Content-Type': 'text/xml' },
+      status: 200,
+    });
   }
 }
