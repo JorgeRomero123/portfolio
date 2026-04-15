@@ -23,6 +23,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (body.processing !== undefined) update.processing = body.processing;
   if (body.error !== undefined) update.error = body.error;
   if (body.printedAt !== undefined) update.printed_at = body.printedAt;
+  if (body.printer !== undefined) update.printer = body.printer;
+  if (body.tipo !== undefined) update.tipo = body.tipo;
+  if (body.copias !== undefined) update.copias = body.copias;
 
   const { data, error } = await supabase
     .from('pedidos')

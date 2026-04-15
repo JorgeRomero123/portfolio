@@ -6,17 +6,22 @@ type Row = { archivo_url: string } & Record<string, unknown>;
 const hydrate = (rows: Row[]) =>
   rows.map((r) => ({ ...r, archivo_url: toPublicUrl(r.archivo_url) }));
 
-// GET /api/pedidos              → lista completa (dashboard)
-// GET /api/pedidos?status=pending → reclamo atómico para cliente local
+// GET /api/pedidos                       → todos, ordenados por creación
+// GET /api/pedidos?status=pending         → filtra por status (SIN reclamar)
+// GET /api/pedidos?status=pending&claim=1 → filtra y reclama atómicamente (processing=true)
 export async function GET(req: NextRequest) {
   const status = req.nextUrl.searchParams.get('status');
+  const claim = req.nextUrl.searchParams.get('claim') === '1';
 
-  if (!status) {
-    const { data, error } = await supabase
+  if (!claim) {
+    let query = supabase
       .from('pedidos')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(100);
+      .limit(200);
+    if (status) query = query.eq('status', status);
+
+    const { data, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json(hydrate((data ?? []) as Row[]));
   }
@@ -25,7 +30,7 @@ export async function GET(req: NextRequest) {
   const { data: candidatos, error: err1 } = await supabase
     .from('pedidos')
     .select('*')
-    .eq('status', status)
+    .eq('status', status ?? 'pending')
     .eq('processing', false)
     .order('created_at', { ascending: true })
     .limit(10);

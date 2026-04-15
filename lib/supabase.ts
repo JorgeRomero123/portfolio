@@ -17,6 +17,7 @@ export type Pedido = {
   archivo_url: string;
   copias: number;
   tipo: 'color' | 'bn';
+  printer: string | null;
   status: 'pending' | 'printing' | 'done' | 'error';
   processing: boolean;
   error: string | null;
