@@ -8,7 +8,7 @@ import { composeImagesToPdf } from '@/lib/compose-images';
 import { toStorageFormat, toPublicUrl } from '@/lib/archivo-url';
 
 // POST /api/pedidos/componer
-// Body: { ids: string[], copias?: number, tipo?: "color"|"bn", printer?: string }
+// Body: { ids: string[], copias?: number, tipo?: "color"|"bn", printer?: string, perPage?: number }
 // - Descarga las imágenes de todos los pedidos
 // - Compone un PDF carta con grid auto
 // - Sube el PDF a R2
@@ -21,6 +21,8 @@ export async function POST(req: NextRequest) {
     const copias: number = Number.isInteger(body?.copias) && body.copias > 0 ? body.copias : 1;
     const tipo: 'color' | 'bn' = body?.tipo === 'bn' ? 'bn' : 'color';
     const printer: string | null = typeof body?.printer === 'string' ? body.printer : null;
+    const perPage: number | undefined =
+      Number.isInteger(body?.perPage) && body.perPage > 0 ? body.perPage : undefined;
 
     if (ids.length < 2) {
       return NextResponse.json({ error: 'Se necesitan al menos 2 ids' }, { status: 400 });
@@ -65,7 +67,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Componer PDF
-    const pdfBytes = await composeImagesToPdf(imageBuffers);
+    const pdfBytes = await composeImagesToPdf(imageBuffers, { perPage });
 
     // 4. Subir a R2
     const key = `print/${uuidv4()}.pdf`;

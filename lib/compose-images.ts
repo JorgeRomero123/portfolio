@@ -26,6 +26,22 @@ function gridFor(count: number): { cols: number; rows: number } {
   return { cols: 4, rows: 5 }; // hasta 20 por página
 }
 
+// Grid explícito por cantidad-por-página (cuando el usuario lo fuerza).
+function gridForPerPage(perPage: number): { cols: number; rows: number } {
+  switch (perPage) {
+    case 1: return { cols: 1, rows: 1 };
+    case 2: return { cols: 1, rows: 2 };
+    case 3: return { cols: 1, rows: 3 };
+    case 4: return { cols: 2, rows: 2 };
+    case 6: return { cols: 2, rows: 3 };
+    case 9: return { cols: 3, rows: 3 };
+    case 12: return { cols: 3, rows: 4 };
+    case 16: return { cols: 4, rows: 4 };
+    case 20: return { cols: 4, rows: 5 };
+    default: return gridFor(perPage);
+  }
+}
+
 type Buf = Buffer | Uint8Array;
 
 async function toCoverJpeg(buf: Buf, widthPt: number, heightPt: number): Promise<Buffer> {
@@ -42,15 +58,21 @@ async function toCoverJpeg(buf: Buf, widthPt: number, heightPt: number): Promise
 
 /**
  * Compone múltiples imágenes en un PDF tamaño carta.
- * Grid equitativo automático según count, orientación vertical, object-fit cover.
- * Si hay más imágenes que entradas en un grid, usa múltiples páginas.
+ * Si se pasa `perPage`, fuerza esa cantidad por hoja (usa múltiples páginas si hace falta).
+ * Si no, elige un grid equitativo automático según count.
  */
-export async function composeImagesToPdf(images: Buf[]): Promise<Uint8Array> {
+export async function composeImagesToPdf(
+  images: Buf[],
+  opts?: { perPage?: number }
+): Promise<Uint8Array> {
   if (images.length === 0) throw new Error('No hay imágenes para componer');
 
   const pdf = await PDFDocument.create();
 
-  const { cols, rows } = gridFor(images.length);
+  const { cols, rows } =
+    opts?.perPage && opts.perPage > 0
+      ? gridForPerPage(opts.perPage)
+      : gridFor(images.length);
   const perPage = cols * rows;
   const totalPages = Math.ceil(images.length / perPage);
 
@@ -82,8 +104,9 @@ export async function composeImagesToPdf(images: Buf[]): Promise<Uint8Array> {
   return await pdf.save();
 }
 
-export function describeLayout(count: number): string {
-  const { cols, rows } = gridFor(count);
+export function describeLayout(count: number, forcePerPage?: number): string {
+  const { cols, rows } =
+    forcePerPage && forcePerPage > 0 ? gridForPerPage(forcePerPage) : gridFor(count);
   const perPage = cols * rows;
   const pages = Math.ceil(count / perPage);
   const grid = `${cols}×${rows}`;
