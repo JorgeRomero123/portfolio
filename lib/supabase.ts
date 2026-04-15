@@ -18,9 +18,10 @@ export type Pedido = {
   copias: number;
   tipo: 'color' | 'bn';
   printer: string | null;
-  status: 'pending' | 'printing' | 'done' | 'error';
+  status: 'pending' | 'printing' | 'done' | 'error' | 'merged';
   processing: boolean;
   error: string | null;
   printed_at: string | null;
   created_at: string;
+  parent_id: string | null;
 };

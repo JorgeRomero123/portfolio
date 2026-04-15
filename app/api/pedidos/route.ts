@@ -19,7 +19,12 @@ export async function GET(req: NextRequest) {
       .select('*')
       .order('created_at', { ascending: false })
       .limit(200);
-    if (status) query = query.eq('status', status);
+    if (status) {
+      query = query.eq('status', status);
+    } else {
+      // Sin filtro de status, excluimos los 'merged' (son hijos absorbidos en un compuesto)
+      query = query.neq('status', 'merged');
+    }
 
     const { data, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
