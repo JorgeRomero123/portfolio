@@ -24,8 +24,8 @@ export async function POST(req: NextRequest) {
     const perPage: number | undefined =
       Number.isInteger(body?.perPage) && body.perPage > 0 ? body.perPage : undefined;
 
-    if (ids.length < 2) {
-      return NextResponse.json({ error: 'Se necesitan al menos 2 ids' }, { status: 400 });
+    if (ids.length < 1) {
+      return NextResponse.json({ error: 'Se necesita al menos 1 id' }, { status: 400 });
     }
 
     // 1. Traer los pedidos originales
@@ -105,15 +105,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 6. Marcar los originales como merged con parent_id
-    const { error: updErr } = await supabase
-      .from('pedidos')
-      .update({ status: 'merged', parent_id: nuevo.id, processing: false })
-      .in('id', ids);
+    // 6. Marcar los originales como merged con parent_id (solo si hay >1)
+    if (ids.length > 1) {
+      const { error: updErr } = await supabase
+        .from('pedidos')
+        .update({ status: 'merged', parent_id: nuevo.id, processing: false })
+        .in('id', ids);
 
-    if (updErr) {
-      console.error('Error marcando merged:', updErr);
-      // No rollbackeamos el compuesto — ya existe y es útil
+      if (updErr) {
+        console.error('Error marcando merged:', updErr);
+        // No rollbackeamos el compuesto — ya existe y es útil
+      }
+    } else {
+      // Con 1 sola imagen, marcar como done (el PDF compuesto la reemplaza)
+      await supabase
+        .from('pedidos')
+        .update({ status: 'done', processing: false, printed_at: new Date().toISOString() })
+        .eq('id', ids[0]);
     }
 
     return NextResponse.json({
