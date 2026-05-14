@@ -1,6 +1,12 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+// SECURITY: xlsx (SheetJS) has two unpatched npm advisories — prototype
+// pollution (GHSA-4r6h-8v6p-xvw6) and ReDoS (GHSA-5pgg-2g8v-p4x9). SheetJS
+// no longer publishes to npm, so there is no registry fix. Risk accepted:
+// this is a client-side tool parsing the user's own CFDI files, not
+// untrusted server input. Revisit (CDN build or library swap) if this ever
+// handles third-party uploads.
 import * as XLSX from 'xlsx';
 
 /**
