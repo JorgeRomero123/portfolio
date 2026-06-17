@@ -476,10 +476,26 @@ export default function HomeExperience() {
         @media (prefers-reduced-motion: reduce){
           .jrr-reveal{opacity:1!important;transform:none!important;}
         }
+        /* ---- tablet ---- */
+        @media (max-width:860px){
+          .jrr-navlinks{gap:18px!important;}
+          .jrr-hint-drag{display:none!important;}
+        }
+        /* ---- phone ---- */
+        @media (max-width:680px){
+          .jrr-navbar{padding:14px 18px!important;}
+          .jrr-brandtext{display:none!important;}
+          .jrr-navlinks{gap:14px!important;font-size:11px!important;letter-spacing:0.04em!important;}
+          .jrr-available{display:none!important;}
+        }
+        @media (max-width:430px){
+          .jrr-navlinks .jrr-hide-xs{display:none!important;}
+          .jrr-cta-row a{flex:1 1 auto;text-align:center;}
+        }
       `}</style>
 
       {/* ===== NAV ===== */}
-      <nav style={{
+      <nav className="jrr-navbar" style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex',
         justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px',
         backdropFilter: 'blur(8px)', background: 'linear-gradient(#0b0a09cc,#0b0a0900)',
@@ -488,19 +504,19 @@ export default function HomeExperience() {
           <span style={{
             width: 34, height: 34, border: '1.5px solid #ff6a3d', color: '#ff6a3d', display: 'flex',
             alignItems: 'center', justifyContent: 'center', fontFamily: MONO, fontWeight: 700,
-            fontSize: 13, letterSpacing: '-0.04em',
+            fontSize: 13, letterSpacing: '-0.04em', flex: '0 0 auto',
           }}>JR</span>
-          <span style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.12em', color: '#c0b6ac' }}>
+          <span className="jrr-brandtext" style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.12em', color: '#c0b6ac' }}>
             jorge romero romanis
           </span>
         </a>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 30, fontFamily: MONO, fontSize: 12, letterSpacing: '0.08em' }}>
+        <div className="jrr-navlinks" style={{ display: 'flex', alignItems: 'center', gap: 30, fontFamily: MONO, fontSize: 12, letterSpacing: '0.08em' }}>
           {NAV_LINKS.map((l) => (
-            <a key={l.href} href={l.href} className="jrr-nav" style={{ color: '#c0b6ac', textDecoration: 'none' }}>
+            <a key={l.href} href={l.href} className={`jrr-navlink${l.label === 'live demo' ? ' jrr-hide-xs' : ''}`} style={{ color: '#c0b6ac', textDecoration: 'none', whiteSpace: 'nowrap' }}>
               {l.label}
             </a>
           ))}
-          <span style={{ display: 'flex', alignItems: 'center', gap: 7, color: '#8fb98a' }}>
+          <span className="jrr-available" style={{ display: 'flex', alignItems: 'center', gap: 7, color: '#8fb98a' }}>
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7ed47a', animation: 'jrr-pulse 2s ease-in-out infinite' }} />
             available
           </span>
@@ -536,7 +552,7 @@ export default function HomeExperience() {
           <p style={{ fontSize: 'clamp(16px,1.5vw,20px)', lineHeight: 1.55, color: '#c0b6ac', marginTop: 26, maxWidth: 520 }}>
             A software engineer shipping production apps for millions — and treating the browser as a playground for 3D, 360° and the new web.
           </p>
-          <div style={{ display: 'flex', gap: 14, marginTop: 34, pointerEvents: 'auto', flexWrap: 'wrap' }}>
+          <div className="jrr-cta-row" style={{ display: 'flex', gap: 14, marginTop: 34, pointerEvents: 'auto', flexWrap: 'wrap' }}>
             <a href="#work" data-magnetic style={{ textDecoration: 'none', fontSize: 15, fontWeight: 600, color: '#0b0a09', background: '#ff6a3d', borderRadius: 12, padding: '15px 28px', display: 'inline-block' }}>
               See my work →
             </a>
@@ -549,7 +565,7 @@ export default function HomeExperience() {
           <span style={{ display: 'inline-block', width: 1, height: 30, background: 'linear-gradient(#7a6e63,transparent)', animation: 'jrr-down 1.8s ease-in-out infinite' }} />
           scroll to explore
         </div>
-        <div style={{ position: 'absolute', bottom: 30, right: 40, fontFamily: MONO, fontSize: 11, letterSpacing: '0.08em', color: '#7a6e63' }}>
+        <div className="jrr-hint-drag" style={{ position: 'absolute', bottom: 30, right: 40, fontFamily: MONO, fontSize: 11, letterSpacing: '0.08em', color: '#7a6e63' }}>
           drag the particles ↺
         </div>
       </section>
@@ -576,7 +592,7 @@ export default function HomeExperience() {
           <div data-reveal className="jrr-reveal" style={{ fontSize: 'clamp(28px,3.6vw,52px)', lineHeight: 1.2, fontWeight: 500, letterSpacing: '-0.02em', maxWidth: '18ch', textWrap: 'pretty' }}>
             I write code that reaches <span style={{ color: '#ff6a3d' }}>millions</span>, then spend my nights pushing pixels into the <span style={{ color: '#6f7bff' }}>third dimension</span>.
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 34, borderTop: '1px solid #211e1b', paddingTop: 40 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(200px,100%),1fr))', gap: 34, borderTop: '1px solid #211e1b', paddingTop: 40 }}>
             {STATS.map((s, i) => (
               <div key={s.value} data-reveal className="jrr-reveal" style={{ transitionDelay: `${i * 0.08}s` }}>
                 <div style={{ fontFamily: MONO, fontSize: 38, fontWeight: 700, color: '#ffd089' }}>{s.value}</div>
@@ -595,7 +611,7 @@ export default function HomeExperience() {
           <span style={{ fontFamily: MONO, fontSize: 13, color: '#7a6e63', letterSpacing: '0.04em', marginLeft: 'auto' }}>4 projects · 2 companies · 2 solo</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(330px,1fr))', gap: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(330px,100%),1fr))', gap: 24 }}>
           {PROJECTS.map((p) => (
             <a
               key={p.title}
