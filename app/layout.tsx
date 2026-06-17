@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 import { Analytics } from "@vercel/analytics/next";
@@ -15,6 +15,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const jetBrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+});
+
 export const metadata: Metadata = {
   title: "Jorge Romero Romanis - Portfolio",
   description: "Personal portfolio showcasing photography, videos, 360 tours, and interactive projects by Jorge Romero Romanis",
@@ -28,18 +40,23 @@ export default async function RootLayout({
   const headersList = await headers();
   const pathname = headersList.get('x-pathname') || '';
   const isAdminRoute = pathname.startsWith('/admin');
+  // The homepage is a self-contained dark experience with its own nav/footer.
+  const isHome = pathname === '/';
+  const bareLayout = isAdminRoute || isHome;
 
   return (
-    <html lang="en" className="bg-gray-50">
+    <html lang="en" className={isHome ? 'bg-[#0b0a09]' : 'bg-gray-50'}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 text-gray-900`}
+        className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${jetBrainsMono.variable} antialiased ${
+          isHome ? 'bg-[#0b0a09] text-[#f6f0e9]' : 'bg-gray-50 text-gray-900'
+        }`}
       >
-        {!isAdminRoute && <Navigation />}
-        <main className={isAdminRoute ? '' : 'min-h-screen bg-gray-50'}>
+        {!bareLayout && <Navigation />}
+        <main className={bareLayout ? '' : 'min-h-screen bg-gray-50'}>
           {children}
         </main>
         <Analytics />
-        {!isAdminRoute && (
+        {!bareLayout && (
           <footer className="bg-gray-100 border-t border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <p className="text-center text-gray-600">
