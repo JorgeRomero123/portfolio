@@ -28,8 +28,8 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Jorge Romero Romanis - Portfolio",
-  description: "Personal portfolio showcasing photography, videos, 360 tours, and interactive projects by Jorge Romero Romanis",
+  title: "Jorge Romero Romanis - Full-Stack Software Engineer",
+  description: "Full-stack software engineer (React, TypeScript, Next.js) who scaled PayPal's Fastlane to 1.5M users across 7 countries. Portfolio of shipped projects, plus photography, 360 tours, and interactive tools.",
 };
 
 export default async function RootLayout({

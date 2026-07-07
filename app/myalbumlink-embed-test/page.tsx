@@ -1,6 +1,7 @@
 export const metadata = {
   title: 'MyAlbumLink Embed Test',
   description: 'Local test page for the MyAlbumLink iframe embed',
+  robots: { index: false, follow: false },
 };
 
 export default function MyAlbumLinkEmbedTestPage() {

@@ -16,19 +16,6 @@ interface Tool {
 
 const categories: { label: string; tools: Tool[] }[] = [
   {
-    label: 'Image & Media',
-    tools: [
-      { name: 'Background Remover', description: 'AI-powered background removal with manual refinement', href: '/tools/background-remover', icon: '✂️', color: 'from-pink-500 to-rose-500' },
-      { name: 'Photo Editor', description: 'Grid alignment, auto-levels, white balance, and color correction', href: '/tools/photo-editor', icon: '🎨', color: 'from-yellow-500 to-orange-500' },
-      { name: 'HEIC to PNG', description: 'Convert iPhone photos to PNG', href: '/tools/heic-converter', icon: '📱', color: 'from-blue-500 to-cyan-500' },
-      { name: 'WebP Converter', description: 'Optimize images with WebP compression', href: '/tools/webp-converter', icon: '🖼️', color: 'from-green-500 to-emerald-500' },
-      { name: 'Image Splitter', description: 'Split images into grid layouts', href: '/tools/image-splitter', icon: '🔲', color: 'from-cyan-500 to-blue-500' },
-      { name: 'Image Opacity', description: 'Adjust opacity and export as transparent PNG', href: '/tools/image-opacity', icon: '👻', color: 'from-gray-500 to-slate-500' },
-      { name: 'Video to WebM', description: 'Trim and convert video to WebM', href: '/tools/video-to-webm', icon: '🎬', color: 'from-violet-500 to-purple-500' },
-      { name: 'Pinterest Downloader', description: 'Download board images as a ZIP', href: '/tools/pinterest-downloader', icon: '📌', color: 'from-red-500 to-pink-500' },
-    ],
-  },
-  {
     label: 'Business & Utility',
     tools: [
       { name: 'CV Tailor', description: 'AI-powered CV tailoring for job vacancies', href: '/tools/cv-tailor', icon: '📄', color: 'from-blue-600 to-indigo-600' },
@@ -39,6 +26,19 @@ const categories: { label: string; tools: Tool[] }[] = [
       { name: 'Client Intake', description: 'AI-assisted intake form for web projects', href: '/tools/client-intake', icon: '📋', color: 'from-purple-500 to-indigo-500' },
       { name: 'Travel Time Calculator', description: 'Calculate driving times from multiple origins', href: '/tools/travel-time-calculator', icon: '🗺️', color: 'from-green-500 to-teal-500' },
       { name: 'Estudio Dental México', description: 'Estudio de mercado dental en México', href: '/tools/dental-market', icon: '🦷', color: 'from-blue-500 to-indigo-500' },
+    ],
+  },
+  {
+    label: 'Image & Media',
+    tools: [
+      { name: 'Background Remover', description: 'AI-powered background removal with manual refinement', href: '/tools/background-remover', icon: '✂️', color: 'from-pink-500 to-rose-500' },
+      { name: 'Photo Editor', description: 'Grid alignment, auto-levels, white balance, and color correction', href: '/tools/photo-editor', icon: '🎨', color: 'from-yellow-500 to-orange-500' },
+      { name: 'HEIC to PNG', description: 'Convert iPhone photos to PNG', href: '/tools/heic-converter', icon: '📱', color: 'from-blue-500 to-cyan-500' },
+      { name: 'WebP Converter', description: 'Optimize images with WebP compression', href: '/tools/webp-converter', icon: '🖼️', color: 'from-green-500 to-emerald-500' },
+      { name: 'Image Splitter', description: 'Split images into grid layouts', href: '/tools/image-splitter', icon: '🔲', color: 'from-cyan-500 to-blue-500' },
+      { name: 'Image Opacity', description: 'Adjust opacity and export as transparent PNG', href: '/tools/image-opacity', icon: '👻', color: 'from-gray-500 to-slate-500' },
+      { name: 'Video to WebM', description: 'Trim and convert video to WebM', href: '/tools/video-to-webm', icon: '🎬', color: 'from-violet-500 to-purple-500' },
+      { name: 'Pinterest Downloader', description: 'Download board images as a ZIP', href: '/tools/pinterest-downloader', icon: '📌', color: 'from-red-500 to-pink-500' },
     ],
   },
   {
@@ -62,7 +62,7 @@ export default function ToolsPage() {
           Interactive Tools
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          {categories.reduce((sum, c) => sum + c.tools.length, 0)} browser-based tools I&apos;ve built with Next.js and TypeScript.
+          {`${categories.reduce((sum, c) => sum + c.tools.length, 0)} browser-based tools I've built with Next.js and TypeScript.`}
         </p>
       </AnimateIn>
 
