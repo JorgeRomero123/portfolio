@@ -82,10 +82,9 @@ export default function CameraTracer() {
         audio: false,
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play().catch(() => {});
-      }
+      // The <video> element only mounts once cameraState becomes 'active'
+      // (see tracerReady below), so attaching srcObject here would race
+      // against that mount. attachVideoRef (a callback ref) does it instead.
       setFacingMode(mode);
       setCameraState('active');
     } catch (err) {
@@ -106,6 +105,16 @@ export default function CameraTracer() {
   const flipCamera = useCallback(() => {
     startCamera(facingMode === 'environment' ? 'user' : 'environment');
   }, [facingMode, startCamera]);
+
+  // Fires whenever the <video> element mounts (it only exists once the
+  // camera is 'active') and attaches whatever stream is current at that time.
+  const attachVideoRef = useCallback((node: HTMLVideoElement | null) => {
+    videoRef.current = node;
+    if (node && streamRef.current) {
+      node.srcObject = streamRef.current;
+      node.play().catch(() => {});
+    }
+  }, []);
 
   useEffect(() => stopCamera, [stopCamera]);
 
@@ -218,7 +227,7 @@ export default function CameraTracer() {
         style={{ height: '100dvh' }}
       >
         <video
-          ref={videoRef}
+          ref={attachVideoRef}
           autoPlay
           muted
           playsInline
