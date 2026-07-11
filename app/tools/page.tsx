@@ -39,6 +39,7 @@ const categories: { label: string; tools: Tool[] }[] = [
       { name: 'Image Opacity', description: 'Adjust opacity and export as transparent PNG', href: '/tools/image-opacity', icon: '👻', color: 'from-gray-500 to-slate-500' },
       { name: 'Video to WebM', description: 'Trim and convert video to WebM', href: '/tools/video-to-webm', icon: '🎬', color: 'from-violet-500 to-purple-500' },
       { name: 'Pinterest Downloader', description: 'Download board images as a ZIP', href: '/tools/pinterest-downloader', icon: '📌', color: 'from-red-500 to-pink-500' },
+      { name: 'Camera Tracer', description: 'Overlay an image on your live camera to trace by hand', href: '/tools/camera-tracer', icon: '📷', color: 'from-sky-500 to-blue-600' },
     ],
   },
   {
