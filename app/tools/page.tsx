@@ -49,7 +49,6 @@ const categories: { label: string; tools: Tool[] }[] = [
       { name: 'Paint by Numbers', description: 'Generate templates with acrylic paint recipes', href: '/tools/paint-by-numbers', icon: '🎨', color: 'from-rose-500 to-amber-500' },
       { name: 'Wheel of Fortune', description: 'Spin the wheel for random decisions', href: '/tools/wheel-of-fortune', icon: '🎡', color: 'from-purple-500 to-pink-500' },
       { name: 'The Puzzle', description: 'A mystery challenge for curious minds', href: '/tools/puzzle', icon: '🧩', color: 'from-indigo-500 to-purple-500' },
-      { name: 'Card Games', description: 'Play poker with friends in real-time', href: '/tools/card-games', icon: '♠️', color: 'from-emerald-600 to-green-700' },
       { name: 'Exercise Routine', description: 'Track your daily workout plan', href: '/tools/exercise-routine', icon: '💪', color: 'from-orange-500 to-red-500' },
       { name: 'Quehaceres del Depa', description: 'Chore tracker with email reminders', href: '/tools/quehaceres', icon: '🧹', color: 'from-emerald-500 to-teal-600' },
     ],
