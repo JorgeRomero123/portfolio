@@ -5,7 +5,13 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/admin', '/api', '/print-dashboard', '/myalbumlink-embed-test'],
+      disallow: [
+        '/admin',
+        '/api',
+        '/print-dashboard',
+        '/myalbumlink-embed-test',
+        '/tools/quehaceres',
+      ],
     },
   };
 }
