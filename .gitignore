@@ -24,6 +24,10 @@
 .DS_Store
 *.pem
 
+# CVs generados por scripts/generate-resume-*.tsx (van a ~/Downloads/VCs/).
+# Solo la raíz: un PDF en public/ sí se puede versionar.
+/*.pdf
+
 # debug
 npm-debug.log*
 yarn-debug.log*
