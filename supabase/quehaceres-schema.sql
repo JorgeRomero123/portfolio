@@ -30,7 +30,10 @@ alter table quehaceres            enable row level security;
 alter table quehaceres_bitacora   enable row level security;
 
 -- Quehaceres iniciales. ultima_vez en null = "toca hoy".
-insert into quehaceres (nombre, emoji, frecuencia_dias, orden) values
+-- El "where not exists" hace que correr el script dos veces no duplique nada:
+-- solo siembra si la tabla está vacía.
+insert into quehaceres (nombre, emoji, frecuencia_dias, orden)
+select * from (values
   ('Regar las plantas',     '🪴', 3,  1),
   ('Limpiar el baño',       '🚿', 7,  2),
   ('Limpiar el escritorio', '🖥️', 7,  3),
@@ -38,4 +41,5 @@ insert into quehaceres (nombre, emoji, frecuencia_dias, orden) values
   ('Lavar las sábanas',     '🛏️', 14, 5),
   ('Lavar mis tenis',       '👟', 30, 6),
   ('Lavar el refri',        '🧊', 30, 7)
-on conflict do nothing;
+) as semilla(nombre, emoji, frecuencia_dias, orden)
+where not exists (select 1 from quehaceres);
