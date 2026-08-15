@@ -34,12 +34,21 @@ alter table quehaceres_bitacora   enable row level security;
 -- solo siembra si la tabla está vacía.
 insert into quehaceres (nombre, emoji, frecuencia_dias, orden)
 select * from (values
-  ('Regar las plantas',     '🪴', 3,  1),
-  ('Limpiar el baño',       '🚿', 7,  2),
-  ('Limpiar el escritorio', '🖥️', 7,  3),
-  ('Limpiar la estufa',     '🔥', 14, 4),
-  ('Lavar las sábanas',     '🛏️', 14, 5),
-  ('Lavar mis tenis',       '👟', 30, 6),
-  ('Lavar el refri',        '🧊', 30, 7)
+  ('Regar las plantas',            '🪴', 3,   1),
+  ('Trapear',                      '🧹', 7,   2),
+  ('Limpiar la cafetera',          '☕', 7,   3),
+  ('Limpiar el baño',              '🚿', 7,   4),
+  ('Limpiar el escritorio',        '🖥️', 7,   5),
+  ('Limpiar la estufa',            '🔥', 14,  6),
+  ('Lavar las sábanas',            '🛏️', 14,  7),
+  ('Limpiar la laptop y teclado',  '💻', 30,  8),
+  ('Lavar el bote de basura',      '🚮', 30,  9),
+  ('Lavar mis tenis',              '👟', 30,  10),
+  ('Lavar el refri',               '🧊', 30,  11),
+  ('Descalcificar la cafetera',    '🫧', 60,  12),
+  ('Quitar el sarro de la regadera','💧', 60,  13),
+  ('Cambiar el cepillo de dientes','🪥', 90,  14),
+  ('Voltear el colchón',           '🛌', 180, 15),
+  ('Revisar el botiquín',          '💊', 180, 16)
 ) as semilla(nombre, emoji, frecuencia_dias, orden)
 where not exists (select 1 from quehaceres);

@@ -18,7 +18,10 @@ const ESTILO: Record<Estado, { punto: string; texto: string; barra: string; bord
   ok: { punto: 'bg-gray-300', texto: 'text-gray-500', barra: 'bg-gray-300', borde: 'border-gray-100' },
 };
 
-const EMOJIS = ['🧽', '🪴', '🚿', '🖥️', '🔥', '🛏️', '👟', '🧊', '🧹', '🧺', '🗑️', '🪟', '🍽️', '🚽', '🧴'];
+const EMOJIS = [
+  '🧽', '🪴', '🚿', '🖥️', '🔥', '🛏️', '👟', '🧊', '🧹', '🧺', '🗑️', '🪟', '🍽️', '🚽', '🧴',
+  '☕', '💻', '🚮', '🫧', '💧', '🪥', '🛌', '💊', '🎧', '🎒', '🧘', '🪞', '🚪', '🐜', '👕',
+];
 
 export default function QuehaceresTracker() {
   const [autorizado, setAutorizado] = useState<boolean | null>(null);
