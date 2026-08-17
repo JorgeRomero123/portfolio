@@ -28,6 +28,7 @@ interface Props<T> {
  * herramienta le pasa sus ejercicios y cómo dibujarlos.
  */
 export default function LevelRunner<T>({
+  levelId,
   exercises,
   accent,
   previousStars,
@@ -42,6 +43,10 @@ export default function LevelRunner<T>({
   const [results, setResults] = useState<boolean[]>([])
   const [feedback, setFeedback] = useState<boolean | null>(null)
   const [finished, setFinished] = useState(false)
+  /** Sube en cada reintento. Junto al índice forma la key que remonta el
+   *  ejercicio: sin ella, repetir un nivel de un solo ejercicio reutilizaría
+   *  el componente ya contestado. */
+  const [attempt, setAttempt] = useState(0)
 
   const exercise = exercises[index]
   const isLast = index === exercises.length - 1
@@ -72,6 +77,7 @@ export default function LevelRunner<T>({
     setResults([])
     setFeedback(null)
     setFinished(false)
+    setAttempt((a) => a + 1)
   }
 
   const stars = starsFor(results)
@@ -165,7 +171,12 @@ export default function LevelRunner<T>({
         </span>
       </div>
 
-      <div className="pb-32">{renderExercise(exercise, handleDone)}</div>
+      {/* La key remonta el ejercicio en cada paso: cada uno guarda su propio
+          estado (la opción marcada, las notas ya confirmadas) y reutilizar el
+          componente lo dejaría contestado de antemano. */}
+      <div key={`${levelId}:${attempt}:${index}`} className="pb-32">
+        {renderExercise(exercise, handleDone)}
+      </div>
 
       {feedback !== null && (
         <div
