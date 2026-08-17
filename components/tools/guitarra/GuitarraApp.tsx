@@ -1,75 +1,191 @@
 'use client'
 
 import { useState } from 'react'
-import { useIsHydrated } from './useStoredState'
-import Empezar from './Empezar'
+import PathMap from './PathMap'
+import LevelPlayer from './LevelPlayer'
 import Afinador from './Afinador'
 import Acordes from './Acordes'
 import Diapason from './Diapason'
-import Practica from './Practica'
+import Stars from './Stars'
+import { useProgress } from './useProgress'
+import { ALL_LEVELS, type Level, type Stage } from './curriculum'
 
-export type TabId = 'empezar' | 'afinador' | 'acordes' | 'diapason' | 'practica'
+type View = 'camino' | 'herramientas'
+type Tool = 'afinador' | 'acordes' | 'diapason'
 
-const TABS: { id: TabId; label: string; hint: string }[] = [
-  { id: 'empezar', label: 'Empezar', hint: 'Lo básico si nunca has tocado' },
-  { id: 'afinador', label: 'Afinador', hint: 'Afina con el micrófono' },
-  { id: 'acordes', label: 'Acordes', hint: 'Diagramas y entrenador de cambios' },
-  { id: 'diapason', label: 'Diapasón', hint: 'Notas y escalas en el mástil' },
-  { id: 'practica', label: 'Práctica', hint: 'Rutina diaria y progreso' },
+const TOOLS: { id: Tool; label: string }[] = [
+  { id: 'afinador', label: 'Afinador' },
+  { id: 'acordes', label: 'Acordes' },
+  { id: 'diapason', label: 'Diapasón' },
 ]
 
-const isTabId = (value: string): value is TabId => TABS.some((t) => t.id === value)
-
 export default function GuitarraApp() {
-  const hydrated = useIsHydrated()
+  const progress = useProgress()
+  const [view, setView] = useState<View>('camino')
+  const [tool, setTool] = useState<Tool>('afinador')
+  const [active, setActive] = useState<{ level: Level; stage: Stage } | null>(null)
+  const [confirmReset, setConfirmReset] = useState(false)
 
-  // El hash permite compartir o recargar en la sección en la que estabas. Se
-  // lee en el inicializador y solo se aplica tras hidratar, para que el
-  // servidor y el primer render del cliente rendericen lo mismo.
-  const [selected, setTab] = useState<TabId>(() => {
-    if (typeof window === 'undefined') return 'empezar'
-    const fromHash = window.location.hash.slice(1)
-    return isTabId(fromHash) ? fromHash : 'empezar'
-  })
-  const tab = hydrated ? selected : 'empezar'
-
-  const navigate = (next: TabId) => {
-    setTab(next)
-    window.history.replaceState(null, '', `#${next}`)
+  const openLevel = (level: Level, stage: Stage) => {
+    setActive({ level, stage })
     window.scrollTo({ top: 0 })
   }
 
-  return (
-    <div>
-      <nav
-        aria-label="Secciones"
-        /* top-16 deja libre la barra de navegación del sitio, que también es sticky. */
-        className="sticky top-16 z-20 -mx-4 px-4 py-3 bg-gray-50/90 backdrop-blur-sm mb-6"
-      >
-        <div className="flex gap-1.5 overflow-x-auto pb-1">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => navigate(t.id)}
-              title={t.hint}
-              aria-current={tab === t.id ? 'page' : undefined}
-              className={`shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                tab === t.id
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </nav>
+  const openNext = () => {
+    if (!active) return
+    const i = ALL_LEVELS.findIndex((l) => l.level.id === active.level.id)
+    const next = ALL_LEVELS[i + 1]
+    if (next) openLevel(next.level, next.stage)
+    else setActive(null)
+  }
 
-      {tab === 'empezar' && <Empezar onNavigate={navigate} />}
-      {tab === 'afinador' && <Afinador />}
-      {tab === 'acordes' && <Acordes />}
-      {tab === 'diapason' && <Diapason />}
-      {tab === 'practica' && <Practica onNavigate={navigate} />}
+  // ── Dentro de un nivel: pantalla limpia, sin cabeceras ni pestañas ──
+  if (active) {
+    const i = ALL_LEVELS.findIndex((l) => l.level.id === active.level.id)
+    const hasNext = i >= 0 && i + 1 < ALL_LEVELS.length
+    return (
+      <LevelPlayer
+        key={active.level.id}
+        level={active.level}
+        stage={active.stage}
+        previousStars={progress.starsOf(active.level.id)}
+        onExit={() => setActive(null)}
+        onFinish={(stars) => progress.record(active.level.id, stars)}
+        onNext={hasNext ? openNext : null}
+      />
+    )
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      {/* Marcador */}
+      <div className="rounded-2xl bg-white border border-gray-100 shadow-sm px-5 py-4 mb-5">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-6">
+            <div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-gray-900 tabular-nums">
+                  {progress.streak}
+                </span>
+                <span className="text-orange-500 text-lg" aria-hidden="true">
+                  &#9650;
+                </span>
+              </div>
+              <div className="text-[11px] uppercase tracking-wider text-gray-400">
+                {progress.streak === 1 ? 'día' : 'días'}
+              </div>
+            </div>
+            <div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-gray-900 tabular-nums">
+                  {progress.earnedStars}
+                </span>
+                <Stars count={1} max={1} size={17} />
+              </div>
+              <div className="text-[11px] uppercase tracking-wider text-gray-400">estrellas</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-gray-900 tabular-nums">
+                {progress.completed}
+                <span className="text-gray-300 font-normal">/{progress.total}</span>
+              </div>
+              <div className="text-[11px] uppercase tracking-wider text-gray-400">niveles</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-3 h-2 rounded-full bg-gray-100 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-sky-500 to-blue-600 transition-[width] duration-500"
+            style={{ width: `${(progress.completed / progress.total) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Camino / Herramientas */}
+      <div className="flex gap-1.5 mb-7">
+        {(
+          [
+            ['camino', 'Camino'],
+            ['herramientas', 'Herramientas'],
+          ] as [View, string][]
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            onClick={() => setView(id)}
+            aria-current={view === id ? 'page' : undefined}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+              view === id
+                ? 'bg-gray-900 text-white'
+                : 'bg-white border border-gray-200 text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {view === 'camino' ? (
+        <PathMap
+          starsOf={progress.starsOf}
+          isUnlocked={progress.isUnlocked}
+          nextLevelId={progress.nextLevelId}
+          onPick={openLevel}
+        />
+      ) : (
+        <div>
+          <div className="flex gap-1.5 mb-5">
+            {TOOLS.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTool(t.id)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  tool === t.id
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                    : 'bg-white border border-gray-200 text-gray-500 hover:text-gray-900'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          {tool === 'afinador' && <Afinador />}
+          {tool === 'acordes' && <Acordes />}
+          {tool === 'diapason' && <Diapason />}
+        </div>
+      )}
+
+      {view === 'camino' && progress.completed > 0 && (
+        <div className="mt-12 text-center">
+          {confirmReset ? (
+            <div className="inline-flex items-center gap-3 text-xs">
+              <span className="text-gray-500">¿Borrar todo tu progreso?</span>
+              <button
+                onClick={() => {
+                  progress.reset()
+                  setConfirmReset(false)
+                }}
+                className="font-semibold text-red-500 hover:text-red-700"
+              >
+                Sí, borrar
+              </button>
+              <button
+                onClick={() => setConfirmReset(false)}
+                className="font-medium text-gray-400 hover:text-gray-700"
+              >
+                Cancelar
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmReset(true)}
+              className="text-xs font-medium text-gray-300 hover:text-red-500 transition-colors"
+            >
+              Reiniciar progreso
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }
