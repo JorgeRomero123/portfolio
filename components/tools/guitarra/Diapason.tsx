@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { playTone } from './audio'
+import { playTone } from '../shared-audio/audio'
 import { NOTES_ES, SCALES, STRINGS, degreeOf, midiToFreq, noteNameEs } from './music'
 
 const FRET_COUNT = 15

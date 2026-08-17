@@ -2,9 +2,6 @@
 
 import { useCallback, useMemo } from 'react'
 import { useStoredState } from './useStoredState'
-import { ALL_LEVELS } from './curriculum'
-
-const STORAGE_KEY = 'guitarra.progreso.v1'
 
 export interface ProgressState {
   /** levelId → mejor resultado, de 1 a 3 estrellas. */
@@ -34,19 +31,23 @@ function computeStreak(days: string[]): number {
   return streak
 }
 
-export function useProgress() {
-  const [state, setState, hydrated] = useStoredState<ProgressState>(STORAGE_KEY, EMPTY)
+/**
+ * @param storageKey clave de localStorage propia de cada herramienta
+ * @param orderedIds ids de los niveles en el orden del camino
+ */
+export function useLevelProgress(storageKey: string, orderedIds: string[]) {
+  const [state, setState, hydrated] = useStoredState<ProgressState>(storageKey, EMPTY)
 
   const starsOf = useCallback((levelId: string) => state.stars[levelId] ?? 0, [state.stars])
 
   /** Un nivel se abre cuando el anterior tiene al menos una estrella. */
   const isUnlocked = useCallback(
     (levelId: string) => {
-      const idx = ALL_LEVELS.findIndex((l) => l.level.id === levelId)
+      const idx = orderedIds.indexOf(levelId)
       if (idx <= 0) return true
-      return (state.stars[ALL_LEVELS[idx - 1].level.id] ?? 0) > 0
+      return (state.stars[orderedIds[idx - 1]] ?? 0) > 0
     },
-    [state.stars]
+    [state.stars, orderedIds]
   )
 
   const record = useCallback(
@@ -64,20 +65,20 @@ export function useProgress() {
   const reset = useCallback(() => setState(EMPTY), [setState])
 
   const derived = useMemo(() => {
-    const earned = ALL_LEVELS.reduce((sum, l) => sum + (state.stars[l.level.id] ?? 0), 0)
-    const completed = ALL_LEVELS.filter((l) => (state.stars[l.level.id] ?? 0) > 0).length
+    const earned = orderedIds.reduce((sum, id) => sum + (state.stars[id] ?? 0), 0)
+    const completed = orderedIds.filter((id) => (state.stars[id] ?? 0) > 0).length
     // El primer nivel sin estrellas es donde se retoma el camino.
-    const next = ALL_LEVELS.find((l) => (state.stars[l.level.id] ?? 0) === 0)
+    const next = orderedIds.find((id) => (state.stars[id] ?? 0) === 0)
     return {
       earnedStars: earned,
-      maxStars: ALL_LEVELS.length * 3,
+      maxStars: orderedIds.length * 3,
       completed,
-      total: ALL_LEVELS.length,
+      total: orderedIds.length,
       streak: computeStreak(state.days),
       practicedToday: state.days.includes(keyFor(new Date())),
-      nextLevelId: next?.level.id ?? null,
+      nextLevelId: next ?? null,
     }
-  }, [state])
+  }, [state, orderedIds])
 
   return { ...derived, starsOf, isUnlocked, record, reset, hydrated }
 }

@@ -1,10 +1,11 @@
 /**
- * Teoría musical mínima para guitarra en afinación estándar.
- * Todo se calcula sobre números MIDI: cuerda al aire + traste.
+ * Teoría específica de guitarra en afinación estándar: cuerdas, acordes y
+ * escalas. La aritmética de notas es genérica y vive en shared-audio/notes.
  */
 
-export const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'] as const
-export const NOTES_ES = ['Do', 'Do#', 'Re', 'Re#', 'Mi', 'Fa', 'Fa#', 'Sol', 'Sol#', 'La', 'La#', 'Si'] as const
+import { pitchClass } from '../shared-audio/notes'
+
+export * from '../shared-audio/notes'
 
 /** Cuerdas de la 6ª (más grave) a la 1ª (más aguda): E2 A2 D3 G3 B3 E4 */
 export const TUNING = [40, 45, 50, 55, 59, 64]
@@ -17,21 +18,6 @@ export const STRINGS = [
   { number: 2, label: 'Si', short: 'Si', latin: 'Si', midi: 59 },
   { number: 1, label: 'Mi agudo', short: 'Mi', latin: 'Mi', midi: 64 },
 ]
-
-export const midiToFreq = (midi: number) => 440 * Math.pow(2, (midi - 69) / 12)
-export const freqToMidi = (freq: number) => 69 + 12 * Math.log2(freq / 440)
-
-export const pitchClass = (midi: number) => ((Math.round(midi) % 12) + 12) % 12
-export const noteName = (midi: number) => NOTES[pitchClass(midi)]
-export const noteNameEs = (midi: number) => NOTES_ES[pitchClass(midi)]
-export const octaveOf = (midi: number) => Math.floor(Math.round(midi) / 12) - 1
-
-/** Diferencia en cents entre una frecuencia y la nota temperada más cercana. */
-export function centsOff(freq: number) {
-  const midi = freqToMidi(freq)
-  const nearest = Math.round(midi)
-  return { nearest, cents: (midi - nearest) * 100 }
-}
 
 // ---------------------------------------------------------------------------
 // Acordes

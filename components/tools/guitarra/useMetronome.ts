@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { getAudioContext, scheduleClick } from './audio'
+import { getAudioContext, scheduleClick } from '../shared-audio/audio'
 
 const LOOKAHEAD_MS = 25
 const SCHEDULE_AHEAD_S = 0.15

@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { usePitchDetector } from './usePitchDetector'
-import { playTone } from './audio'
+import { usePitchDetector } from '../shared-audio/usePitchDetector'
+import { playTone } from '../shared-audio/audio'
 import { STRINGS, centsOff, freqToMidi, midiToFreq, noteNameEs, octaveOf } from './music'
 
 const IN_TUNE_CENTS = 5

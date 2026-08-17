@@ -671,6 +671,9 @@ export const ALL_LEVELS: { level: Level; stage: Stage; index: number }[] = STAGE
   stage.levels.map((level) => ({ level, stage, index: 0 }))
 ).map((entry, index) => ({ ...entry, index }))
 
+/** Ids en el orden del camino. Referencia estable: el currículo es estático. */
+export const LEVEL_IDS = ALL_LEVELS.map((l) => l.level.id)
+
 export const LEVEL_COUNT = ALL_LEVELS.length
 
 export const findLevel = (id: string) => ALL_LEVELS.find((l) => l.level.id === id)

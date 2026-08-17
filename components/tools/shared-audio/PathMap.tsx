@@ -1,35 +1,40 @@
 'use client'
 
-import LevelIcon from './LevelIcon'
+import type { ReactNode } from 'react'
 import Stars from './Stars'
-import { STAGES, type Level, type Stage } from './curriculum'
+import { levelPositions, type PathLevel, type PathStage } from './levels'
 
 /** Desplazamiento horizontal de cada nodo: da al camino su forma serpenteante. */
 const WEAVE = [0, 44, 68, 44, 0, -44, -68, -44]
 
-/** Posición de cada nivel en el camino completo, para que el serpenteo no se
- *  reinicie en cada etapa. Se calcula una vez: el currículo es estático. */
-const POSITION = new Map<string, number>()
-STAGES.forEach((stage) => stage.levels.forEach((level) => POSITION.set(level.id, POSITION.size)))
-
-interface Props {
+interface Props<L extends PathLevel, S extends PathStage<L>> {
+  stages: S[]
+  renderIcon: (kind: string) => ReactNode
   starsOf: (levelId: string) => number
   isUnlocked: (levelId: string) => boolean
   nextLevelId: string | null
-  onPick: (level: Level, stage: Stage) => void
+  onPick: (level: L, stage: S) => void
 }
 
-export default function PathMap({ starsOf, isUnlocked, nextLevelId, onPick }: Props) {
+export default function PathMap<L extends PathLevel, S extends PathStage<L>>({
+  stages,
+  renderIcon,
+  starsOf,
+  isUnlocked,
+  nextLevelId,
+  onPick,
+}: Props<L, S>) {
+  const position = levelPositions(stages)
+
   return (
     <div className="space-y-14">
-      {STAGES.map((stage) => {
+      {stages.map((stage) => {
         const earned = stage.levels.reduce((sum, l) => sum + starsOf(l.id), 0)
         const possible = stage.levels.length * 3
         const stageOpen = stage.levels.some((l) => isUnlocked(l.id))
 
         return (
           <section key={stage.id}>
-            {/* Cabecera de etapa */}
             <div
               className={`rounded-2xl px-5 py-4 bg-gradient-to-r ${stage.accent} ${
                 stageOpen ? '' : 'opacity-40 saturate-0'
@@ -50,7 +55,6 @@ export default function PathMap({ starsOf, isUnlocked, nextLevelId, onPick }: Pr
               </div>
             </div>
 
-            {/* Nodos */}
             <div className="relative mt-8">
               <div
                 aria-hidden="true"
@@ -62,7 +66,7 @@ export default function PathMap({ starsOf, isUnlocked, nextLevelId, onPick }: Pr
                   const stars = starsOf(level.id)
                   const unlocked = isUnlocked(level.id)
                   const isNext = level.id === nextLevelId
-                  const offset = WEAVE[(POSITION.get(level.id) ?? 0) % WEAVE.length]
+                  const offset = WEAVE[(position.get(level.id) ?? 0) % WEAVE.length]
 
                   return (
                     <div
@@ -90,7 +94,7 @@ export default function PathMap({ starsOf, isUnlocked, nextLevelId, onPick }: Pr
                         }`}
                       >
                         {unlocked ? (
-                          <LevelIcon kind={level.kind} size={26} />
+                          renderIcon(level.kind)
                         ) : (
                           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <rect x="5" y="11" width="14" height="9" rx="2" />
@@ -99,9 +103,7 @@ export default function PathMap({ starsOf, isUnlocked, nextLevelId, onPick }: Pr
                         )}
                       </button>
 
-                      <div className="mt-2 h-4">
-                        {stars > 0 && <Stars count={stars} size={13} />}
-                      </div>
+                      <div className="mt-2 h-4">{stars > 0 && <Stars count={stars} size={13} />}</div>
                       <div
                         className={`text-xs font-medium text-center max-w-[120px] leading-tight ${
                           unlocked ? 'text-gray-700' : 'text-gray-300'

@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import ChordDiagram from './ChordDiagram'
 import { useMetronome } from './useMetronome'
-import { useStoredState } from './useStoredState'
-import { playTone } from './audio'
+import { useStoredState } from '../shared-audio/useStoredState'
+import { playTone } from '../shared-audio/audio'
 import {
   CHORDS,
   LEVEL_LABEL,

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { playTone } from '../audio'
+import { playTone } from '../../shared-audio/audio'
 import { STRINGS, midiToFreq, noteNameEs } from '../music'
 import type { FretboardExercise as Ex } from '../curriculum'
 

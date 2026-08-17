@@ -1,8 +1,13 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { getAudioContext, scheduleClick } from '../audio'
-import type { RhythmExercise as Ex } from '../curriculum'
+import { getAudioContext, scheduleClick } from './audio'
+/** Cualquier herramienta puede pedir un ejercicio de pulso con esta forma. */
+export interface RhythmSpec {
+  prompt: string
+  bpm: number
+  beats: number
+}
 
 const COUNT_IN = 4
 /** Desviación media por debajo de la cual damos el pulso por bien marcado. */
@@ -10,7 +15,7 @@ const GOOD_MS = 130
 const TIGHT_MS = 70
 
 interface Props {
-  exercise: Ex
+  exercise: RhythmSpec
   onDone: (correct: boolean) => void
 }
 

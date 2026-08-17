@@ -1,14 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import PathMap from './PathMap'
+import PathMap from '../shared-audio/PathMap'
+import LevelIcon from './LevelIcon'
 import LevelPlayer from './LevelPlayer'
 import Afinador from './Afinador'
 import Acordes from './Acordes'
 import Diapason from './Diapason'
-import Stars from './Stars'
-import { useProgress } from './useProgress'
-import { ALL_LEVELS, type Level, type Stage } from './curriculum'
+import Stars from '../shared-audio/Stars'
+import { useLevelProgress } from '../shared-audio/useLevelProgress'
+import { ALL_LEVELS, LEVEL_IDS, STAGES, type Level, type LevelKind, type Stage } from './curriculum'
 
 type View = 'camino' | 'herramientas'
 type Tool = 'afinador' | 'acordes' | 'diapason'
@@ -20,7 +21,7 @@ const TOOLS: { id: Tool; label: string }[] = [
 ]
 
 export default function GuitarraApp() {
-  const progress = useProgress()
+  const progress = useLevelProgress('guitarra.progreso.v1', LEVEL_IDS)
   const [view, setView] = useState<View>('camino')
   const [tool, setTool] = useState<Tool>('afinador')
   const [active, setActive] = useState<{ level: Level; stage: Stage } | null>(null)
@@ -127,6 +128,8 @@ export default function GuitarraApp() {
 
       {view === 'camino' ? (
         <PathMap
+          stages={STAGES}
+          renderIcon={(kind) => <LevelIcon kind={kind as LevelKind} size={26} />}
           starsOf={progress.starsOf}
           isUnlocked={progress.isUnlocked}
           nextLevelId={progress.nextLevelId}
