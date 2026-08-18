@@ -313,7 +313,7 @@ function Tablero({ onSalir }: { onSalir: () => void }) {
       {/* Pie */}
       <div className="mt-10 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-gray-100 pt-5 text-sm">
         <p className="mr-auto text-gray-500">
-          Te llega un correo a las 8:00 a.m. cuando algo esté pendiente.
+          Te llega un correo a las 7:00 a.m. cuando algo esté pendiente.
         </p>
         <button onClick={mandarCorreoDePrueba} className="font-medium text-blue-600 hover:text-blue-800">
           Mandar correo de prueba

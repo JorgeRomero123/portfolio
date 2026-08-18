@@ -12,7 +12,7 @@ import {
   type QuehacerCalculado,
 } from '@/lib/quehaceres';
 
-// El cron de Vercel corre a las 14:00 UTC = 8:00 a.m. en CDMX (sin horario de verano).
+// El cron de Vercel corre a las 13:00 UTC = 7:00 a.m. en CDMX (sin horario de verano).
 export const dynamic = 'force-dynamic';
 
 const COLOR = {
