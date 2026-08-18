@@ -30,11 +30,13 @@ export function safeRange(range: VoiceRange): VoiceRange {
 }
 
 /**
- * El intervalo más ancho que pide el currículo sin contar la octava (una sexta
- * mayor). La tónica tiene que dejar sitio para él o el ejercicio se sale por
- * arriba en las voces de rango estrecho.
+ * El intervalo más ancho que se pide cantar: la octava. La tónica tiene que
+ * dejarle sitio o el ejercicio se sale por arriba, se pliega de octava y
+ * acaba pidiendo la misma nota de partida — el nivel se vuelve trivial sin
+ * avisar. Con rangos anchos manda el 30% de abajo; solo en los estrechos
+ * este tope llega a bajar la tónica.
  */
-const WIDEST_INTERVAL = 9
+const WIDEST_INTERVAL = 12
 
 /**
  * La nota de trabajo. Se coloca en el tercio bajo del rango, no en el centro:
@@ -62,6 +64,19 @@ export function targetMidi(range: VoiceRange, offset: number): number {
   // Red de seguridad para un rango tan estrecho que ni la octava de abajo
   // cabe: mejor pedir la nota del borde que una que no puede producir.
   return Math.max(r.low, Math.min(r.high, midi))
+}
+
+/**
+ * Nota para escuchar, no para cantar.
+ *
+ * A diferencia de targetMidi, no pliega octavas ni recorta al rango: en un
+ * ejercicio de oído el intervalo que suena ES la lección, y plegarlo la
+ * destruye — una octava plegada al rango vuelve a la tónica y suena como el
+ * unísono. Se transpone a la tónica del usuario para que reconozca intervalos
+ * en la altura en la que canta, pero puede salirse por arriba sin problema.
+ */
+export function listenMidi(range: VoiceRange, offset: number): number {
+  return tonicOf(range) + offset
 }
 
 /** Nombre aproximado del tipo de voz, solo como dato simpático tras calibrar. */
