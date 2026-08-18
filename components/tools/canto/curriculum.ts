@@ -44,6 +44,12 @@ export interface MatchPitchExercise {
   kind: 'matchPitch'
   prompt: string
   offset: number
+  /**
+   * A ciegas: suena la tónica en vez de la nota buscada, así que hay que
+   * encontrar el intervalo por uno mismo en lugar de copiar una altura. Es el
+   * salto real entre imitar y cantar.
+   */
+  blind?: boolean
 }
 
 /** Mantener una nota estable, que es lo que de verdad cuesta. */
@@ -567,6 +573,360 @@ export const STAGES: Stage[] = [
     ],
   },
 ]
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Segunda mitad: a partir de aquí se asume que ya afinas notas sueltas.
+// ═══════════════════════════════════════════════════════════════════════════
+
+STAGES.push(
+  {
+    id: 'intervalos-dificiles',
+    name: 'Intervalos difíciles',
+    subtitle: 'Cuartas, sextas y los saltos que bajan',
+    accent: 'from-indigo-500 to-indigo-700',
+    ring: 'ring-indigo-200',
+    text: 'text-indigo-600',
+    levels: [
+      {
+        id: 'cuarta-sexta-teoria',
+        title: 'Cuarta y sexta',
+        kind: 'teoria',
+        exercises: [
+          {
+            kind: 'quiz',
+            prompt: 'La cuarta justa y la quinta justa se confunden mucho. ¿Cuál suena más "abierta"?',
+            options: ['La cuarta', 'La quinta', 'Suenan igual'],
+            answer: 1,
+            explain:
+              'La quinta es más ancha y más estable. La cuarta suena algo más cerrada y con una ligera tensión.',
+          },
+          {
+            kind: 'quiz',
+            prompt: '¿Por qué cuesta más cantar un intervalo hacia abajo que hacia arriba?',
+            options: [
+              'Porque la voz pierde apoyo al bajar y tiende a quedarse corta',
+              'Porque las notas graves no existen en la escala',
+              'No cuesta más, es igual',
+            ],
+            answer: 0,
+            explain:
+              'Al bajar se suele aflojar el aire y la nota se queda por encima o se desploma. Bajar pide el mismo apoyo que subir.',
+          },
+        ],
+      },
+      {
+        id: 'cuarta-vs-quinta',
+        title: 'Cuarta o quinta',
+        kind: 'oido',
+        exercises: [
+          {
+            kind: 'ear',
+            prompt: '¿Qué intervalo es?',
+            offsets: [0, 5],
+            options: ['Cuarta justa', 'Quinta justa'],
+            answer: 0,
+            explain: 'Cuarta. Es el salto del principio del himno nupcial.',
+          },
+          {
+            kind: 'ear',
+            prompt: '¿Y este?',
+            offsets: [0, 7],
+            options: ['Cuarta justa', 'Quinta justa'],
+            answer: 1,
+            explain: 'Quinta. Un poco más ancha y más luminosa que la anterior.',
+          },
+          {
+            kind: 'ear',
+            prompt: 'Uno más, sin pistas.',
+            offsets: [0, 9],
+            options: ['Cuarta justa', 'Quinta justa', 'Sexta mayor'],
+            answer: 2,
+            explain: 'Sexta mayor. Ya se oye claramente más ancha que la quinta.',
+          },
+        ],
+      },
+      {
+        id: 'cantar-cuarta-sexta',
+        title: 'Canta los saltos anchos',
+        kind: 'voz',
+        exercises: [
+          { kind: 'sequence', prompt: 'Tónica y cuarta.', offsets: [0, 5] },
+          { kind: 'sequence', prompt: 'Ahora la sexta, que es bastante más arriba.', offsets: [0, 9] },
+        ],
+      },
+      {
+        id: 'descendentes',
+        title: 'Saltos hacia abajo',
+        kind: 'voz',
+        exercises: [
+          { kind: 'sequence', prompt: 'De la quinta a la tónica, bajando.', offsets: [7, 0] },
+          { kind: 'sequence', prompt: 'Ahora desde la octava. No aflojes el aire al bajar.', offsets: [12, 5, 0] },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'escala-menor',
+    name: 'La escala menor',
+    subtitle: 'El otro color, y cómo se canta',
+    accent: 'from-slate-500 to-slate-700',
+    ring: 'ring-slate-200',
+    text: 'text-slate-600',
+    levels: [
+      {
+        id: 'menor-teoria',
+        title: 'Qué cambia en la menor',
+        kind: 'teoria',
+        exercises: [
+          {
+            kind: 'quiz',
+            prompt: 'Respecto a la mayor, ¿qué nota cambia y le da el color triste?',
+            options: ['La tercera, que baja medio tono', 'La quinta, que sube', 'La tónica'],
+            answer: 0,
+            explain:
+              'La tercera bajada medio tono. Con ese único cambio la escala pasa de alegre a melancólica.',
+          },
+          {
+            kind: 'quiz',
+            prompt: 'La escala menor natural, ¿es una escala nueva o la mayor empezada en otro sitio?',
+            options: [
+              'Es la mayor empezando desde su sexto grado',
+              'Es una escala completamente distinta',
+              'Es la mayor al revés',
+            ],
+            answer: 0,
+            explain:
+              'Las mismas notas, otro punto de partida. Por eso a cada tonalidad mayor le corresponde una menor "relativa".',
+          },
+        ],
+      },
+      {
+        id: 'menor-oido',
+        title: 'Distingue las dos escalas',
+        kind: 'oido',
+        exercises: [
+          {
+            kind: 'ear',
+            prompt: 'Escucha la escala. ¿Mayor o menor?',
+            offsets: [0, 2, 4, 5, 7],
+            options: ['Mayor', 'Menor'],
+            answer: 0,
+            explain: 'Mayor. La tercera nota sonó alta y alegre.',
+          },
+          {
+            kind: 'ear',
+            prompt: '¿Y esta?',
+            offsets: [0, 2, 3, 5, 7],
+            options: ['Mayor', 'Menor'],
+            answer: 1,
+            explain: 'Menor: la tercera bajó medio tono y todo cambió de carácter.',
+          },
+        ],
+      },
+      {
+        id: 'menor-cantar',
+        title: 'Canta la escala menor',
+        kind: 'voz',
+        exercises: [
+          { kind: 'sequence', prompt: 'Subiendo. Cuidado con la tercera: va más baja de lo que pide el oído.', offsets: [0, 2, 3, 5, 7] },
+        ],
+      },
+      {
+        id: 'menor-arpegio',
+        title: 'Arpegio menor',
+        kind: 'voz',
+        exercises: [
+          { kind: 'sequence', prompt: 'Tónica, tercera menor, quinta, y de vuelta.', offsets: [0, 3, 7, 3, 0] },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'a-ciegas',
+    name: 'Encontrar la nota solo',
+    subtitle: 'Dejar de imitar y empezar a cantar',
+    accent: 'from-teal-500 to-teal-700',
+    ring: 'ring-teal-200',
+    text: 'text-teal-600',
+    levels: [
+      {
+        id: 'audiacion-teoria',
+        title: 'Oírla antes de cantarla',
+        kind: 'teoria',
+        exercises: [
+          {
+            kind: 'quiz',
+            prompt: 'Los cantantes afinados, ¿qué hacen antes de emitir una nota?',
+            options: [
+              'La imaginan primero y luego la producen',
+              'La buscan deslizando la voz hasta acertar',
+              'Cantan y corrigen sobre la marcha',
+            ],
+            answer: 0,
+            explain:
+              'Se llama audiación: la oyes dentro de la cabeza y solo entonces la sueltas. Buscar deslizando es lo que suena a desafinado.',
+          },
+          {
+            kind: 'quiz',
+            prompt: 'Entonces, si no estás seguro de una nota, lo mejor es…',
+            options: [
+              'Tomarte un segundo en silencio para imaginarla',
+              'Cantarla flojito y subir hasta encontrarla',
+              'Cantarla fuerte para no dudar',
+            ],
+            answer: 0,
+            explain:
+              'Un segundo de silencio ahorra tres de deslizamiento. En los ejercicios que vienen, imagina antes de abrir la boca.',
+          },
+        ],
+      },
+      {
+        id: 'ciegas-tercera',
+        title: 'Encuentra la tercera',
+        kind: 'voz',
+        exercises: [
+          { kind: 'matchPitch', prompt: 'Te doy la tónica. Canta la tercera mayor.', offset: 4, blind: true },
+        ],
+      },
+      {
+        id: 'ciegas-quinta',
+        title: 'Encuentra la quinta',
+        kind: 'voz',
+        exercises: [
+          { kind: 'matchPitch', prompt: 'Misma tónica. Ahora la quinta.', offset: 7, blind: true },
+        ],
+      },
+      {
+        id: 'ciegas-octava',
+        title: 'Encuentra la octava',
+        kind: 'voz',
+        exercises: [
+          { kind: 'matchPitch', prompt: 'La misma nota, una octava arriba.', offset: 12, blind: true },
+          { kind: 'matchPitch', prompt: 'Y una cuarta, que es la que más se resiste.', offset: 5, blind: true },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'agilidad',
+    name: 'Agilidad y aguante',
+    subtitle: 'Más notas, más rápido, más tiempo',
+    accent: 'from-fuchsia-500 to-purple-700',
+    ring: 'ring-fuchsia-200',
+    text: 'text-fuchsia-600',
+    levels: [
+      {
+        id: 'escala-completa',
+        title: 'La escala entera',
+        kind: 'voz',
+        exercises: [
+          { kind: 'sequence', prompt: 'Ocho notas hasta la octava. Sin prisa.', offsets: [0, 2, 4, 5, 7, 9, 11, 12] },
+        ],
+      },
+      {
+        id: 'escala-vuelta',
+        title: 'Ida y vuelta',
+        kind: 'voz',
+        exercises: [
+          { kind: 'sequence', prompt: 'Sube cinco notas y baja las mismas.', offsets: [0, 2, 4, 5, 7, 5, 4, 2, 0] },
+        ],
+      },
+      {
+        id: 'aguante',
+        title: 'Ocho segundos',
+        kind: 'aliento',
+        exercises: [
+          { kind: 'sustain', prompt: 'Dosifica el aire desde el principio.', offset: 4, seconds: 8 },
+        ],
+      },
+      {
+        id: 'pulso-rapido',
+        title: 'Pulso rápido',
+        kind: 'ritmo',
+        exercises: [
+          { kind: 'rhythm', prompt: 'Más rápido que antes. Escucha la entrada completa.', bpm: 120, beats: 12 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'canciones',
+    name: 'Cantar canciones',
+    subtitle: 'Frases largas, respiración y repertorio',
+    accent: 'from-lime-600 to-green-700',
+    ring: 'ring-lime-200',
+    text: 'text-lime-700',
+    levels: [
+      {
+        id: 'frase-teoria',
+        title: 'Frasear',
+        kind: 'teoria',
+        exercises: [
+          {
+            kind: 'quiz',
+            prompt: 'Al preparar una canción, ¿qué conviene marcar antes de cantarla entera?',
+            options: [
+              'Dónde vas a respirar',
+              'Dónde vas a cantar más fuerte',
+              'Cuántos compases tiene',
+            ],
+            answer: 0,
+            explain:
+              'Las respiraciones. Si no las decides tú, las decide el pánico a mitad de frase y la nota se cae.',
+          },
+          {
+            kind: 'quiz',
+            prompt: 'Una nota larga al final de una frase larga se suele desafinar hacia…',
+            options: ['Arriba', 'Abajo', 'No se desafina'],
+            answer: 1,
+            explain:
+              'Hacia abajo, porque se acaba el aire y cae la presión. Guarda aire para el final, no lo gastes al principio.',
+          },
+          {
+            kind: 'quiz',
+            prompt: 'Si una canción es demasiado aguda para ti, lo correcto es…',
+            options: [
+              'Cambiarla de tono para que entre en tu rango',
+              'Forzar hasta que salga',
+              'Cantarla en falsete siempre',
+            ],
+            answer: 0,
+            explain:
+              'Transportarla. Los cantantes profesionales lo hacen constantemente; forzar solo te lesiona.',
+          },
+        ],
+      },
+      {
+        id: 'frase-1',
+        title: 'Frase larga',
+        kind: 'voz',
+        exercises: [
+          { kind: 'sequence', prompt: 'Primera frase completa, seis notas.', offsets: [0, 0, 7, 7, 9, 7] },
+        ],
+      },
+      {
+        id: 'frase-2',
+        title: 'La respuesta',
+        kind: 'voz',
+        exercises: [
+          { kind: 'sequence', prompt: 'La frase que contesta, bajando hasta la tónica.', offsets: [5, 5, 4, 4, 2, 2, 0] },
+        ],
+      },
+      {
+        id: 'cierre',
+        title: 'Cerrar bien',
+        kind: 'aliento',
+        exercises: [
+          { kind: 'sustain', prompt: 'La última nota de una canción: seis segundos, firme hasta el final.', offset: 0, seconds: 6 },
+        ],
+      },
+    ],
+  }
+)
 
 export const ALL_LEVELS = STAGES.flatMap((stage) => stage.levels.map((level) => ({ level, stage })))
 

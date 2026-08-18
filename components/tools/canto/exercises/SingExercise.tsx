@@ -116,15 +116,18 @@ export function MatchPitch({
   onDone: (correct: boolean) => void
 }) {
   const target = targetMidi(range, exercise.offset)
+  // A ciegas suena la tónica, no la nota buscada: el ejercicio deja de ser
+  // copiar una altura y pasa a ser encontrar el intervalo.
+  const reference = exercise.blind ? targetMidi(range, 0) : target
   const [hit, setHit] = useState(false)
   const played = useRef(false)
 
   useEffect(() => {
     if (played.current) return
     played.current = true
-    const id = window.setTimeout(() => playTone(midiToFreq(target), 2), 300)
+    const id = window.setTimeout(() => playTone(midiToFreq(reference), 2), 300)
     return () => window.clearTimeout(id)
-  }, [target])
+  }, [reference])
 
   const matching =
     !hit && mic.freq !== null && Math.abs(centsFromTarget(mic.freq, target)) <= TOLERANCE_CENTS
@@ -149,8 +152,16 @@ export function MatchPitch({
       <h2 className="text-xl sm:text-2xl font-bold text-gray-900 max-w-lg text-balance">
         {exercise.prompt}
       </h2>
+      {exercise.blind && (
+        <span className="mt-3 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-xs font-semibold uppercase tracking-wider">
+          A ciegas · solo oyes la nota de partida
+        </span>
+      )}
       <PitchMeter target={target} freq={listening ? mic.freq : null} hit={hit} />
-      <ReferenceButton midi={target} />
+      <ReferenceButton
+        midi={reference}
+        label={exercise.blind ? 'Oír la nota de partida' : 'Oír la nota'}
+      />
 
       {listening ? (
         <>
