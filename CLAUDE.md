@@ -34,3 +34,18 @@
 - @react-three/fiber for 3D, Pannellum for 360 photos
 - Deployed on Vercel with Cloudflare R2 for media storage
 - Geist Sans/Mono fonts
+
+## Code Graph (graphify)
+
+A graphify code graph lives in `graphify-out/` (gitignored, so it may be absent
+on a fresh clone — rebuild with `graphify update .`, no API cost).
+
+Prefer it over reading many files for **structural** questions: what depends on
+X, how two subsystems connect, where the hubs are, whether something is safe to
+delete. Use `graphify affected "X"`, `path "A" "B"`, `explain "X"`, `god-nodes`,
+or the graphify MCP tools. Stick to grep/git for exact-string and local
+questions — they're faster and never stale.
+
+**Check freshness first.** `graphify-out/GRAPH_REPORT.md` names the commit it was
+built from. If that doesn't match `git rev-parse HEAD`, re-run `graphify update .`
+before trusting it, or fall back to grep.
