@@ -6,7 +6,9 @@ import {
   BLOQUES_DEPA,
   VARIANTES,
   minimo,
+  videoUrl,
   type Bloque,
+  type Ejercicio,
 } from '@/lib/rutina-ejercicios';
 import type { Esfuerzo, Modo, Resumen, Sesion, Variante } from '@/lib/rutina';
 import { ITEMS_DEPA, proximoItem } from '@/lib/rutina-items';
@@ -339,12 +341,15 @@ export default function Rutina() {
               </div>
               <ul className="mt-3 space-y-1.5">
                 {minimo(datos.variante).map((e) => (
-                  <li key={e.nombre} className="flex justify-between text-sm">
-                    <span className="text-gray-800">
-                      {e.nombre}
-                      {e.nota && <span className="ml-1 text-gray-500">({e.nota})</span>}
+                  <li key={e.nombre} className="flex items-center justify-between gap-2 text-sm">
+                    <span className="flex min-w-0 items-center gap-1.5 text-gray-800">
+                      <span className="truncate">
+                        {e.nombre}
+                        {e.nota && <span className="ml-1 text-gray-500">({e.nota})</span>}
+                      </span>
+                      <Video e={e} />
                     </span>
-                    <span className="tabular-nums text-gray-600">{e.detalle}</span>
+                    <span className="shrink-0 tabular-nums text-gray-600">{e.detalle}</span>
                   </li>
                 ))}
               </ul>
@@ -511,28 +516,60 @@ export default function Rutina() {
   );
 }
 
+/** Link a la búsqueda del ejercicio en YouTube. */
+function Video({ e }: { e: Ejercicio }) {
+  const url = videoUrl(e);
+  if (!url) return null;
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={`Ver "${e.nombre}" en YouTube`}
+      aria-label={`Ver cómo se hace ${e.nombre} en YouTube`}
+      className="shrink-0 text-gray-400 transition hover:text-red-600"
+    >
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden>
+        <path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8zM10 15V9l5.2 3L10 15z" />
+      </svg>
+    </a>
+  );
+}
+
+/**
+ * La tarjeta ya no es un <button> completo: los links de video viven adentro,
+ * y un <a> dentro de un <button> es HTML inválido y además se pelea el clic.
+ * Solo el encabezado selecciona el bloque.
+ */
 function BloqueCard({ bloque, activo, onClick }: { bloque: Bloque; activo: boolean; onClick: () => void }) {
   return (
-    <button
-      onClick={onClick}
-      className={`rounded-xl border-2 p-3 text-left transition ${
+    <div
+      className={`rounded-xl border-2 transition ${
         activo ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
       }`}
     >
-      <div className="flex items-center justify-between">
+      <button
+        onClick={onClick}
+        aria-pressed={activo}
+        className="flex w-full items-center justify-between gap-2 rounded-t-xl p-3 text-left"
+      >
         <span className="flex items-center gap-2">
           <span className="text-lg">{bloque.emoji}</span>
           <span className="text-sm font-semibold text-gray-900">{bloque.nombre}</span>
         </span>
-        <span className="text-xs text-gray-500">{bloque.minutos} min</span>
-      </div>
-      <ul className="mt-2 space-y-0.5">
+        <span className="shrink-0 text-xs text-gray-500">{bloque.minutos} min</span>
+      </button>
+      <ul className="space-y-1 px-3 pb-3">
         {bloque.ejercicios.map((e) => (
-          <li key={e.nombre} className="text-xs text-gray-600">
-            {e.nombre} <span className="text-gray-400">· {e.detalle}</span>
+          <li key={e.nombre} className="flex items-center gap-1.5 text-xs text-gray-600">
+            <span className="min-w-0 truncate">
+              {e.nombre} <span className="text-gray-400">· {e.detalle}</span>
+            </span>
+            <Video e={e} />
           </li>
         ))}
       </ul>
-    </button>
+    </div>
   );
 }
