@@ -51,7 +51,7 @@ const categories: { label: string; tools: Tool[] }[] = [
       { name: 'The Puzzle', description: 'A mystery challenge for curious minds', href: '/tools/puzzle', icon: '🧩', color: 'from-emerald-500 to-teal-600' },
       { name: 'Aprende Guitarra', description: 'Level-based course with mic-verified chord practice', href: '/tools/guitarra', icon: '🎸', color: 'from-emerald-500 to-teal-600' },
       { name: 'Aprende a Cantar', description: 'Pitch training that transposes every level to your vocal range', href: '/tools/canto', icon: '🎤', color: 'from-emerald-500 to-teal-600' },
-      { name: 'Exercise Routine', description: 'Track your daily workout plan', href: '/tools/exercise-routine', icon: '💪', color: 'from-emerald-500 to-teal-600' },
+      { name: 'Mi Rutina', description: 'Rutina diaria con racha, niveles y modo depa o parque', href: '/tools/exercise-routine', icon: '💪', color: 'from-emerald-500 to-teal-600' },
       { name: 'Quehaceres del Depa', description: 'Chore tracker with email reminders', href: '/tools/quehaceres', icon: '🧹', color: 'from-emerald-500 to-teal-600' },
     ],
   },

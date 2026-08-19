@@ -153,7 +153,7 @@ export const TOOL_GROUPS: { label: string; accent: string; tools: { name: string
       { name: 'The Puzzle', icon: '🧩' },
       { name: 'Aprende Guitarra', icon: '🎸' },
       { name: 'Aprende a Cantar', icon: '🎤' },
-      { name: 'Exercise Routine', icon: '💪' },
+      { name: 'Mi Rutina', icon: '💪' },
       { name: 'Quehaceres del Depa', icon: '🧹' },
     ],
   },
