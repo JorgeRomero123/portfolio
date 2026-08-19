@@ -70,6 +70,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Los minutos deben ir de 1 a 600.' }, { status: 400 });
   }
 
+  const vueltas = Number.isFinite(Number(body.vueltas)) ? Math.trunc(Number(body.vueltas)) : null;
+  if (vueltas !== null && (vueltas < 1 || vueltas > 100)) {
+    return NextResponse.json({ error: 'Las vueltas deben ir de 1 a 100.' }, { status: 400 });
+  }
+  // Las vueltas son de la pista del parque; en el depa no significan nada.
+  const vueltasReales = modo === 'parque' ? vueltas : null;
+
   const hoy = hoyCDMX();
 
   // El estado de antes decide los bonus, así que se lee antes de insertar.
@@ -81,7 +88,13 @@ export async function POST(req: NextRequest) {
   const sesiones = (previas ?? []) as Sesion[];
   const antes = resumir(sesiones, hoy);
 
-  let xp = xpDeSesion({ modo, esfuerzo, bloques, barras: bloques.includes('barras') });
+  let xp = xpDeSesion({
+    modo,
+    esfuerzo,
+    bloques,
+    barras: bloques.includes('barras'),
+    vueltas: vueltasReales,
+  });
   const bonus: string[] = [];
 
   // Cerrar un múltiplo de 7 días de racha. Solo cuenta si hoy no estaba hecho:
@@ -111,6 +124,7 @@ export async function POST(req: NextRequest) {
     esfuerzo,
     bloques,
     minutos,
+    vueltas: vueltasReales,
     xp,
     notas: typeof body.notas === 'string' && body.notas.trim() ? body.notas.trim() : null,
   });

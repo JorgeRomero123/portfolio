@@ -10,6 +10,7 @@ create table if not exists rutina_bitacora (
   esfuerzo   text        not null check (esfuerzo in ('minimo', 'normal', 'energia')),
   bloques    text[]      not null default '{}',
   minutos    integer     check (minutos is null or minutos between 1 and 600),
+  vueltas    integer     check (vueltas is null or vueltas between 1 and 100),  -- 1 vuelta = 1 km
   xp         integer     not null default 0 check (xp >= 0),
   notas      text,
   created_at timestamptz not null default now()
@@ -17,6 +18,14 @@ create table if not exists rutina_bitacora (
 
 create index if not exists rutina_bitacora_fecha_idx
   on rutina_bitacora (fecha desc);
+
+-- Por si ya habías corrido este archivo antes de que existieran las vueltas.
+alter table rutina_bitacora add column if not exists vueltas integer;
+do $$ begin
+  alter table rutina_bitacora
+    add constraint rutina_bitacora_vueltas_check
+    check (vueltas is null or vueltas between 1 and 100);
+exception when duplicate_object then null; end $$;
 
 -- Ajustes de una sola fila: la variante de flexión con la que vas hoy.
 create table if not exists rutina_config (

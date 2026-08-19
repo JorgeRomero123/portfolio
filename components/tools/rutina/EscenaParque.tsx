@@ -7,9 +7,9 @@ import { motion } from 'framer-motion';
  * aparece un corredor con la primera salida y el sol se abre con la segunda.
  */
 export default function EscenaParque({
-  salidas, meta, barrasDesbloqueadas,
+  salidas, meta, barrasDesbloqueadas, km = 0,
 }: {
-  salidas: number; meta: number; barrasDesbloqueadas: boolean;
+  salidas: number; meta: number; barrasDesbloqueadas: boolean; km?: number;
 }) {
   const cumplida = salidas >= meta;
 
@@ -133,6 +133,7 @@ export default function EscenaParque({
             <span key={k} className={k < salidas ? 'text-emerald-600' : 'text-gray-300'}>●</span>
           ))}{' '}
           {salidas} de {meta}
+          {km > 0 && <span className="ml-2 font-medium text-gray-700">· {km} km</span>}
         </span>
         <motion.span
           key={cumplida ? 'ok' : 'pend'}

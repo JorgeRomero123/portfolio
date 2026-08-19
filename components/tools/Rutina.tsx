@@ -35,6 +35,7 @@ export default function Rutina() {
   const [esfuerzo, setEsfuerzo] = useState<Esfuerzo>('minimo');
   const [bloques, setBloques] = useState<string[]>([]);
   const [minutos, setMinutos] = useState('');
+  const [vueltas, setVueltas] = useState(0);
   const [guardando, setGuardando] = useState(false);
   const [guardado, setGuardado] = useState<Guardado | null>(null);
 
@@ -88,6 +89,7 @@ export default function Rutina() {
           esfuerzo: modo === 'parque' ? 'normal' : esfuerzo,
           bloques,
           minutos: minutos ? Number(minutos) : null,
+          vueltas: vueltas > 0 ? vueltas : null,
         }),
       });
       const json = await res.json();
@@ -96,6 +98,7 @@ export default function Rutina() {
       setGuardado({ ganado: json.ganado, bonus: json.bonus ?? [], subioDeNivel: json.subioDeNivel });
       setBloques([]);
       setMinutos('');
+      setVueltas(0);
       void cargar();
     } finally {
       setGuardando(false);
@@ -225,6 +228,11 @@ export default function Rutina() {
           <span className="text-gray-600">
             🌳 {datos.parqueEstaSemana} de {datos.metaParque} salidas
           </span>
+          {datos.kmTotales > 0 && (
+            <span className="text-gray-600">
+              🏃 {datos.kmEstaSemana} km esta semana · {datos.kmTotales} en total
+            </span>
+          )}
           {racha.hoyHecho && <span className="font-medium text-blue-700">✓ hoy ya cuenta</span>}
         </div>
 
@@ -267,7 +275,7 @@ export default function Rutina() {
           ]).map((m) => (
             <button
               key={m.id}
-              onClick={() => { setModo(m.id); setBloques([]); }}
+              onClick={() => { setModo(m.id); setBloques([]); setVueltas(0); }}
               className={`rounded-xl border-2 p-4 text-left transition ${
                 modo === m.id
                   ? 'border-blue-600 bg-blue-50'
@@ -290,6 +298,7 @@ export default function Rutina() {
               salidas={datos.parqueEstaSemana}
               meta={datos.metaParque}
               barrasDesbloqueadas={datos.barrasDesbloqueadas}
+              km={datos.kmEstaSemana + vueltas}
             />
           )}
         </div>
@@ -381,18 +390,50 @@ export default function Rutina() {
         )}
 
         {modo === 'parque' && (
-          <label className="mt-4 block text-sm text-gray-700">
-            Minutos <span className="text-gray-400">(opcional)</span>
-            <input
-              type="number"
-              min={1}
-              max={600}
-              value={minutos}
-              onChange={(e) => setMinutos(e.target.value)}
-              placeholder="30"
-              className="ml-2 w-24 rounded border border-gray-300 px-2 py-1"
-            />
-          </label>
+          <div className="mt-5 rounded-xl border border-gray-200 bg-white/70 p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900">Vueltas a la pista</h4>
+                <p className="text-xs text-gray-500">Cada vuelta es 1 km · +{5} XP</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setVueltas((v) => Math.max(0, v - 1))}
+                  disabled={vueltas === 0}
+                  aria-label="Quitar una vuelta"
+                  className="h-10 w-10 rounded-full border border-gray-300 text-xl leading-none text-gray-700 transition hover:border-gray-400 disabled:opacity-30"
+                >
+                  −
+                </button>
+                <div className="min-w-[3.5rem] text-center">
+                  <div className="text-2xl font-bold tabular-nums text-gray-900">{vueltas}</div>
+                  <div className="text-[11px] text-gray-500">{vueltas} km</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setVueltas((v) => Math.min(100, v + 1))}
+                  aria-label="Agregar una vuelta"
+                  className="h-10 w-10 rounded-full border border-gray-300 text-xl leading-none text-gray-700 transition hover:border-gray-400"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <label className="mt-4 block text-sm text-gray-700">
+              Minutos <span className="text-gray-400">(opcional)</span>
+              <input
+                type="number"
+                min={1}
+                max={600}
+                value={minutos}
+                onChange={(e) => setMinutos(e.target.value)}
+                placeholder="30"
+                className="ml-2 w-24 rounded border border-gray-300 px-2 py-1"
+              />
+            </label>
+          </div>
         )}
 
         <button
@@ -421,6 +462,7 @@ export default function Rutina() {
                   {s.bloques.length > 0 && (
                     <span className="text-gray-500">{s.bloques.join(' · ')}</span>
                   )}
+                  {s.vueltas ? <span className="text-gray-500">{s.vueltas} km</span> : null}
                   {s.minutos && <span className="text-gray-500">{s.minutos} min</span>}
                 </span>
                 <span className="flex items-center gap-3">

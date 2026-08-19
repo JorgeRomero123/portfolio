@@ -17,9 +17,13 @@ export type Sesion = {
   esfuerzo: Esfuerzo;
   bloques: string[];
   minutos: number | null;
+  vueltas: number | null;   // 1 vuelta = 1 km
   xp: number;
   notas: string | null;
 };
+
+/** La pista del parque mide un kilómetro por vuelta. */
+export const KM_POR_VUELTA = 1;
 
 // ---------------------------------------------------------------- XP
 
@@ -30,6 +34,7 @@ export const XP = {
   barras: 25,        // trabajo de barras, se desbloquea en el nivel 3
   racha7: 50,        // bonus al cerrar cada 7 días de racha
   metaParque: 60,    // bonus al llegar a 2 salidas en la semana
+  vuelta: 5,         // por cada vuelta a la pista (1 km)
 } as const;
 
 /** Umbrales acumulados. El hueco crece para que subir de nivel siga costando. */
@@ -186,9 +191,11 @@ export function xpDeSesion(input: {
   esfuerzo: Esfuerzo;
   bloques: string[];
   barras: boolean;
+  vueltas?: number | null;
 }): number {
   if (input.modo === 'parque') {
-    return XP.parque + (input.barras ? XP.barras : 0);
+    // Salir ya vale por sí solo; las vueltas suman encima, no reemplazan.
+    return XP.parque + (input.barras ? XP.barras : 0) + (input.vueltas ?? 0) * XP.vuelta;
   }
   return XP.minimo + input.bloques.length * XP.bloque;
 }
@@ -203,6 +210,8 @@ export type Resumen = {
   sesionesHoy: Sesion[];
   parqueEstaSemana: number;
   metaParque: number;
+  kmEstaSemana: number;
+  kmTotales: number;
   barrasDesbloqueadas: boolean;
   avanzadoDesbloqueado: boolean;
 };
@@ -223,6 +232,10 @@ export function resumir(sesiones: Sesion[], hoy: string): Resumen {
     sesionesHoy: sesiones.filter((s) => s.fecha === hoy),
     parqueEstaSemana: sesiones.filter((s) => s.modo === 'parque' && semanaDe(s.fecha) === semana).length,
     metaParque: META_PARQUE,
+    kmEstaSemana: sesiones
+      .filter((s) => semanaDe(s.fecha) === semana)
+      .reduce((n, s) => n + (s.vueltas ?? 0) * KM_POR_VUELTA, 0),
+    kmTotales: sesiones.reduce((n, s) => n + (s.vueltas ?? 0) * KM_POR_VUELTA, 0),
     barrasDesbloqueadas: nivel.nivel >= NIVEL_BARRAS,
     avanzadoDesbloqueado: nivel.nivel >= NIVEL_AVANZADO,
   };
