@@ -4,15 +4,33 @@ import { useEffect, useState } from 'react';
 import TourEmbed from '@/components/TourEmbed';
 import type { Tour } from '@/lib/types';
 
+type LoadState = 'loading' | 'ready' | 'error';
+
 export default function ToursPage() {
   const [tours, setTours] = useState<Tour[]>([]);
   const [selectedTour, setSelectedTour] = useState<Tour | null>(null);
+  const [state, setState] = useState<LoadState>('loading');
 
   useEffect(() => {
+    let active = true;
     fetch('/api/tours')
-      .then((res) => res.json())
-      .then((data) => setTours(data.tours))
-      .catch(() => setTours([]));
+      .then((res) => {
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (!active) return;
+        setTours(Array.isArray(data.tours) ? data.tours : []);
+        setState('ready');
+      })
+      .catch(() => {
+        if (!active) return;
+        setTours([]);
+        setState('error');
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
@@ -40,6 +58,30 @@ export default function ToursPage() {
           )}
           <TourEmbed src={selectedTour.iframeUrl} title={selectedTour.title} />
         </div>
+      ) : state === 'loading' ? (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8" aria-busy="true" aria-label="Loading tours">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="aspect-video bg-gray-200 animate-pulse" />
+              <div className="p-6">
+                <div className="h-5 w-2/3 rounded bg-gray-200 animate-pulse" />
+                <div className="mt-3 h-4 w-full rounded bg-gray-100 animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : state === 'error' ? (
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <p className="text-gray-900 font-semibold mb-1">We couldn&rsquo;t load the tours.</p>
+          <p className="text-gray-600">
+            Something went wrong on our side. Please refresh the page to try again.
+          </p>
+        </div>
+      ) : tours.length === 0 ? (
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <p className="text-gray-900 font-semibold mb-1">No tours published yet.</p>
+          <p className="text-gray-600">Check back soon — new virtual tours are on the way.</p>
+        </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {tours.map((tour) => (
@@ -57,8 +99,10 @@ export default function ToursPage() {
                   />
                 </div>
               ) : (
-                <div className="aspect-video bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                  <span className="text-6xl">🌐</span>
+                <div className="aspect-video bg-gray-100 border-b border-gray-200 flex items-center justify-center p-6">
+                  <span className="text-lg font-semibold text-gray-700 text-center text-balance">
+                    {tour.title}
+                  </span>
                 </div>
               )}
               <div className="p-6">
