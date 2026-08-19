@@ -24,8 +24,17 @@ import ProjectCard from './ProjectCard';
 import ToolWall from './ToolWall';
 import GalleryTile from './GalleryTile';
 import {
-  MONO, SANS, NAV_LINKS, TECH, STATS, TRUTHS, PROJECTS, TOOL_COUNT,
+  ACCENT, MONO, SANS, NAV_LINKS, TECH, STATS, TRUTHS, PROJECTS, TOOL_COUNT,
 } from './data';
+
+/**
+ * The two WebGL scenes are built for a dark canvas — both use additive
+ * blending, which adds light to darkness and renders as nothing on a light
+ * background. Disabled while the page is light. Flip to `true` to bring the
+ * particle hero and the 3D demo back; nothing else needs changing, though
+ * they will need re-colouring for a light ground first.
+ */
+const SHOW_WEBGL = false;
 
 type Hero = { url: string; title: string } | null;
 
@@ -58,17 +67,7 @@ export default function HomeExperience({
   const reduced = usePrefersReducedMotion();
   const { scrollTo } = useSmoothScroll(!reduced);
 
-  const { spurs, idleHint } = useEasterEggs({
-    onSpurs: () => {
-      heroHandle.current?.setPalette('spurs');
-      heroHandle.current?.burst();
-      worldHandle.current?.setPalette('spurs');
-    },
-    onSpursEnd: () => {
-      heroHandle.current?.setPalette('default');
-      worldHandle.current?.setPalette('default');
-    },
-  });
+  const { idleHint } = useEasterEggs();
 
   // ---- nav: hide going down, reveal coming back up ----
   const { scrollY } = useScroll();
@@ -90,6 +89,7 @@ export default function HomeExperience({
 
   // ---- WebGL ----
   useEffect(() => {
+    if (!SHOW_WEBGL) return;
     if (heroCanvasRef.current) {
       try {
         heroHandle.current = createHeroScene(heroCanvasRef.current, { reducedMotion: reduced });
@@ -193,24 +193,23 @@ export default function HomeExperience({
     return () => ctx.revert();
   }, [reduced]);
 
-  const accent = spurs ? '#ffffff' : '#ff6a3d';
+
 
   return (
     <div
       ref={rootRef}
       style={{
-        background: spurs ? '#0a0e1c' : '#0b0a09',
-        color: '#f6f0e9',
+        background: '#f7f9fc',
+        color: '#0b1b3a',
         fontFamily: SANS,
         // `clip` (not `hidden`) prevents horizontal overflow WITHOUT creating a
         // scroll container — which would otherwise break ScrollTrigger's pinning.
         overflowX: 'clip',
         position: 'relative',
-        transition: 'background 0.6s ease',
       }}
     >
       <style>{`
-        ::selection{background:${accent};color:#0b0a09;}
+        ::selection{background:${ACCENT};color:#f7f9fc;}
         @keyframes jrr-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
         @keyframes jrr-marquee2{from{transform:translateX(-50%)}to{transform:translateX(0)}}
         [data-reveal]{opacity:0;transform:translateY(28px);}
@@ -218,10 +217,10 @@ export default function HomeExperience({
           [data-reveal]{opacity:1!important;transform:none!important;}
           .jrr-marquee{animation:none!important;}
         }
-        a:focus-visible{outline:2px solid ${accent};outline-offset:4px;border-radius:4px;}
+        a:focus-visible{outline:2px solid ${ACCENT};outline-offset:4px;border-radius:4px;}
         .jrr-navlink:focus-visible::after{transform:scaleX(1);transform-origin:left;}
         .jrr-navlink{position:relative;}
-        .jrr-navlink::after{content:'';position:absolute;left:0;bottom:-5px;width:100%;height:1px;background:${accent};transform:scaleX(0);transform-origin:right;transition:transform .35s cubic-bezier(.2,.6,.2,1);}
+        .jrr-navlink::after{content:'';position:absolute;left:0;bottom:-5px;width:100%;height:1px;background:${ACCENT};transform:scaleX(0);transform-origin:right;transition:transform .35s cubic-bezier(.2,.6,.2,1);}
         .jrr-navlink:hover::after{transform:scaleX(1);transform-origin:left;}
         @media (max-width:860px){
           .jrr-navlinks{gap:18px!important;}
@@ -247,7 +246,7 @@ export default function HomeExperience({
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex',
           justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px',
           backdropFilter: 'blur(8px)',
-          background: 'linear-gradient(#0b0a09cc,#0b0a0900)',
+          background: 'linear-gradient(#f7f9fccc,#f7f9fc00)',
         }}
       >
         <a
@@ -259,14 +258,14 @@ export default function HomeExperience({
             whileHover={{ rotate: -8, scale: 1.08 }}
             transition={{ type: 'spring', stiffness: 380, damping: 14 }}
             style={{
-              width: 34, height: 34, border: `1.5px solid ${accent}`, color: accent, display: 'flex',
+              width: 34, height: 34, border: `1.5px solid ${ACCENT}`, color: ACCENT, display: 'flex',
               alignItems: 'center', justifyContent: 'center', fontFamily: MONO, fontWeight: 700,
               fontSize: 13, letterSpacing: '-0.04em', flex: '0 0 auto',
             }}
           >
             JR
           </motion.span>
-          <span className="jrr-brandtext" style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.12em', color: '#c0b6ac' }}>
+          <span className="jrr-brandtext" style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.12em', color: '#44557a' }}>
             jorge romero romanis
           </span>
         </a>
@@ -278,13 +277,13 @@ export default function HomeExperience({
               href={l.href}
               onClick={(e) => { e.preventDefault(); scrollTo(l.href); }}
               className={`jrr-navlink${l.label === 'live demo' ? ' jrr-hide-xs' : ''}`}
-              style={{ color: '#c0b6ac', textDecoration: 'none', whiteSpace: 'nowrap' }}
+              style={{ color: '#44557a', textDecoration: 'none', whiteSpace: 'nowrap' }}
             >
               {l.label}
             </a>
           ))}
-          <span className="jrr-available" style={{ display: 'flex', alignItems: 'center', gap: 7, color: '#8fb98a' }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7ed47a' }} />
+          <span className="jrr-available" style={{ display: 'flex', alignItems: 'center', gap: 7, color: '#047857' }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#059669' }} />
             available
           </span>
         </div>
@@ -292,13 +291,15 @@ export default function HomeExperience({
 
       {/* ===== HERO ===== */}
       <section id="top" style={{ position: 'relative', height: '100vh', minHeight: 680, overflow: 'hidden' }}>
-        <canvas ref={heroCanvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }} />
+        {SHOW_WEBGL && (
+          <canvas ref={heroCanvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }} />
+        )}
 
         <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', overflow: 'hidden' }}>
           <div className="jrr-marquee" style={{
             display: 'flex', width: 'max-content', animation: 'jrr-marquee 26s linear infinite',
             fontWeight: 700, fontSize: 'clamp(90px,13vw,190px)', letterSpacing: '-0.03em',
-            whiteSpace: 'nowrap', color: 'transparent', WebkitTextStroke: '1.3px rgba(255,255,255,0.08)',
+            whiteSpace: 'nowrap', color: 'transparent', WebkitTextStroke: '1.3px rgba(11,27,58,0.10)',
           }}>
             <span style={{ padding: '0 38px' }}>SOFTWARE&nbsp;×&nbsp;PHOTOGRAPHY&nbsp;×&nbsp;360°&nbsp;×&nbsp;</span>
             <span style={{ padding: '0 38px' }}>SOFTWARE&nbsp;×&nbsp;PHOTOGRAPHY&nbsp;×&nbsp;360°&nbsp;×&nbsp;</span>
@@ -312,7 +313,7 @@ export default function HomeExperience({
             flexDirection: 'column', justifyContent: 'center', padding: '0 clamp(24px,7vw,110px)',
           }}
         >
-          <div style={{ fontFamily: MONO, fontSize: 13, letterSpacing: '0.28em', textTransform: 'uppercase', color: accent, marginBottom: 22 }}>
+          <div style={{ fontFamily: MONO, fontSize: 13, letterSpacing: '0.28em', textTransform: 'uppercase', color: ACCENT, marginBottom: 22 }}>
             méxico · software engineer · builds too much
           </div>
 
@@ -320,11 +321,11 @@ export default function HomeExperience({
             Hi, I&rsquo;m Jorge.
           </h1>
 
-          <div style={{ display: 'block', color: '#9a8d80', fontWeight: 500, fontSize: 'clamp(27px,4.2vw,58px)', letterSpacing: '-0.02em', marginTop: 14, lineHeight: 1 }}>
+          <div style={{ display: 'block', color: '#64789b', fontWeight: 500, fontSize: 'clamp(27px,4.2vw,58px)', letterSpacing: '-0.02em', marginTop: 14, lineHeight: 1 }}>
             I build for millions, then go build something silly.
           </div>
 
-          <p style={{ fontSize: 'clamp(16px,1.5vw,20px)', lineHeight: 1.55, color: '#c0b6ac', marginTop: 26, maxWidth: 560 }}>
+          <p style={{ fontSize: 'clamp(16px,1.5vw,20px)', lineHeight: 1.55, color: '#44557a', marginTop: 26, maxWidth: 560 }}>
             By day I ship production software to hundreds of thousands of people. By night I
             build browser toys nobody asked for — a singing coach, a chore tracker that emails
             my roommate, a 360° tour engine.
@@ -337,37 +338,34 @@ export default function HomeExperience({
               whileHover={{ scale: 1.045 }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 420, damping: 17 }}
-              style={{ textDecoration: 'none', fontSize: 15, fontWeight: 600, color: '#0b0a09', background: accent, borderRadius: 12, padding: '15px 28px', display: 'inline-block' }}
+              style={{ textDecoration: 'none', fontSize: 15, fontWeight: 600, color: '#f7f9fc', background: ACCENT, borderRadius: 12, padding: '15px 28px', display: 'inline-block' }}
             >
               See my work →
             </motion.a>
             <motion.a
-              href="#demo"
-              onClick={(e) => { e.preventDefault(); scrollTo('#demo'); }}
-              whileHover={{ scale: 1.045, borderColor: 'rgba(255,255,255,0.45)' }}
+              href="#tools"
+              onClick={(e) => { e.preventDefault(); scrollTo('#tools'); }}
+              whileHover={{ scale: 1.045, borderColor: 'rgba(11,27,58,0.35)' }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 420, damping: 17 }}
-              style={{ textDecoration: 'none', fontSize: 15, fontWeight: 600, color: '#f6f0e9', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, padding: '15px 28px', display: 'inline-block' }}
+              style={{ textDecoration: 'none', fontSize: 15, fontWeight: 600, color: '#0b1b3a', background: 'transparent', border: '1px solid rgba(11,27,58,0.16)', borderRadius: 12, padding: '15px 28px', display: 'inline-block' }}
             >
-              Step into a 3D scene
+              Browse the 25 tools
             </motion.a>
           </div>
         </motion.div>
 
-        <div className="jrr-hint-drag" style={{ position: 'absolute', bottom: 30, right: 40, fontFamily: MONO, fontSize: 11, letterSpacing: '0.08em', color: '#7a6e63' }}>
-          the cloud follows your cursor ↺
-        </div>
       </section>
 
       {/* ===== TECH MARQUEE ===== */}
-      <div style={{ borderTop: '1px solid #211e1b', borderBottom: '1px solid #211e1b', padding: '20px 0', overflow: 'hidden', background: '#0d0c0b' }}>
-        <div className="jrr-marquee" style={{ display: 'flex', width: 'max-content', animation: 'jrr-marquee2 30s linear infinite', fontFamily: MONO, fontSize: 14, letterSpacing: '0.1em', color: '#6b635a' }}>
+      <div style={{ borderTop: '1px solid #e4eaf3', borderBottom: '1px solid #e4eaf3', padding: '20px 0', overflow: 'hidden', background: '#ffffff' }}>
+        <div className="jrr-marquee" style={{ display: 'flex', width: 'max-content', animation: 'jrr-marquee2 30s linear infinite', fontFamily: MONO, fontSize: 14, letterSpacing: '0.1em', color: '#9aa8c2' }}>
           {[0, 1].map((dup) => (
             <span key={dup} style={{ display: 'flex', gap: 46, paddingRight: 46 }}>
               {TECH.map((tech) => (
                 <span key={tech} style={{ display: 'contents' }}>
                   <span>{tech}</span>
-                  <span style={{ color: accent }}>/</span>
+                  <span style={{ color: ACCENT }}>/</span>
                 </span>
               ))}
             </span>
@@ -380,10 +378,10 @@ export default function HomeExperience({
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(200px,100%),1fr))', gap: 34 }}>
           {STATS.map((s) => (
             <div key={s.label} data-reveal>
-              <div style={{ fontFamily: MONO, fontSize: 38, fontWeight: 700, color: '#ffd089' }}>
+              <div style={{ fontFamily: MONO, fontSize: 38, fontWeight: 700, color: '#0070f3' }}>
                 <Counter to={s.value} suffix={s.suffix} />
               </div>
-              <div style={{ fontSize: 14, color: '#9a8d80', marginTop: 6, lineHeight: 1.5 }}>{s.label}</div>
+              <div style={{ fontSize: 14, color: '#64789b', marginTop: 6, lineHeight: 1.5 }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -392,18 +390,18 @@ export default function HomeExperience({
       {/* ===== TRUTHS — the stuff a résumé leaves out ===== */}
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '0 clamp(24px,7vw,40px) clamp(80px,12vh,140px)' }}>
         <div data-reveal style={{ display: 'flex', alignItems: 'baseline', gap: 18, marginBottom: 34, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: MONO, fontSize: 13, color: accent, letterSpacing: '0.1em' }}>01</span>
+          <span style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em' }}>01</span>
           <h2 style={{ fontSize: 'clamp(30px,4.4vw,52px)', fontWeight: 700, letterSpacing: '-0.03em' }}>
             The stuff a résumé leaves out
           </h2>
         </div>
 
-        <div style={{ display: 'grid', gap: 0, borderTop: '1px solid #211e1b' }}>
+        <div style={{ display: 'grid', gap: 0, borderTop: '1px solid #e4eaf3' }}>
           {TRUTHS.map((t) => (
             <motion.div
               key={t.k}
               data-reveal
-              whileHover={{ backgroundColor: '#111010', paddingLeft: 14 }}
+              whileHover={{ backgroundColor: '#eff4fd', paddingLeft: 14 }}
               transition={{ duration: 0.28 }}
               style={{
                 display: 'grid',
@@ -411,13 +409,13 @@ export default function HomeExperience({
                 gap: 20,
                 alignItems: 'baseline',
                 padding: '22px 0',
-                borderBottom: '1px solid #211e1b',
+                borderBottom: '1px solid #e4eaf3',
               }}
             >
-              <span style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#6b635a' }}>
+              <span style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9aa8c2' }}>
                 {t.k}
               </span>
-              <span style={{ fontSize: 'clamp(16px,1.7vw,21px)', lineHeight: 1.5, color: '#c8bfb5' }}>
+              <span style={{ fontSize: 'clamp(16px,1.7vw,21px)', lineHeight: 1.5, color: '#3d4f73' }}>
                 {t.v}
               </span>
             </motion.div>
@@ -428,9 +426,9 @@ export default function HomeExperience({
       {/* ===== SELECTED WORK ===== */}
       <section id="work" style={{ maxWidth: 1180, margin: '0 auto', padding: '0 clamp(24px,7vw,40px) clamp(60px,10vh,120px)' }}>
         <div data-reveal style={{ display: 'flex', alignItems: 'baseline', gap: 18, marginBottom: 48, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: MONO, fontSize: 13, color: accent, letterSpacing: '0.1em' }}>02</span>
+          <span style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em' }}>02</span>
           <h2 style={{ fontSize: 'clamp(34px,5vw,60px)', fontWeight: 700, letterSpacing: '-0.03em' }}>Things I shipped</h2>
-          <span style={{ fontFamily: MONO, fontSize: 13, color: '#7a6e63', letterSpacing: '0.04em', marginLeft: 'auto' }}>2 companies · 2 solo</span>
+          <span style={{ fontFamily: MONO, fontSize: 13, color: '#8494b0', letterSpacing: '0.04em', marginLeft: 'auto' }}>2 companies · 2 solo</span>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(330px,100%),1fr))', gap: 24 }}>
@@ -443,12 +441,12 @@ export default function HomeExperience({
       {/* ===== THE PILE — 25 tools ===== */}
       <section id="tools" style={{ maxWidth: 1180, margin: '0 auto', padding: 'clamp(40px,8vh,90px) clamp(24px,7vw,40px) clamp(80px,12vh,140px)' }}>
         <div data-reveal style={{ display: 'flex', alignItems: 'baseline', gap: 18, marginBottom: 20, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: MONO, fontSize: 13, color: accent, letterSpacing: '0.1em' }}>03</span>
+          <span style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em' }}>03</span>
           <h2 style={{ fontSize: 'clamp(34px,5vw,60px)', fontWeight: 700, letterSpacing: '-0.03em' }}>The pile</h2>
-          <span style={{ fontFamily: MONO, fontSize: 13, color: '#7a6e63', letterSpacing: '0.04em', marginLeft: 'auto' }}>{TOOL_COUNT} working tools</span>
+          <span style={{ fontFamily: MONO, fontSize: 13, color: '#8494b0', letterSpacing: '0.04em', marginLeft: 'auto' }}>{TOOL_COUNT} working tools</span>
         </div>
 
-        <p data-reveal style={{ fontSize: 'clamp(16px,1.6vw,19px)', lineHeight: 1.6, color: '#9a8d80', maxWidth: '58ch', marginBottom: 50 }}>
+        <p data-reveal style={{ fontSize: 'clamp(16px,1.6vw,19px)', lineHeight: 1.6, color: '#64789b', maxWidth: '58ch', marginBottom: 50 }}>
           Every one of these is a real route on this site, built because I personally needed it
           and it was faster to write than to find. Some are genuinely useful. One tracks whose
           turn it is to clean the apartment.
@@ -462,7 +460,7 @@ export default function HomeExperience({
         ref={exploreRef}
         id="explore"
         style={{
-          position: 'relative', background: '#0d0c0b', borderTop: '1px solid #211e1b',
+          position: 'relative', background: '#ffffff', borderTop: '1px solid #e4eaf3',
           display: 'flex', flexDirection: 'column', justifyContent: 'center',
           // With motion reduced the GSAP pin never runs, which would strand the
           // track inside a clipped 100vh box and make tiles 3-4 unreachable.
@@ -474,28 +472,28 @@ export default function HomeExperience({
         }}
       >
         <div style={{ padding: '0 clamp(24px,7vw,40px)', marginBottom: 32, display: 'flex', alignItems: 'baseline', gap: 18, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: MONO, fontSize: 13, color: accent, letterSpacing: '0.1em' }}>04</span>
+          <span style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em' }}>04</span>
           <h2 style={{ fontSize: 'clamp(30px,4.5vw,54px)', fontWeight: 700, letterSpacing: '-0.03em' }}>Other things I make</h2>
-          <span style={{ fontFamily: MONO, fontSize: 12, color: '#7a6e63', marginLeft: 'auto' }}>keep scrolling →</span>
+          <span style={{ fontFamily: MONO, fontSize: 12, color: '#8494b0', marginLeft: 'auto' }}>keep scrolling →</span>
         </div>
 
         <div ref={trackRef} style={{ display: 'flex', gap: 26, padding: '0 clamp(24px,7vw,40px)', willChange: 'transform' }}>
           <GalleryTile
             href="/gallery" title="Photography" index="01 / 04"
             copy="Light, landscape, and the shots I keep coming back to."
-            width="min(64vw,560px)" gradient="radial-gradient(120% 120% at 20% 15%,#2a1c14,#0c0b0a)" icon="📷"
+            width="min(64vw,560px)" gradient="radial-gradient(120% 120% at 20% 15%,#dfe8f5,#e6edf7)" icon="📷"
             image={photographyHero?.url} imageAlt={photographyHero?.title}
           />
 
           <GalleryTile
             href="/gallery360" title="360° Tours" index="02 / 04"
             copy="Walkthroughs I shoot and build for real clients."
-            width="min(64vw,560px)" gradient="radial-gradient(120% 120% at 75% 25%,#161a2e,#0c0b0a)" icon="🌐"
+            width="min(64vw,560px)" gradient="radial-gradient(120% 120% at 75% 25%,#dde7f6,#e6edf7)" icon="🌐"
             image={panoramaHero?.url} imageAlt={panoramaHero?.title}
           />
 
           <div style={{ flex: '0 0 auto', width: 'min(70vw,640px)' }}>
-            <div style={{ width: '100%', height: '54vh', maxHeight: 460, borderRadius: 16, overflow: 'hidden', border: '1px solid #2a2622', background: '#000' }}>
+            <div style={{ width: '100%', height: '54vh', maxHeight: 460, borderRadius: 16, overflow: 'hidden', border: '1px solid #d3dcea', background: '#000' }}>
               <iframe
                 src="https://www.youtube.com/embed/mLDi3wrbtpc?si=NFQJJMPjjCzVupzO"
                 title="Aerial videography"
@@ -506,61 +504,63 @@ export default function HomeExperience({
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 18 }}>
               <h3 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em' }}>Aerial videography</h3>
-              <span style={{ fontFamily: MONO, fontSize: 12, color: '#7a6e63' }}>03 / 04</span>
+              <span style={{ fontFamily: MONO, fontSize: 12, color: '#8494b0' }}>03 / 04</span>
             </div>
-            <p style={{ fontSize: 14, color: '#9a8d80', lineHeight: 1.55, marginTop: 6, maxWidth: '46ch' }}>
+            <p style={{ fontSize: 14, color: '#64789b', lineHeight: 1.55, marginTop: 6, maxWidth: '46ch' }}>
               I fly the drone badly and edit the footage well. This is the edit.
             </p>
           </div>
 
           <Link href="/tools" style={{ flex: '0 0 auto', width: 'min(64vw,560px)', textDecoration: 'none', color: 'inherit' }}>
-            <div style={{ width: '100%', height: '54vh', maxHeight: 460, borderRadius: 16, overflow: 'hidden', border: '1px solid #2a2622', background: 'radial-gradient(120% 120% at 20% 15%,#1a130f,#0c0b0a)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ fontFamily: MONO, fontSize: 13, color: accent, letterSpacing: '0.1em', textAlign: 'center', lineHeight: 2 }}>
+            <div style={{ width: '100%', height: '54vh', maxHeight: 460, borderRadius: 16, overflow: 'hidden', border: '1px solid #d3dcea', background: 'radial-gradient(120% 120% at 20% 15%,#e3ebf7,#e6edf7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em', textAlign: 'center', lineHeight: 2 }}>
                 &lt;/&gt;<br />
-                <span style={{ color: '#9a8d80' }}>{TOOL_COUNT} interactive experiments</span>
+                <span style={{ color: '#64789b' }}>{TOOL_COUNT} interactive experiments</span>
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 18 }}>
               <h3 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em' }}>Interactive tools</h3>
-              <span style={{ fontFamily: MONO, fontSize: 12, color: '#7a6e63' }}>04 / 04</span>
+              <span style={{ fontFamily: MONO, fontSize: 12, color: '#8494b0' }}>04 / 04</span>
             </div>
-            <p style={{ fontSize: 14, color: '#9a8d80', lineHeight: 1.55, marginTop: 6, maxWidth: '46ch' }}>
+            <p style={{ fontSize: 14, color: '#64789b', lineHeight: 1.55, marginTop: 6, maxWidth: '46ch' }}>
               Generative toys, converters, and a few things I needed exactly once.
             </p>
           </Link>
         </div>
 
         <div style={{ padding: '0 clamp(24px,7vw,40px)', marginTop: 34 }}>
-          <div style={{ height: 2, background: '#211e1b', borderRadius: 2, overflow: 'hidden', maxWidth: 340 }}>
-            <div ref={barRef} style={{ height: '100%', width: '8%', background: accent, borderRadius: 2 }} />
+          <div style={{ height: 2, background: '#e4eaf3', borderRadius: 2, overflow: 'hidden', maxWidth: 340 }}>
+            <div ref={barRef} style={{ height: '100%', width: '8%', background: ACCENT, borderRadius: 2 }} />
           </div>
         </div>
       </section>
 
-      {/* ===== LIVE 3D DEMO ===== */}
-      <section id="demo" style={{ position: 'relative', height: '100vh', minHeight: 600, overflow: 'hidden', borderTop: '1px solid #211e1b' }}>
-        <canvas ref={worldCanvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', cursor: 'grab' }} />
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 'clamp(90px,12vh,120px) clamp(24px,7vw,40px) 40px' }}>
-          <div style={{ maxWidth: 560 }}>
-            <h2 style={{ fontSize: 'clamp(32px,5vw,58px)', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1 }}>Step inside a 3D scene.</h2>
-            <p style={{ fontSize: 16, lineHeight: 1.6, color: '#c0b6ac', marginTop: 18, maxWidth: 460 }}>
-              No video, no screenshot — a real-time WebGL world rendered on your machine. Drag
-              to look around, the way a 360° tour feels. Nobody asked for this one either.
-            </p>
+      {/* ===== LIVE 3D DEMO — disabled while the page is light (see SHOW_WEBGL) ===== */}
+      {SHOW_WEBGL && (
+        <section id="demo" style={{ position: 'relative', height: '100vh', minHeight: 600, overflow: 'hidden', borderTop: '1px solid #e4eaf3' }}>
+          <canvas ref={worldCanvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', cursor: 'grab' }} />
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 'clamp(90px,12vh,120px) clamp(24px,7vw,40px) 40px' }}>
+            <div style={{ maxWidth: 560 }}>
+              <h2 style={{ fontSize: 'clamp(32px,5vw,58px)', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1 }}>Step inside a 3D scene.</h2>
+              <p style={{ fontSize: 16, lineHeight: 1.6, color: '#44557a', marginTop: 18, maxWidth: 460 }}>
+                No video, no screenshot — a real-time WebGL world rendered on your machine. Drag
+                to look around, the way a 360° tour feels. Nobody asked for this one either.
+              </p>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontFamily: MONO, fontSize: 11, color: '#6b7c9c', letterSpacing: '0.08em' }}>
+              <span>three.js · custom GLSL · renders only while on screen</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>drag to look around <span style={{ fontSize: 15 }}>↺</span></span>
+            </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontFamily: MONO, fontSize: 11, color: '#8a7e72', letterSpacing: '0.08em' }}>
-            <span>three.js · custom GLSL · renders only while on screen</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>drag to look around <span style={{ fontSize: 15 }}>↺</span></span>
-          </div>
-        </div>
-        <div style={{ position: 'absolute', left: '50%', top: '50%', width: 22, height: 22, margin: '-11px 0 0 -11px', pointerEvents: 'none', border: '1px solid rgba(255,255,255,0.25)', borderRadius: '50%' }} />
-      </section>
+          <div style={{ position: 'absolute', left: '50%', top: '50%', width: 22, height: 22, margin: '-11px 0 0 -11px', pointerEvents: 'none', border: '1px solid rgba(11,27,58,0.20)', borderRadius: '50%' }} />
+        </section>
+      )}
 
       {/* ===== CONTACT ===== */}
       <section id="contact" style={{ maxWidth: 1180, margin: '0 auto', padding: 'clamp(90px,16vh,180px) clamp(24px,7vw,40px) 70px' }}>
-        <div data-reveal style={{ fontFamily: MONO, fontSize: 13, color: accent, letterSpacing: '0.1em', marginBottom: 24 }}>05 · let&rsquo;s talk</div>
+        <div data-reveal style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em', marginBottom: 24 }}>05 · let&rsquo;s talk</div>
         <h2 data-reveal style={{ fontSize: 'clamp(44px,8vw,104px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 0.95 }}>
-          Let&rsquo;s build<br />something <span style={{ color: accent, fontStyle: 'italic' }}>you&rsquo;d actually use.</span>
+          Let&rsquo;s build<br />something <span style={{ color: ACCENT, fontStyle: 'italic' }}>you&rsquo;d actually use.</span>
         </h2>
 
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 48 }}>
@@ -569,18 +569,18 @@ export default function HomeExperience({
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 420, damping: 17 }}
-            style={{ textDecoration: 'none', fontSize: 16, fontWeight: 600, color: '#0b0a09', background: accent, borderRadius: 14, padding: '18px 34px', display: 'inline-block' }}
+            style={{ textDecoration: 'none', fontSize: 16, fontWeight: 600, color: '#f7f9fc', background: ACCENT, borderRadius: 14, padding: '18px 34px', display: 'inline-block' }}
           >
             jorgeromanis@yahoo.com.mx
           </motion.a>
           <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} transition={{ type: 'spring', stiffness: 420, damping: 17 }} style={{ display: 'inline-block' }}>
-            <Link href="/about" style={{ textDecoration: 'none', fontSize: 16, fontWeight: 600, color: '#f6f0e9', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 14, padding: '18px 34px', display: 'inline-block' }}>
+            <Link href="/about" style={{ textDecoration: 'none', fontSize: 16, fontWeight: 600, color: '#0b1b3a', border: '1px solid rgba(11,27,58,0.16)', borderRadius: 14, padding: '18px 34px', display: 'inline-block' }}>
               More about me →
             </Link>
           </motion.div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginTop: 'clamp(70px,12vh,130px)', paddingTop: 28, borderTop: '1px solid #211e1b', fontFamily: MONO, fontSize: 12, color: '#6b635a', letterSpacing: '0.06em' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginTop: 'clamp(70px,12vh,130px)', paddingTop: 28, borderTop: '1px solid #e4eaf3', fontFamily: MONO, fontSize: 12, color: '#9aa8c2', letterSpacing: '0.06em' }}>
           <span>© 2026 Jorge Romero Romanis</span>
           <span>built in méxico · {TOOL_COUNT} tools · COYS</span>
         </div>
@@ -600,8 +600,8 @@ export default function HomeExperience({
             }}
           >
             <span style={{
-              fontFamily: MONO, fontSize: 12, letterSpacing: '0.06em', color: '#c0b6ac',
-              background: 'rgba(18,17,16,0.92)', border: '1px solid #2a2622',
+              fontFamily: MONO, fontSize: 12, letterSpacing: '0.06em', color: '#44557a',
+              background: 'rgba(255,255,255,0.95)', border: '1px solid #d3dcea',
               borderRadius: 999, padding: '11px 20px', backdropFilter: 'blur(10px)',
               whiteSpace: 'nowrap',
             }}>
@@ -611,36 +611,6 @@ export default function HomeExperience({
         )}
       </AnimatePresence>
 
-      {/* ===== COYS ===== */}
-      <AnimatePresence>
-        {spurs && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.94 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-            style={{
-              // Centred with flex rather than a translate pair: Framer owns the
-              // transform while animating `scale`, and a hard-coded translate in
-              // `style` fights it — the element freezes at its initial values.
-              position: 'fixed', inset: 0, zIndex: 70, pointerEvents: 'none',
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-              // A scrim turns this from text fighting the hero copy into a
-              // deliberate takeover moment.
-              background: 'rgba(10,14,28,0.78)',
-              backdropFilter: 'blur(4px)',
-            }}
-          >
-            <div style={{ fontSize: 'clamp(54px,11vw,150px)', fontWeight: 700, letterSpacing: '-0.05em', color: '#fff', lineHeight: 0.9, textShadow: '0 6px 60px rgba(0,0,0,0.75)' }}>
-              COYS
-            </div>
-            <div style={{ fontFamily: MONO, fontSize: 13, letterSpacing: '0.22em', color: '#c8d1e8', marginTop: 14, textTransform: 'uppercase' }}>
-              come on you spurs
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

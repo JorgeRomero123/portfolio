@@ -45,10 +45,10 @@ export default async function RootLayout({
   const bareLayout = isAdminRoute || isHome;
 
   return (
-    <html lang="en" className={isHome ? 'bg-[#0b0a09]' : 'bg-gray-50'}>
+    <html lang="en" className={isHome ? 'bg-[#f7f9fc]' : 'bg-gray-50'}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${jetBrainsMono.variable} antialiased ${
-          isHome ? 'bg-[#0b0a09] text-[#f6f0e9]' : 'bg-gray-50 text-gray-900'
+          isHome ? 'bg-[#f7f9fc] text-[#0b1b3a]' : 'bg-gray-50 text-gray-900'
         }`}
       >
         {!bareLayout && <Navigation />}

@@ -26,7 +26,7 @@ export default function GalleryTile({
         transition={{ type: 'spring', stiffness: 260, damping: 24 }}
         style={{
           width: '100%', height: '54vh', maxHeight: 460, borderRadius: 16,
-          overflow: 'hidden', border: '1px solid #2a2622', background: gradient,
+          overflow: 'hidden', border: '1px solid #d3dcea', background: gradient,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
       >
@@ -46,9 +46,9 @@ export default function GalleryTile({
       </motion.div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 18 }}>
         <h3 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em' }}>{title}</h3>
-        <span style={{ fontFamily: MONO, fontSize: 12, color: '#7a6e63' }}>{index}</span>
+        <span style={{ fontFamily: MONO, fontSize: 12, color: '#8494b0' }}>{index}</span>
       </div>
-      <p style={{ fontSize: 14, color: '#9a8d80', lineHeight: 1.55, marginTop: 6, maxWidth: '46ch' }}>{copy}</p>
+      <p style={{ fontSize: 14, color: '#64789b', lineHeight: 1.55, marginTop: 6, maxWidth: '46ch' }}>{copy}</p>
     </Link>
   );
 }

@@ -20,8 +20,8 @@ export default function ToolWall() {
           }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: group.accent }} />
             {group.label}
-            <span style={{ flex: 1, height: 1, background: '#211e1b' }} />
-            <span style={{ color: '#6b635a' }}>{group.tools.length}</span>
+            <span style={{ flex: 1, height: 1, background: '#e4eaf3' }} />
+            <span style={{ color: '#9aa8c2' }}>{group.tools.length}</span>
           </div>
 
           <motion.div
@@ -45,15 +45,15 @@ export default function ToolWall() {
                   hidden: { opacity: 0, y: 16, scale: 0.97 },
                   show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
                 }}
-                whileHover={{ y: -4, backgroundColor: '#191614', borderColor: 'rgba(255,106,61,0.4)' }}
+                whileHover={{ y: -4, backgroundColor: '#eff4fd', borderColor: 'rgba(0,112,243,0.45)' }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 10,
-                  background: '#121110', border: '1px solid #232020',
+                  background: '#ffffff', border: '1px solid #e4eaf3',
                   borderRadius: 12, padding: '13px 14px',
                 }}
               >
                 <span style={{ fontSize: 17, lineHeight: 1 }} aria-hidden="true">{tool.icon}</span>
-                <span style={{ fontSize: 13.5, color: '#c0b6ac', lineHeight: 1.3 }}>{tool.name}</span>
+                <span style={{ fontSize: 13.5, color: '#44557a', lineHeight: 1.3 }}>{tool.name}</span>
               </motion.div>
             ))}
           </motion.div>
@@ -70,8 +70,8 @@ export default function ToolWall() {
           href="/tools"
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none',
-            fontFamily: MONO, fontSize: 13, letterSpacing: '0.06em', color: '#ff6a3d',
-            border: '1px solid #4a2c20', borderRadius: 12, padding: '15px 24px',
+            fontFamily: MONO, fontSize: 13, letterSpacing: '0.06em', color: '#0070f3',
+            border: '1px solid #bcd8fb', borderRadius: 12, padding: '15px 24px',
           }}
         >
           open all {TOOL_COUNT} tools →

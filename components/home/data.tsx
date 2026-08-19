@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
 
+/** The single accent. Change it here and the whole page follows. */
+export const ACCENT = '#0070f3';
+
 export const MONO = 'var(--font-jetbrains-mono), monospace';
 export const SANS = 'var(--font-space-grotesk), sans-serif';
 
@@ -7,7 +10,6 @@ export const NAV_LINKS = [
   { href: '#work', label: 'work' },
   { href: '#tools', label: 'the pile' },
   { href: '#explore', label: 'explore' },
-  { href: '#demo', label: 'live demo' },
   { href: '#contact', label: 'contact' },
 ];
 
@@ -44,14 +46,14 @@ export type Project = {
   cardBorder?: string;
 };
 
-const hi = (s: string) => <b style={{ color: '#e8e2da', fontWeight: 600 }}>{s}</b>;
+const hi = (s: string) => <b style={{ color: '#0b1b3a', fontWeight: 600 }}>{s}</b>;
 
 export const PROJECTS: Project[] = [
   {
     href: 'https://fastlane.paypal.com/',
     tag: 'PayPal · lead',
-    tagColor: '#8da0ff',
-    tagBorder: '#2c3358',
+    tagColor: '#5b7fc7',
+    tagBorder: '#c9d8f0',
     title: 'Fastlane',
     body: (
       <>
@@ -65,8 +67,8 @@ export const PROJECTS: Project[] = [
   {
     href: 'https://www.bing.com/images?FORM=Z9LH',
     tag: 'Microsoft',
-    tagColor: '#8da0ff',
-    tagBorder: '#2c3358',
+    tagColor: '#5b7fc7',
+    tagBorder: '#c9d8f0',
     title: 'Bing Image\nInspiration Feed',
     body: (
       <>
@@ -80,8 +82,8 @@ export const PROJECTS: Project[] = [
   {
     href: 'https://myalbumlink.com',
     tag: 'solo · SaaS',
-    tagColor: '#ff6a3d',
-    tagBorder: '#4a2c20',
+    tagColor: '#0070f3',
+    tagBorder: '#bcd8fb',
     title: 'MyAlbumLink',
     body: (
       <>
@@ -95,8 +97,8 @@ export const PROJECTS: Project[] = [
   {
     href: 'https://www.labwiselink.com',
     tag: 'solo · B2B',
-    tagColor: '#ff6a3d',
-    tagBorder: '#4a2c20',
+    tagColor: '#0070f3',
+    tagBorder: '#bcd8fb',
     title: 'LabWiseLink',
     body: (
       <>
@@ -114,7 +116,7 @@ export const PROJECTS: Project[] = [
 export const TOOL_GROUPS: { label: string; accent: string; tools: { name: string; icon: string }[] }[] = [
   {
     label: 'business & utility',
-    accent: '#8da0ff',
+    accent: '#0070f3',
     tools: [
       { name: 'CV Tailor', icon: '📄' },
       { name: 'CFDI XML Grouper', icon: '🗂️' },
@@ -128,7 +130,7 @@ export const TOOL_GROUPS: { label: string; accent: string; tools: { name: string
   },
   {
     label: 'image & media',
-    accent: '#ffd089',
+    accent: '#0891b2',
     tools: [
       { name: 'Background Remover', icon: '✂️' },
       { name: 'Photo Editor', icon: '🎨' },
@@ -143,7 +145,7 @@ export const TOOL_GROUPS: { label: string; accent: string; tools: { name: string
   },
   {
     label: 'interactive & fun',
-    accent: '#7ed47a',
+    accent: '#059669',
     tools: [
       { name: '3D Model Viewer', icon: '🧊' },
       { name: 'Paint by Numbers', icon: '🖌️' },

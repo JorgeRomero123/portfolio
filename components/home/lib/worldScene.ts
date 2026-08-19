@@ -5,7 +5,6 @@ import * as THREE from 'three';
  * feeling as the 360° tours, but generated rather than captured.
  */
 export type WorldHandle = {
-  setPalette: (mode: 'default' | 'spurs') => void;
   resize: () => void;
   dispose: () => void;
 };
@@ -52,8 +51,7 @@ export function createWorldScene(
   // ---- floating solids ----
   const shapes: THREE.Mesh[] = [];
   const materials: Array<THREE.MeshBasicMaterial | THREE.MeshStandardMaterial> = [];
-  const DEFAULT_COLORS = [0xff6a3d, 0xffd089, 0x6f7bff, 0xff6a3d, 0xe85d75];
-  const SPURS_COLORS   = [0xffffff, 0xc8d1e8, 0x132257, 0xffffff, 0x1f3272];
+  const COLORS = [0xff6a3d, 0xffd089, 0x6f7bff, 0xff6a3d, 0xe85d75];
 
   const geoms = [
     new THREE.IcosahedronGeometry(1, 0),
@@ -65,7 +63,7 @@ export function createWorldScene(
   for (let i = 0; i < 32; i++) {
     const g = geoms[i % geoms.length];
     const wire = Math.random() > 0.45;
-    const c = DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+    const c = COLORS[i % COLORS.length];
     const m = wire
       ? new THREE.MeshBasicMaterial({ color: c, wireframe: true, transparent: true, opacity: 0.6 })
       : new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.5, roughness: 0.35, metalness: 0.2 });
@@ -80,7 +78,7 @@ export function createWorldScene(
     mesh.userData.spin2 = (Math.random() - 0.5) * 0.01;
     mesh.userData.fy    = mesh.position.y;
     mesh.userData.ph    = Math.random() * Math.PI * 2;
-    mesh.userData.slot  = i % DEFAULT_COLORS.length;
+    mesh.userData.slot  = i % COLORS.length;
     shapes.push(mesh);
     scene.add(mesh);
   }
@@ -88,18 +86,6 @@ export function createWorldScene(
   scene.add(new THREE.AmbientLight(0xffffff, 0.5));
   const key  = new THREE.PointLight(0xff6a3d, 60, 60); key.position.set(0, 6, 0);   scene.add(key);
   const fill = new THREE.PointLight(0x6f7bff, 40, 60); fill.position.set(10, -4, -8); scene.add(fill);
-
-  const setPalette = (mode: 'default' | 'spurs') => {
-    const table = mode === 'spurs' ? SPURS_COLORS : DEFAULT_COLORS;
-    shapes.forEach((mesh, i) => {
-      const m = materials[i];
-      const c = table[mesh.userData.slot as number];
-      m.color.set(c);
-      if ((m as THREE.MeshStandardMaterial).emissive) (m as THREE.MeshStandardMaterial).emissive.set(c);
-    });
-    key.color.set(mode === 'spurs' ? 0xffffff : 0xff6a3d);
-    fill.color.set(mode === 'spurs' ? 0x132257 : 0x6f7bff);
-  };
 
   // ---- look controls ----
   const look = { yaw: 0.4, pitch: 0, tyaw: 0.4, tpitch: 0, down: false, px: 0, py: 0, idle: 0 };
@@ -180,5 +166,5 @@ export function createWorldScene(
     renderer.dispose();
   };
 
-  return { setPalette, resize, dispose };
+  return { resize, dispose };
 }

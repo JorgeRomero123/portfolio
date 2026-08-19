@@ -62,16 +62,11 @@ export type HeroHandle = {
   setPointer: (ndcX: number, ndcY: number, active: boolean) => void;
   /** One-shot expansion pulse — used by the COYS easter egg. */
   burst: () => void;
-  /** Swap the palette (Spurs mode). */
-  setPalette: (mode: 'default' | 'spurs') => void;
   resize: () => void;
   dispose: () => void;
 };
 
-const PALETTES = {
-  default: [0xff6a3d, 0xffd089, 0x6f7bff],
-  spurs:   [0xffffff, 0xc8d1e8, 0x132257],
-} as const;
+const PALETTE = [0xff6a3d, 0xffd089, 0x6f7bff] as const;
 
 export function createHeroScene(
   canvas: HTMLCanvasElement,
@@ -91,8 +86,8 @@ export function createHeroScene(
   const scl = new Float32Array(N);
   const sed = new Float32Array(N);
 
-  const writePalette = (mode: keyof typeof PALETTES) => {
-    const [c1, c2, c3] = PALETTES[mode].map((h) => new THREE.Color(h));
+  const writePalette = () => {
+    const [c1, c2, c3] = PALETTE.map((h) => new THREE.Color(h));
     for (let i = 0; i < N; i++) {
       const t = sed[i];
       const mix = t < 0.72 ? c1.clone().lerp(c2, t / 0.72) : c1.clone().lerp(c3, (t - 0.72) / 0.28);
@@ -110,7 +105,7 @@ export function createHeroScene(
     scl[i] = 0.75 + Math.random() * 1.35;
     sed[i] = Math.random();
   }
-  writePalette('default');
+  writePalette();
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
@@ -191,12 +186,6 @@ export function createHeroScene(
   let burstV = 0;
   const burst = () => { burstV = 1; };
 
-  const setPalette = (mode: 'default' | 'spurs') => {
-    writePalette(mode);
-    (geo.getAttribute('aColor') as THREE.BufferAttribute).needsUpdate = true;
-    ringMat.color.set(mode === 'spurs' ? 0xffffff : 0xff6a3d);
-  };
-
   let alive = true;
   let raf = 0;
   const clock = new THREE.Clock();
@@ -253,5 +242,5 @@ export function createHeroScene(
     renderer.dispose();
   };
 
-  return { setPointer, burst, setPalette, resize, dispose };
+  return { setPointer, burst, resize, dispose };
 }

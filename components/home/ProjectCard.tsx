@@ -30,7 +30,7 @@ export default function ProjectCard({ project, index }: { project: Project; inde
   const rotateY = useSpring(useTransform(px, [-0.5, 0.5], [-10, 10]), spring);
   const rotateX = useSpring(useTransform(py, [-0.5, 0.5], [8, -8]), spring);
 
-  const spotlight = useMotionTemplate`radial-gradient(420px circle at ${sx}% ${sy}%, rgba(255,106,61,0.16), transparent 68%)`;
+  const spotlight = useMotionTemplate`radial-gradient(420px circle at ${sx}% ${sy}%, rgba(0,112,243,0.10), transparent 68%)`;
 
   const onMove = (e: React.PointerEvent) => {
     const r = ref.current?.getBoundingClientRect();
@@ -74,15 +74,16 @@ export default function ProjectCard({ project, index }: { project: Project; inde
           rotateX,
           rotateY,
           transformStyle: 'preserve-3d',
-          background: project.cardBg || '#131210',
-          border: `1px solid ${project.cardBorder || '#262220'}`,
+          background: project.cardBg || '#ffffff',
+          border: `1px solid ${project.cardBorder || '#e4eaf3'}`,
           borderRadius: 18,
           padding: 30,
           height: '100%',
           position: 'relative',
           overflow: 'hidden',
+          boxShadow: '0 1px 2px rgba(11,27,58,0.04), 0 10px 28px rgba(11,27,58,0.06)',
         }}
-        whileHover={{ borderColor: 'rgba(255,106,61,0.5)' }}
+        whileHover={{ borderColor: 'rgba(0,112,243,0.50)' }}
         transition={{ duration: 0.3 }}
       >
         {/* cursor spotlight */}
@@ -104,7 +105,7 @@ export default function ProjectCard({ project, index }: { project: Project; inde
             {project.tag}
           </span>
           <motion.span
-            style={{ fontSize: 20, color: '#7a6e63', display: 'inline-block' }}
+            style={{ fontSize: 20, color: '#8494b0', display: 'inline-block' }}
             whileHover={{ x: 3, y: -3 }}
           >
             ↗
@@ -118,15 +119,15 @@ export default function ProjectCard({ project, index }: { project: Project; inde
           {project.title}
         </h3>
 
-        <p style={{ fontSize: 14.5, lineHeight: 1.6, color: '#a89e94', marginTop: 12, transform: 'translateZ(22px)', position: 'relative' }}>
+        <p style={{ fontSize: 14.5, lineHeight: 1.6, color: '#4e5f80', marginTop: 12, transform: 'translateZ(22px)', position: 'relative' }}>
           {project.body}
         </p>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 20, transform: 'translateZ(16px)', position: 'relative' }}>
           {project.tech.map((t) => (
             <span key={t} style={{
-              fontFamily: MONO, fontSize: 11, color: '#8a8078',
-              border: '1px solid #2a2622', borderRadius: 6, padding: '4px 9px',
+              fontFamily: MONO, fontSize: 11, color: '#6b7c9c',
+              border: '1px solid #d3dcea', borderRadius: 6, padding: '4px 9px',
             }}>
               {t}
             </span>
