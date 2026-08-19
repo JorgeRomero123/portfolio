@@ -213,12 +213,13 @@ export default function HomeExperience({
         ::selection{background:${accent};color:#0b0a09;}
         @keyframes jrr-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
         @keyframes jrr-marquee2{from{transform:translateX(-50%)}to{transform:translateX(0)}}
-        @keyframes jrr-down{0%{transform:translateY(0);opacity:0}30%{opacity:1}100%{transform:translateY(14px);opacity:0}}
-        @keyframes jrr-pulse{0%,100%{opacity:1}50%{opacity:.3}}
         [data-reveal]{opacity:0;transform:translateY(28px);}
         @media (prefers-reduced-motion: reduce){
           [data-reveal]{opacity:1!important;transform:none!important;}
+          .jrr-marquee{animation:none!important;}
         }
+        a:focus-visible{outline:2px solid ${accent};outline-offset:4px;border-radius:4px;}
+        .jrr-navlink:focus-visible::after{transform:scaleX(1);transform-origin:left;}
         .jrr-navlink{position:relative;}
         .jrr-navlink::after{content:'';position:absolute;left:0;bottom:-5px;width:100%;height:1px;background:${accent};transform:scaleX(0);transform-origin:right;transition:transform .35s cubic-bezier(.2,.6,.2,1);}
         .jrr-navlink:hover::after{transform:scaleX(1);transform-origin:left;}
@@ -283,7 +284,7 @@ export default function HomeExperience({
             </a>
           ))}
           <span className="jrr-available" style={{ display: 'flex', alignItems: 'center', gap: 7, color: '#8fb98a' }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7ed47a', animation: 'jrr-pulse 2s ease-in-out infinite' }} />
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7ed47a' }} />
             available
           </span>
         </div>
@@ -294,13 +295,13 @@ export default function HomeExperience({
         <canvas ref={heroCanvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }} />
 
         <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', overflow: 'hidden' }}>
-          <div style={{
+          <div className="jrr-marquee" style={{
             display: 'flex', width: 'max-content', animation: 'jrr-marquee 26s linear infinite',
             fontWeight: 700, fontSize: 'clamp(90px,13vw,190px)', letterSpacing: '-0.03em',
             whiteSpace: 'nowrap', color: 'transparent', WebkitTextStroke: '1.3px rgba(255,255,255,0.08)',
           }}>
-            <span style={{ padding: '0 38px' }}>SHIP&nbsp;IT&nbsp;×&nbsp;BREAK&nbsp;IT&nbsp;×&nbsp;</span>
-            <span style={{ padding: '0 38px' }}>SHIP&nbsp;IT&nbsp;×&nbsp;BREAK&nbsp;IT&nbsp;×&nbsp;</span>
+            <span style={{ padding: '0 38px' }}>SOFTWARE&nbsp;×&nbsp;PHOTOGRAPHY&nbsp;×&nbsp;360°&nbsp;×&nbsp;</span>
+            <span style={{ padding: '0 38px' }}>SOFTWARE&nbsp;×&nbsp;PHOTOGRAPHY&nbsp;×&nbsp;360°&nbsp;×&nbsp;</span>
           </div>
         </div>
 
@@ -326,8 +327,7 @@ export default function HomeExperience({
           <p style={{ fontSize: 'clamp(16px,1.5vw,20px)', lineHeight: 1.55, color: '#c0b6ac', marginTop: 26, maxWidth: 560 }}>
             By day I ship production software to hundreds of thousands of people. By night I
             build browser toys nobody asked for — a singing coach, a chore tracker that emails
-            my roommate, a 360° tour engine. Four of those experiments are running on this
-            page right now.
+            my roommate, a 360° tour engine.
           </p>
 
           <div className="jrr-cta-row" style={{ display: 'flex', gap: 14, marginTop: 34, pointerEvents: 'auto', flexWrap: 'wrap' }}>
@@ -354,10 +354,6 @@ export default function HomeExperience({
           </div>
         </motion.div>
 
-        <div style={{ position: 'absolute', bottom: 30, left: 'clamp(24px,7vw,110px)', fontFamily: MONO, fontSize: 11, letterSpacing: '0.1em', color: '#7a6e63', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ display: 'inline-block', width: 1, height: 30, background: 'linear-gradient(#7a6e63,transparent)', animation: 'jrr-down 1.8s ease-in-out infinite' }} />
-          scroll to explore
-        </div>
         <div className="jrr-hint-drag" style={{ position: 'absolute', bottom: 30, right: 40, fontFamily: MONO, fontSize: 11, letterSpacing: '0.08em', color: '#7a6e63' }}>
           the cloud follows your cursor ↺
         </div>
@@ -365,7 +361,7 @@ export default function HomeExperience({
 
       {/* ===== TECH MARQUEE ===== */}
       <div style={{ borderTop: '1px solid #211e1b', borderBottom: '1px solid #211e1b', padding: '20px 0', overflow: 'hidden', background: '#0d0c0b' }}>
-        <div style={{ display: 'flex', width: 'max-content', animation: 'jrr-marquee2 30s linear infinite', fontFamily: MONO, fontSize: 14, letterSpacing: '0.1em', color: '#6b635a' }}>
+        <div className="jrr-marquee" style={{ display: 'flex', width: 'max-content', animation: 'jrr-marquee2 30s linear infinite', fontFamily: MONO, fontSize: 14, letterSpacing: '0.1em', color: '#6b635a' }}>
           {[0, 1].map((dup) => (
             <span key={dup} style={{ display: 'flex', gap: 46, paddingRight: 46 }}>
               {TECH.map((tech) => (
@@ -379,24 +375,17 @@ export default function HomeExperience({
         </div>
       </div>
 
-      {/* ===== STATEMENT + STATS ===== */}
+      {/* ===== STATS ===== */}
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: 'clamp(90px,14vh,170px) clamp(24px,7vw,40px)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 60 }}>
-          <div data-reveal style={{ fontSize: 'clamp(28px,3.6vw,52px)', lineHeight: 1.2, fontWeight: 500, letterSpacing: '-0.02em', maxWidth: '20ch', textWrap: 'pretty' }}>
-            I write code that reaches <span style={{ color: accent }}>millions</span> — and then
-            spend my nights building things exactly <span style={{ color: '#6f7bff' }}>one person</span> will use.
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(200px,100%),1fr))', gap: 34, borderTop: '1px solid #211e1b', paddingTop: 40 }}>
-            {STATS.map((s) => (
-              <div key={s.label} data-reveal>
-                <div style={{ fontFamily: MONO, fontSize: 38, fontWeight: 700, color: '#ffd089' }}>
-                  <Counter to={s.value} suffix={s.suffix} />
-                </div>
-                <div style={{ fontSize: 14, color: '#9a8d80', marginTop: 6, lineHeight: 1.5 }}>{s.label}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(200px,100%),1fr))', gap: 34 }}>
+          {STATS.map((s) => (
+            <div key={s.label} data-reveal>
+              <div style={{ fontFamily: MONO, fontSize: 38, fontWeight: 700, color: '#ffd089' }}>
+                <Counter to={s.value} suffix={s.suffix} />
               </div>
-            ))}
-          </div>
+              <div style={{ fontSize: 14, color: '#9a8d80', marginTop: 6, lineHeight: 1.5 }}>{s.label}</div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -440,7 +429,7 @@ export default function HomeExperience({
       <section id="work" style={{ maxWidth: 1180, margin: '0 auto', padding: '0 clamp(24px,7vw,40px) clamp(60px,10vh,120px)' }}>
         <div data-reveal style={{ display: 'flex', alignItems: 'baseline', gap: 18, marginBottom: 48, flexWrap: 'wrap' }}>
           <span style={{ fontFamily: MONO, fontSize: 13, color: accent, letterSpacing: '0.1em' }}>02</span>
-          <h2 style={{ fontSize: 'clamp(34px,5vw,60px)', fontWeight: 700, letterSpacing: '-0.03em' }}>Selected work</h2>
+          <h2 style={{ fontSize: 'clamp(34px,5vw,60px)', fontWeight: 700, letterSpacing: '-0.03em' }}>Things I shipped</h2>
           <span style={{ fontFamily: MONO, fontSize: 13, color: '#7a6e63', letterSpacing: '0.04em', marginLeft: 'auto' }}>2 companies · 2 solo</span>
         </div>
 
@@ -486,21 +475,21 @@ export default function HomeExperience({
       >
         <div style={{ padding: '0 clamp(24px,7vw,40px)', marginBottom: 32, display: 'flex', alignItems: 'baseline', gap: 18, flexWrap: 'wrap' }}>
           <span style={{ fontFamily: MONO, fontSize: 13, color: accent, letterSpacing: '0.1em' }}>04</span>
-          <h2 style={{ fontSize: 'clamp(30px,4.5vw,54px)', fontWeight: 700, letterSpacing: '-0.03em' }}>Beyond the code</h2>
+          <h2 style={{ fontSize: 'clamp(30px,4.5vw,54px)', fontWeight: 700, letterSpacing: '-0.03em' }}>Other things I make</h2>
           <span style={{ fontFamily: MONO, fontSize: 12, color: '#7a6e63', marginLeft: 'auto' }}>keep scrolling →</span>
         </div>
 
         <div ref={trackRef} style={{ display: 'flex', gap: 26, padding: '0 clamp(24px,7vw,40px)', willChange: 'transform' }}>
           <GalleryTile
             href="/gallery" title="Photography" index="01 / 04"
-            copy="Favorite shots — light, landscape and the occasional happy accident worth keeping."
+            copy="Light, landscape, and the shots I keep coming back to."
             width="min(64vw,560px)" gradient="radial-gradient(120% 120% at 20% 15%,#2a1c14,#0c0b0a)" icon="📷"
             image={photographyHero?.url} imageAlt={photographyHero?.title}
           />
 
           <GalleryTile
             href="/gallery360" title="360° Tours" index="02 / 04"
-            copy="Immersive walkthroughs I shoot and build for real clients — step inside a space from anywhere."
+            copy="Walkthroughs I shoot and build for real clients."
             width="min(64vw,560px)" gradient="radial-gradient(120% 120% at 75% 25%,#161a2e,#0c0b0a)" icon="🌐"
             image={panoramaHero?.url} imageAlt={panoramaHero?.title}
           />
@@ -525,10 +514,10 @@ export default function HomeExperience({
           </div>
 
           <Link href="/tools" style={{ flex: '0 0 auto', width: 'min(64vw,560px)', textDecoration: 'none', color: 'inherit' }}>
-            <div style={{ width: '100%', height: '54vh', maxHeight: 460, borderRadius: 16, overflow: 'hidden', border: '1px solid #2a2622', background: 'radial-gradient(120% 120% at 30% 20%,#1a130f,#0c0b0a)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '100%', height: '54vh', maxHeight: 460, borderRadius: 16, overflow: 'hidden', border: '1px solid #2a2622', background: 'radial-gradient(120% 120% at 20% 15%,#1a130f,#0c0b0a)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ fontFamily: MONO, fontSize: 13, color: accent, letterSpacing: '0.1em', textAlign: 'center', lineHeight: 2 }}>
                 &lt;/&gt;<br />
-                <span style={{ color: '#9a8d80' }}>{TOOL_COUNT} interactive experiments<br />&amp; creative coding</span>
+                <span style={{ color: '#9a8d80' }}>{TOOL_COUNT} interactive experiments</span>
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 18 }}>
@@ -536,7 +525,7 @@ export default function HomeExperience({
               <span style={{ fontFamily: MONO, fontSize: 12, color: '#7a6e63' }}>04 / 04</span>
             </div>
             <p style={{ fontSize: 14, color: '#9a8d80', lineHeight: 1.55, marginTop: 6, maxWidth: '46ch' }}>
-              Generative toys, converters and one very persistent chore tracker.
+              Generative toys, converters, and a few things I needed exactly once.
             </p>
           </Link>
         </div>
@@ -553,10 +542,6 @@ export default function HomeExperience({
         <canvas ref={worldCanvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', cursor: 'grab' }} />
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 'clamp(90px,12vh,120px) clamp(24px,7vw,40px) 40px' }}>
           <div style={{ maxWidth: 560 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: MONO, fontSize: 12, letterSpacing: '0.18em', color: accent, marginBottom: 18 }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: accent, animation: 'jrr-pulse 1.4s ease-in-out infinite' }} />
-              LIVE · RUNNING IN YOUR BROWSER
-            </div>
             <h2 style={{ fontSize: 'clamp(32px,5vw,58px)', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1 }}>Step inside a 3D scene.</h2>
             <p style={{ fontSize: 16, lineHeight: 1.6, color: '#c0b6ac', marginTop: 18, maxWidth: 460 }}>
               No video, no screenshot — a real-time WebGL world rendered on your machine. Drag
@@ -575,7 +560,7 @@ export default function HomeExperience({
       <section id="contact" style={{ maxWidth: 1180, margin: '0 auto', padding: 'clamp(90px,16vh,180px) clamp(24px,7vw,40px) 70px' }}>
         <div data-reveal style={{ fontFamily: MONO, fontSize: 13, color: accent, letterSpacing: '0.1em', marginBottom: 24 }}>05 · let&rsquo;s talk</div>
         <h2 data-reveal style={{ fontSize: 'clamp(44px,8vw,104px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 0.95 }}>
-          Let&rsquo;s build<br />something <span style={{ color: accent, fontStyle: 'italic' }}>worth exploring.</span>
+          Let&rsquo;s build<br />something <span style={{ color: accent, fontStyle: 'italic' }}>you&rsquo;d actually use.</span>
         </h2>
 
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 48 }}>

@@ -29,8 +29,7 @@ export const TRUTHS: { k: string; v: ReactNode }[] = [
   { k: 'based in', v: <>México. Half my side projects are in Spanish because that&rsquo;s who I build them for.</> },
   { k: 'allegiance', v: <>Tottenham Hotspur, for my sins. There is an entire route on this site about it.</> },
   { k: 'currently learning', v: <>Guitar and singing — so naturally I built two apps that listen to me and grade me.</> },
-  { k: 'also does', v: <>Flies a drone badly, edits the footage well. Shoots 360° tours for real clients.</> },
-  { k: 'strong opinion', v: <>I&rsquo;d rather ship a rough thing this week than a perfect thing next quarter.</> },
+  { k: 'also does', v: <>Photography, drone video, and 360° tours for real clients.</> },
 ];
 
 export type Project = {
@@ -58,8 +57,7 @@ export const PROJECTS: Project[] = [
       <>
         Technical co-lead for the profile-management portal — empty repo to production.
         Kept the Next.js app healthy for {hi('200k+ monthly users')} and led its expansion
-        across continents. The unglamorous truth: most of that work was i18n, edge cases,
-        and not breaking things.
+        across continents.
       </>
     ),
     tech: ['Next.js', 'React', 'i18n'],
@@ -67,8 +65,8 @@ export const PROJECTS: Project[] = [
   {
     href: 'https://www.bing.com/images?FORM=Z9LH',
     tag: 'Microsoft',
-    tagColor: '#7ed47a',
-    tagBorder: '#2a4a2c',
+    tagColor: '#8da0ff',
+    tagBorder: '#2c3358',
     title: 'Bing Image\nInspiration Feed',
     body: (
       <>
@@ -89,19 +87,16 @@ export const PROJECTS: Project[] = [
       <>
         Multi-tenant SaaS for sharing media albums from a single link. Auto-compressed
         photo/video uploads, 360° content, watermarking, passcodes, per-album analytics and
-        tiered Stripe subscriptions. {hi('Built and run entirely solo')} — which means I am
-        also the support team.
+        tiered Stripe subscriptions. {hi('Built and run entirely solo')}.
       </>
     ),
     tech: ['Multi-tenant', 'Stripe', '360°'],
-    cardBg: '#15110f',
-    cardBorder: '#322620',
   },
   {
     href: 'https://www.labwiselink.com',
     tag: 'solo · B2B',
-    tagColor: '#c9a0ff',
-    tagBorder: '#3a2c4a',
+    tagColor: '#ff6a3d',
+    tagBorder: '#4a2c20',
     title: 'LabWiseLink',
     body: (
       <>
