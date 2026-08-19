@@ -9,6 +9,10 @@ import {
   type Bloque,
 } from '@/lib/rutina-ejercicios';
 import type { Esfuerzo, Modo, Resumen, Sesion, Variante } from '@/lib/rutina';
+import { ITEMS_DEPA } from '@/lib/rutina-items';
+import { motion } from 'framer-motion';
+import EscenaDepa from './rutina/EscenaDepa';
+import EscenaParque from './rutina/EscenaParque';
 
 type Datos = Resumen & { variante: Variante; historial: Sesion[] };
 type Guardado = { ganado: number; bonus: string[]; subioDeNivel: boolean };
@@ -152,10 +156,39 @@ export default function Rutina() {
     (b) => b.avanzado && !(modo === 'depa' ? datos.avanzadoDesbloqueado : datos.barrasDesbloqueadas)
   );
 
+  // El mueble recién ganado, para que solo ese entre animado.
+  const nuevoItem = guardado?.subioDeNivel
+    ? ITEMS_DEPA.find((x) => x.nivel === nivel.nivel)?.id
+    : undefined;
+
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6">
+      {/*
+        El fondo de la página entero se tiñe según el modo — un cuarto cálido
+        sobre blanco no se siente a nada. `initial={false}` hace que el primer
+        render ya salga con el color correcto en vez de animarlo desde cero.
+        z-0 (no -z-10) porque <main> pinta su propio bg-gray-50 encima.
+      */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
+        <motion.div
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(170deg,#faf4ea 0%,#f2e6d4 55%,#e9d8c0 100%)' }}
+          initial={false}
+          animate={{ opacity: modo === 'depa' ? 1 : 0 }}
+          transition={{ duration: 0.7, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(170deg,#cfeaf9 0%,#e2f2e6 55%,#d5ecc6 100%)' }}
+          initial={false}
+          animate={{ opacity: modo === 'parque' ? 1 : 0 }}
+          transition={{ duration: 0.7, ease: 'easeInOut' }}
+        />
+      </div>
+
+      <div className="relative z-10 space-y-6">
       {/* ---------- marcador ---------- */}
-      <div className="rounded-2xl bg-white p-6 shadow-md sm:p-8">
+      <div className="rounded-2xl bg-white/90 p-6 shadow-md backdrop-blur sm:p-8">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <div className="text-5xl font-bold text-gray-900">
@@ -208,6 +241,14 @@ export default function Rutina() {
           <p className="font-semibold text-blue-900">
             +{guardado.ganado} XP {guardado.subioDeNivel && `· ¡subiste a nivel ${nivel.nivel}! 🎉`}
           </p>
+          {guardado.subioDeNivel && (() => {
+            const item = ITEMS_DEPA.find((x) => x.nivel === nivel.nivel);
+            return item ? (
+              <p className="mt-1 text-sm text-blue-800">
+                Se desbloqueó <b>{item.nombre.toLowerCase()}</b> en tu depa — {item.pista}
+              </p>
+            ) : null;
+          })()}
           {guardado.bonus.length > 0 && (
             <p className="mt-1 text-sm text-blue-800">Bonus: {guardado.bonus.join(' · ')}</p>
           )}
@@ -215,7 +256,7 @@ export default function Rutina() {
       )}
 
       {/* ---------- modo ---------- */}
-      <div className="rounded-2xl bg-white p-6 shadow-md sm:p-8">
+      <div className="rounded-2xl bg-white/90 p-6 shadow-md backdrop-blur sm:p-8">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
           ¿Dónde estás hoy?
         </h2>
@@ -238,6 +279,19 @@ export default function Rutina() {
               <div className="text-xs text-gray-600">{m.pie}</div>
             </button>
           ))}
+        </div>
+
+        {/* ---------- la escena ---------- */}
+        <div className="mt-5">
+          {modo === 'depa' ? (
+            <EscenaDepa nivel={nivel.nivel} nuevo={nuevoItem} />
+          ) : (
+            <EscenaParque
+              salidas={datos.parqueEstaSemana}
+              meta={datos.metaParque}
+              barrasDesbloqueadas={datos.barrasDesbloqueadas}
+            />
+          )}
         </div>
 
         {/* ---------- depa ---------- */}
@@ -356,7 +410,7 @@ export default function Rutina() {
 
       {/* ---------- historial ---------- */}
       {datos.historial.length > 0 && (
-        <div className="rounded-2xl bg-white p-6 shadow-md sm:p-8">
+        <div className="rounded-2xl bg-white/90 p-6 shadow-md backdrop-blur sm:p-8">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Últimas sesiones</h2>
           <ul className="mt-3 divide-y divide-gray-100">
             {datos.historial.map((s) => (
@@ -384,6 +438,7 @@ export default function Rutina() {
           </ul>
         </div>
       )}
+      </div>
     </div>
   );
 }
