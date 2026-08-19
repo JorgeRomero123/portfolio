@@ -9,9 +9,9 @@ import {
   type Bloque,
 } from '@/lib/rutina-ejercicios';
 import type { Esfuerzo, Modo, Resumen, Sesion, Variante } from '@/lib/rutina';
-import { ITEMS_DEPA } from '@/lib/rutina-items';
+import { ITEMS_DEPA, proximoItem } from '@/lib/rutina-items';
 import { motion } from 'framer-motion';
-import EscenaDepa from './rutina/EscenaDepa';
+import EscenaDepa, { MiniPieza } from './rutina/EscenaDepa';
 import EscenaParque from './rutina/EscenaParque';
 
 type Datos = Resumen & { variante: Variante; historial: Sesion[] };
@@ -160,6 +160,7 @@ export default function Rutina() {
   );
 
   // El mueble recién ganado, para que solo ese entre animado.
+  const proxima = proximoItem(nivel.nivel);
   const nuevoItem = guardado?.subioDeNivel
     ? ITEMS_DEPA.find((x) => x.nivel === nivel.nivel)?.id
     : undefined;
@@ -210,15 +211,40 @@ export default function Rutina() {
           </div>
         </div>
 
-        <div className="mt-5 h-2 overflow-hidden rounded-full bg-gray-100">
-          <div
-            className="h-full rounded-full bg-blue-600 transition-[width] duration-700"
-            style={{ width: `${Math.round(nivel.progreso * 100)}%` }}
-          />
-        </div>
-        <div className="mt-2 flex justify-between text-xs text-gray-500">
-          <span>{datos.xpTotal} XP</span>
-          <span>{nivel.hasta ?? '∞'}</span>
+        <div className="mt-5 flex items-center gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+              <div
+                className="h-full rounded-full bg-blue-600 transition-[width] duration-700"
+                style={{ width: `${Math.round(nivel.progreso * 100)}%` }}
+              />
+            </div>
+            <div className="mt-2 flex justify-between text-xs text-gray-500">
+              <span>{datos.xpTotal} XP</span>
+              <span>{nivel.hasta ?? '∞'}</span>
+            </div>
+          </div>
+
+          {/*
+            Lo que te ganas al subir, a un lado de la barra. En la escena no se
+            asoma: el punto es que aparezca de sorpresa en el cuarto.
+          */}
+          {proxima && (
+            <div className="flex shrink-0 items-center gap-2.5 rounded-xl border border-amber-200 bg-amber-50/80 py-2 pl-2.5 pr-3">
+              <div className="grid h-11 w-11 shrink-0 place-items-center">
+                <MiniPieza id={proxima.id} size={40} />
+              </div>
+              <div className="leading-tight">
+                <div className="text-[10px] font-medium uppercase tracking-wide text-amber-700">
+                  nivel {proxima.nivel}
+                </div>
+                <div className="text-xs font-semibold text-gray-900">{proxima.nombre}</div>
+                {nivel.faltan > 0 && (
+                  <div className="text-[11px] text-amber-800">faltan {nivel.faltan} XP</div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 border-t border-gray-100 pt-4 text-sm">
