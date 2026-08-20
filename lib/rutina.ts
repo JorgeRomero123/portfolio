@@ -239,6 +239,7 @@ export type Resumen = {
   racha: Racha;
   sesionesHoy: Sesion[];
   parqueEstaSemana: number;
+  salidasTotales: number;
   metaParque: number;
   kmEstaSemana: number;
   kmTotales: number;
@@ -261,6 +262,7 @@ export function resumir(sesiones: Sesion[], hoy: string): Resumen {
     racha,
     sesionesHoy: sesiones.filter((s) => s.fecha === hoy),
     parqueEstaSemana: sesiones.filter((s) => s.modo === 'parque' && semanaDe(s.fecha) === semana).length,
+    salidasTotales: sesiones.filter((s) => s.modo === 'parque').length,
     metaParque: META_PARQUE,
     kmEstaSemana: sesiones
       .filter((s) => semanaDe(s.fecha) === semana)

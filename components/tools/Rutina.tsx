@@ -14,7 +14,8 @@ import type { Esfuerzo, Modo, Resumen, Sesion, Variante } from '@/lib/rutina';
 import { ITEMS_DEPA, proximoItem } from '@/lib/rutina-items';
 import { motion } from 'framer-motion';
 import EscenaDepa, { MiniPieza } from './rutina/EscenaDepa';
-import EscenaParque from './rutina/EscenaParque';
+import EscenaParque, { MiniPiezaParque } from './rutina/EscenaParque';
+import { faltaPara, proximoItemParque } from '@/lib/rutina-parque-items';
 
 type Datos = Resumen & { variante: Variante; historial: Sesion[] };
 type Guardado = { ganado: number; bonus: string[]; subioDeNivel: boolean };
@@ -163,6 +164,10 @@ export default function Rutina() {
 
   // El mueble recién ganado, para que solo ese entre animado.
   const proxima = proximoItem(nivel.nivel);
+  const proximaParque = proximoItemParque({
+    salidas: datos.salidasTotales,
+    km: datos.kmTotales,
+  });
   const nuevoItem = guardado?.subioDeNivel
     ? ITEMS_DEPA.find((x) => x.nivel === nivel.nivel)?.id
     : undefined;
@@ -231,22 +236,34 @@ export default function Rutina() {
             Lo que te ganas al subir, a un lado de la barra. En la escena no se
             asoma: el punto es que aparezca de sorpresa en el cuarto.
           */}
-          {proxima && (
-            <div className="flex shrink-0 items-center gap-2.5 rounded-xl border border-amber-200 bg-amber-50/80 py-2 pl-2.5 pr-3">
-              <div className="grid h-11 w-11 shrink-0 place-items-center">
-                <MiniPieza id={proxima.id} size={40} />
-              </div>
-              <div className="leading-tight">
-                <div className="text-[10px] font-medium uppercase tracking-wide text-amber-700">
-                  nivel {proxima.nivel}
-                </div>
-                <div className="text-xs font-semibold text-gray-900">{proxima.nombre}</div>
-                {nivel.faltan > 0 && (
-                  <div className="text-[11px] text-amber-800">faltan {nivel.faltan} XP</div>
-                )}
-              </div>
-            </div>
-          )}
+          {modo === 'depa'
+            ? proxima && (
+                <Recompensa
+                  arriba={`nivel ${proxima.nivel}`}
+                  nombre={proxima.nombre}
+                  falta={nivel.faltan > 0 ? `faltan ${nivel.faltan} XP` : null}
+                >
+                  <MiniPieza id={proxima.id} size={40} />
+                </Recompensa>
+              )
+            : proximaParque && (
+                <Recompensa
+                  arriba="en el parque"
+                  nombre={proximaParque.nombre}
+                  falta={(() => {
+                    const f = faltaPara(proximaParque, {
+                      salidas: datos.salidasTotales,
+                      km: datos.kmTotales,
+                    });
+                    if (f === 0) return null;
+                    return proximaParque.eje === 'salidas'
+                      ? `faltan ${f} salida${f === 1 ? '' : 's'}`
+                      : `faltan ${f} km`;
+                  })()}
+                >
+                  <MiniPiezaParque id={proximaParque.id} size={40} />
+                </Recompensa>
+              )}
         </div>
 
         <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 border-t border-gray-100 pt-4 text-sm">
@@ -327,6 +344,8 @@ export default function Rutina() {
               meta={datos.metaParque}
               barrasDesbloqueadas={datos.barrasDesbloqueadas}
               km={datos.kmEstaSemana + vueltas}
+              salidasTotales={datos.salidasTotales}
+              kmTotales={datos.kmTotales}
             />
           )}
         </div>
@@ -511,6 +530,24 @@ export default function Rutina() {
           </ul>
         </div>
       )}
+      </div>
+    </div>
+  );
+}
+
+/** La recompensa que sigue, al lado de la barra de XP. */
+function Recompensa({
+  arriba, nombre, falta, children,
+}: {
+  arriba: string; nombre: string; falta: string | null; children: React.ReactNode;
+}) {
+  return (
+    <div className="flex shrink-0 items-center gap-2.5 rounded-xl border border-amber-200 bg-amber-50/80 py-2 pl-2.5 pr-3">
+      <div className="grid h-11 w-11 shrink-0 place-items-center">{children}</div>
+      <div className="leading-tight">
+        <div className="text-[10px] font-medium uppercase tracking-wide text-amber-700">{arriba}</div>
+        <div className="text-xs font-semibold text-gray-900">{nombre}</div>
+        {falta && <div className="text-[11px] text-amber-800">{falta}</div>}
       </div>
     </div>
   );
