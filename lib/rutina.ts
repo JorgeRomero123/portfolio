@@ -69,6 +69,36 @@ export function nivelDeXP(xp: number): Nivel {
   };
 }
 
+// ---------------------------------------------------------------- entrada
+
+export type Opcional = { ok: true; valor: number | null } | { ok: false };
+
+/**
+ * Lee un número opcional del cuerpo de una petición.
+ *
+ * `null`, `undefined` y `''` significan "no lo mandé" y valen null.
+ *
+ * El detalle que importa: Number(null) es 0, y 0 es finito. Usar
+ * Number.isFinite(Number(v)) para decidir si venía un número convertía un
+ * campo vacío en 0, y luego 0 reventaba contra el mínimo del rango. Con eso
+ * ninguna sesión de depa se podía guardar, porque la UI siempre manda
+ * minutos: null cuando no hay minutos.
+ */
+export function numeroOpcional(
+  valor: unknown,
+  { min, max, entero = false }: { min: number; max: number; entero?: boolean },
+): Opcional {
+  if (valor === null || valor === undefined || valor === '') return { ok: true, valor: null };
+
+  const n = Number(valor);
+  if (!Number.isFinite(n)) return { ok: false };
+
+  const v = entero ? Math.trunc(n) : n;
+  if (v < min || v > max) return { ok: false };
+
+  return { ok: true, valor: v };
+}
+
 // ---------------------------------------------------------------- fechas
 
 const DIA = 24 * 60 * 60 * 1000;

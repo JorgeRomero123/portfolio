@@ -7,6 +7,7 @@ import {
   xpDeSesion,
   XP,
   META_PARQUE,
+  numeroOpcional,
   semanaDe,
   type Esfuerzo,
   type Modo,
@@ -65,17 +66,18 @@ export async function POST(req: NextRequest) {
     ? body.bloques.filter((b): b is string => typeof b === 'string' && !!bloquePorId(b))
     : [];
 
-  const minutos = Number.isFinite(Number(body.minutos)) ? Number(body.minutos) : null;
-  if (minutos !== null && (minutos < 1 || minutos > 600)) {
+  const m = numeroOpcional(body.minutos, { min: 1, max: 600 });
+  if (!m.ok) {
     return NextResponse.json({ error: 'Los minutos deben ir de 1 a 600.' }, { status: 400 });
   }
+  const minutos = m.valor;
 
-  const vueltas = Number.isFinite(Number(body.vueltas)) ? Math.trunc(Number(body.vueltas)) : null;
-  if (vueltas !== null && (vueltas < 1 || vueltas > 100)) {
+  const v = numeroOpcional(body.vueltas, { min: 1, max: 100, entero: true });
+  if (!v.ok) {
     return NextResponse.json({ error: 'Las vueltas deben ir de 1 a 100.' }, { status: 400 });
   }
   // Las vueltas son de la pista del parque; en el depa no significan nada.
-  const vueltasReales = modo === 'parque' ? vueltas : null;
+  const vueltasReales = modo === 'parque' ? v.valor : null;
 
   const hoy = hoyCDMX();
 
