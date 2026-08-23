@@ -6,6 +6,10 @@
  * Ciudad de México, para evitar corrimientos de un día por UTC.
  */
 
+import type { Suciedad } from './depa-mapa';
+
+export type { Suciedad };
+
 export const ZONA_HORARIA = 'America/Mexico_City';
 
 export type Quehacer = {
@@ -18,9 +22,26 @@ export type Quehacer = {
   notas: string | null;
   orden: number;
   activo: boolean;
+  /** Cuarto del depa donde vive. Los ids salen de lib/depa-mapa.ts. */
+  zona: string;
+  /** Mueble sobre el que se para la burbuja. null = el centro del cuarto. */
+  punto: string | null;
 };
 
 export type Estado = 'vencido' | 'hoy' | 'pronto' | 'ok';
+
+export function suciedadDe(estado: Estado): Suciedad {
+  if (estado === 'vencido') return 'mugroso';
+  if (estado === 'ok') return 'limpio';
+  return 'sucio'; // hoy y pronto
+}
+
+/** De varios quehaceres sobre el mismo mueble gana el más urgente. */
+export function peorSuciedad(estados: Estado[]): Suciedad {
+  if (estados.some((e) => e === 'vencido')) return 'mugroso';
+  if (estados.some((e) => e === 'hoy' || e === 'pronto')) return 'sucio';
+  return 'limpio';
+}
 
 export type QuehacerCalculado = Quehacer & {
   /** Fecha en la que toca, 'YYYY-MM-DD'. */
@@ -28,6 +49,7 @@ export type QuehacerCalculado = Quehacer & {
   /** Negativo = vencido hace N días. 0 = toca hoy. */
   dias_restantes: number;
   estado: Estado;
+  suciedad: Suciedad;
   /** 0 a 1: qué tanto del ciclo ya transcurrió (se pasa de 1 si está vencido). */
   progreso: number;
 };
@@ -72,7 +94,7 @@ export function calcular(q: Quehacer, hoy: string = hoyCDMX()): QuehacerCalculad
   const transcurridos = q.ultima_vez ? diferenciaDias(hoy, q.ultima_vez) : q.frecuencia_dias;
   const progreso = q.frecuencia_dias > 0 ? transcurridos / q.frecuencia_dias : 1;
 
-  return { ...q, proxima_vez, dias_restantes, estado, progreso };
+  return { ...q, proxima_vez, dias_restantes, estado, suciedad: suciedadDe(estado), progreso };
 }
 
 /** Más urgente primero; a igualdad de urgencia, respeta el orden manual. */

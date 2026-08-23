@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { sesionValida } from '@/lib/quehaceres-auth';
 import { calcular, hoyCDMX, type Quehacer } from '@/lib/quehaceres';
+import { esPersonaId } from '@/lib/personas';
+import { leerUbicacion, mueble } from '@/lib/depa-mapa';
 
 const noAutorizado = () => NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
 
@@ -11,8 +13,8 @@ const ES_FECHA = /^\d{4}-\d{2}-\d{2}$/;
  * PATCH /api/quehaceres/[id]
  *
  * Con `{ hecho: true }` marca el quehacer como hecho hoy (o en `fecha`) y lo
- * anota en la bitácora. También acepta ediciones de nombre, emoji, frecuencia
- * y notas.
+ * anota en la bitácora junto con `quien` lo hizo. También acepta ediciones de
+ * nombre, emoji, frecuencia, notas y ubicación (zona y punto).
  */
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await sesionValida())) return noAutorizado();
@@ -27,7 +29,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const { error: errorBitacora } = await supabase
       .from('quehaceres_bitacora')
-      .insert({ quehacer_id: id, hecho_el: fecha });
+      .insert({
+        quehacer_id: id,
+        hecho_el: fecha,
+        // Sin persona el registro sigue contando para el depa; solo no entra
+        // en el reparto de la semana.
+        quien: esPersonaId(body.quien) ? body.quien : null,
+      });
     if (errorBitacora) {
       return NextResponse.json({ error: errorBitacora.message }, { status: 500 });
     }
@@ -54,6 +62,24 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   if (body.notas !== undefined) {
     update.notas = typeof body.notas === 'string' && body.notas.trim() ? body.notas.trim() : null;
+  }
+
+  const ubicacion = leerUbicacion(body);
+  if (ubicacion.error) return NextResponse.json({ error: ubicacion.error }, { status: 400 });
+  if (ubicacion.zona !== undefined) update.zona = ubicacion.zona;
+  if (ubicacion.punto !== undefined) update.punto = ubicacion.punto;
+
+  // Cambiar de cuarto sin decir a qué mueble deja la burbuja en el cuarto
+  // anterior. Se suelta el mueble en vez de dejarlo inconsistente.
+  if (ubicacion.zona !== undefined && ubicacion.punto === undefined) {
+    const { data: actual } = await supabase
+      .from('quehaceres')
+      .select('punto')
+      .eq('id', id)
+      .maybeSingle();
+
+    const previo = (actual?.punto as string | null | undefined) ?? null;
+    if (previo && mueble(previo)?.zona !== ubicacion.zona) update.punto = null;
   }
 
   // Permite deshacer un "hecho" dejando la fecha en null.

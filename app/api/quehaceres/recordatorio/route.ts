@@ -11,6 +11,7 @@ import {
   type Quehacer,
   type QuehacerCalculado,
 } from '@/lib/quehaceres';
+import { mueble, zona } from '@/lib/depa-mapa';
 
 // El cron de Vercel corre a las 13:00 UTC = 7:00 a.m. en CDMX (sin horario de verano).
 export const dynamic = 'force-dynamic';
@@ -22,13 +23,20 @@ const COLOR = {
   ok: '#6b7280',
 } as const;
 
+/** Dónde vive el quehacer, para no tener que abrir el mapa desde el correo. */
+function donde(q: QuehacerCalculado): string {
+  const m = mueble(q.punto);
+  const z = zona(q.zona);
+  return m ? `${z.nombre} · ${m.nombre.toLowerCase()}` : z.nombre;
+}
+
 function filaHTML(q: QuehacerCalculado): string {
   return `
     <tr>
       <td style="padding:12px 0;border-bottom:1px solid #f1f5f9;font-size:22px;width:40px;vertical-align:top;">${q.emoji}</td>
       <td style="padding:12px 0;border-bottom:1px solid #f1f5f9;vertical-align:top;">
         <div style="font-size:16px;font-weight:600;color:#111827;">${escapar(q.nombre)}</div>
-        <div style="font-size:13px;color:${COLOR[q.estado]};margin-top:2px;font-weight:500;">${etiquetaEstado(q)}</div>
+        <div style="font-size:13px;color:${COLOR[q.estado]};margin-top:2px;font-weight:500;">${etiquetaEstado(q)} <span style="color:#9ca3af;font-weight:400;">· ${escapar(donde(q))}</span></div>
         ${q.notas ? `<div style="font-size:13px;color:#6b7280;margin-top:4px;">${escapar(q.notas)}</div>` : ''}
       </td>
     </tr>`;
@@ -84,7 +92,7 @@ function construirCorreo(hoy: string, pendientes: QuehacerCalculado[], proximos:
   const text = [
     `Quehaceres del depa — ${fechaLarga(hoy)}`,
     '',
-    ...pendientes.map((q) => `• ${q.nombre} — ${etiquetaEstado(q)}`),
+    ...pendientes.map((q) => `• ${q.nombre} — ${etiquetaEstado(q)} (${donde(q)})`),
     ...(proximos.length ? ['', 'Ya casi:', ...proximos.map((q) => `• ${q.nombre} — ${etiquetaEstado(q)}`)] : []),
     '',
     `${sitio}/tools/quehaceres`,

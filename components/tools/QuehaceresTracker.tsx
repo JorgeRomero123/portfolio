@@ -1,31 +1,26 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import {
-  FRECUENCIAS_SUGERIDAS,
-  etiquetaEstado,
-  etiquetaFrecuencia,
-  fechaLarga,
-  type Estado,
-  type QuehacerCalculado,
-} from '@/lib/quehaceres';
+import { fechaLarga, type QuehacerCalculado } from '@/lib/quehaceres';
+import { muebleDeQuehacer, type Juego } from '@/lib/quehaceres-juego';
+import type { Persona } from '@/lib/personas';
+import { usePersona } from './depa/usePersona';
+import { ChipPersona, SelectorPersona } from './depa/SelectorPersona';
+import MapaQuehaceres from './quehaceres/MapaQuehaceres';
+import ListaQuehaceres from './quehaceres/ListaQuehaceres';
+import MarcadorDepa from './quehaceres/MarcadorDepa';
+import type { DatosQuehacer } from './quehaceres/FormaQuehacer';
+import type { Acciones } from './quehaceres/tipos';
 
-const ESTILO: Record<Estado, { punto: string; texto: string; barra: string; borde: string }> = {
-  vencido: { punto: 'bg-red-500', texto: 'text-red-600', barra: 'bg-red-500', borde: 'border-red-200' },
-  hoy: { punto: 'bg-blue-500', texto: 'text-blue-600', barra: 'bg-blue-500', borde: 'border-blue-200' },
-  pronto: { punto: 'bg-amber-500', texto: 'text-amber-600', barra: 'bg-amber-400', borde: 'border-amber-200' },
-  ok: { punto: 'bg-gray-300', texto: 'text-gray-500', barra: 'bg-gray-300', borde: 'border-gray-100' },
-};
-
-const EMOJIS = [
-  '🧽', '🪴', '🚿', '🖥️', '🔥', '🛏️', '👟', '🧊', '🧹', '🧺', '🗑️', '🪟', '🍽️', '🚽', '🧴',
-  '☕', '💻', '🚮', '🫧', '💧', '🪥', '🛌', '💊', '🎧', '🎒', '🧘', '🪞', '🚪', '🐜', '👕',
-];
-
+/**
+ * Tres puertas antes de llegar al depa: el PIN (servidor), quién eres
+ * (aparato) y ya. Los datos son los mismos para los dos.
+ */
 export default function QuehaceresTracker() {
   const [autorizado, setAutorizado] = useState<boolean | null>(null);
   const [sinConfigurar, setSinConfigurar] = useState(false);
+  const { persona, escoger } = usePersona();
+  const [cambiando, setCambiando] = useState(false);
 
   useEffect(() => {
     fetch('/api/quehaceres/pin')
@@ -37,19 +32,38 @@ export default function QuehaceresTracker() {
       .catch(() => setAutorizado(false));
   }, []);
 
-  if (autorizado === null) {
-    return (
-      <div className="min-h-[320px] flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-      </div>
-    );
-  }
+  if (autorizado === null) return <Cargando />;
 
   if (!autorizado) {
     return <CandadoPin sinConfigurar={sinConfigurar} onEntrar={() => setAutorizado(true)} />;
   }
 
-  return <Tablero onSalir={() => setAutorizado(false)} />;
+  if (!persona || cambiando) {
+    return (
+      <SelectorPersona
+        onEscoger={(id) => {
+          escoger(id);
+          setCambiando(false);
+        }}
+      />
+    );
+  }
+
+  return (
+    <Tablero
+      persona={persona}
+      onCambiarPersona={() => setCambiando(true)}
+      onSalir={() => setAutorizado(false)}
+    />
+  );
+}
+
+function Cargando() {
+  return (
+    <div className="flex min-h-[320px] items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+    </div>
+  );
 }
 
 /* ---------------------------------------------------------------- candado */
@@ -80,9 +94,9 @@ function CandadoPin({ sinConfigurar, onEntrar }: { sinConfigurar: boolean; onEnt
   }
 
   return (
-    <div className="min-h-[320px] flex items-center justify-center">
-      <div className="w-full max-w-sm rounded-2xl bg-white border border-gray-100 shadow-md p-8">
-        <div className="text-center mb-6">
+    <div className="flex min-h-[320px] items-center justify-center">
+      <div className="w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-8 shadow-md">
+        <div className="mb-6 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-2xl">
             🧹
           </div>
@@ -128,14 +142,26 @@ function CandadoPin({ sinConfigurar, onEntrar }: { sinConfigurar: boolean; onEnt
 
 /* ---------------------------------------------------------------- tablero */
 
-function Tablero({ onSalir }: { onSalir: () => void }) {
+type Vista = 'mapa' | 'lista';
+
+function Tablero({
+  persona,
+  onCambiarPersona,
+  onSalir,
+}: {
+  persona: Persona;
+  onCambiarPersona: () => void;
+  onSalir: () => void;
+}) {
   const [quehaceres, setQuehaceres] = useState<QuehacerCalculado[] | null>(null);
+  const [juego, setJuego] = useState<Juego | null>(null);
   const [hoy, setHoy] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState<string | null>(null);
-  const [mostrarForma, setMostrarForma] = useState(false);
   const [editando, setEditando] = useState<string | null>(null);
+  const [vista, setVista] = useState<Vista>('mapa');
+  const [destello, setDestello] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
     const res = await fetch('/api/quehaceres');
@@ -145,6 +171,7 @@ function Tablero({ onSalir }: { onSalir: () => void }) {
     if (!res.ok) return setError(data.error ?? 'No se pudieron cargar los quehaceres.');
 
     setQuehaceres(data.quehaceres);
+    setJuego(data.juego);
     setHoy(data.hoy);
     setError(null);
   }, [onSalir]);
@@ -163,61 +190,77 @@ function Tablero({ onSalir }: { onSalir: () => void }) {
     };
   }, [quehaceres]);
 
-  async function marcarHecho(id: string) {
-    setOcupado(id);
-    const res = await fetch(`/api/quehaceres/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ hecho: true }),
-    });
-    setOcupado(null);
-    if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
-      return setError(d.error ?? 'No se pudo marcar como hecho.');
-    }
-    await cargar();
-  }
+  /** Todas las escrituras pasan por aquí: marcan ocupado, recargan y reportan. */
+  const escribir = useCallback(
+    async (id: string, init: RequestInit, falla: string) => {
+      setOcupado(id);
+      const res = await fetch(`/api/quehaceres/${id}`, init);
+      setOcupado(null);
 
-  async function guardarEdicion(id: string, cambios: Record<string, unknown>) {
-    setOcupado(id);
-    const res = await fetch(`/api/quehaceres/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(cambios),
-    });
-    setOcupado(null);
-    if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
-      return setError(d.error ?? 'No se pudo guardar.');
-    }
-    setEditando(null);
-    await cargar();
-  }
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.error ?? falla);
+        return false;
+      }
 
-  async function archivar(id: string) {
-    setOcupado(id);
-    const res = await fetch(`/api/quehaceres/${id}`, { method: 'DELETE' });
-    setOcupado(null);
-    if (!res.ok) return setError('No se pudo quitar el quehacer.');
-    setEditando(null);
-    await cargar();
-  }
+      await cargar();
+      return true;
+    },
+    [cargar]
+  );
 
-  async function crear(nuevo: { nombre: string; emoji: string; frecuencia_dias: number }) {
-    const res = await fetch('/api/quehaceres', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nuevo),
-    });
-    if (!res.ok) {
-      const d = await res.json().catch(() => ({}));
-      setError(d.error ?? 'No se pudo agregar.');
-      return false;
-    }
-    setMostrarForma(false);
-    await cargar();
-    return true;
-  }
+  const patch = (id: string, cuerpo: Record<string, unknown>, falla: string) =>
+    escribir(
+      id,
+      { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo) },
+      falla
+    );
+
+  const acciones: Acciones = {
+    ocupado,
+    editando,
+    onEditar: setEditando,
+
+    async onHecho(q) {
+      const ok = await patch(q.id, { hecho: true, quien: persona.id }, 'No se pudo marcar como hecho.');
+      if (!ok) return;
+
+      // El destello cae en el mismo mueble donde estaba la burbuja.
+      setDestello(muebleDeQuehacer(q));
+      setTimeout(() => setDestello(null), 900);
+    },
+
+    async onGuardar(id, datos) {
+      if (await patch(id, datos, 'No se pudo guardar.')) setEditando(null);
+    },
+
+    async onReiniciar(id) {
+      await patch(id, { ultima_vez: null }, 'No se pudo reiniciar.');
+    },
+
+    async onArchivar(id) {
+      if (await escribir(id, { method: 'DELETE' }, 'No se pudo quitar el quehacer.')) {
+        setEditando(null);
+      }
+    },
+
+    async onCrear(datos: DatosQuehacer) {
+      const res = await fetch('/api/quehaceres', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos),
+      });
+
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.error ?? 'No se pudo agregar.');
+        return false;
+      }
+
+      await cargar();
+      return true;
+    },
+  };
 
   async function mandarCorreoDePrueba() {
     setAviso('Mandando…');
@@ -232,23 +275,28 @@ function Tablero({ onSalir }: { onSalir: () => void }) {
     onSalir();
   }
 
-  if (!quehaceres) {
-    return (
-      <div className="min-h-[320px] flex items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-      </div>
-    );
-  }
+  if (!quehaceres) return <Cargando />;
 
   return (
     <div>
-      {/* Resumen */}
-      <div className="mb-6 flex flex-wrap items-center gap-2">
+      {/* Encabezado */}
+      <div className="mb-5 flex flex-wrap items-center gap-2">
+        <ChipPersona persona={persona} onCambiar={onCambiarPersona} />
         <span className="mr-auto text-sm capitalize text-gray-500">{hoy && fechaLarga(hoy)}</span>
-        <Chip n={resumen.vencidos} etiqueta="atrasados" clase="bg-red-50 text-red-700 border-red-200" />
-        <Chip n={resumen.hoy} etiqueta="hoy" clase="bg-blue-50 text-blue-700 border-blue-200" />
-        <Chip n={resumen.pronto} etiqueta="ya casi" clase="bg-amber-50 text-amber-700 border-amber-200" />
-        <Chip n={resumen.alDia} etiqueta="al día" clase="bg-gray-50 text-gray-600 border-gray-200" />
+        <Chip n={resumen.vencidos} etiqueta="atrasados" clase="border-red-200 bg-red-50 text-red-700" />
+        <Chip n={resumen.hoy} etiqueta="hoy" clase="border-blue-200 bg-blue-50 text-blue-700" />
+        <Chip n={resumen.pronto} etiqueta="ya casi" clase="border-amber-200 bg-amber-50 text-amber-700" />
+        <Chip n={resumen.alDia} etiqueta="al día" clase="border-gray-200 bg-gray-50 text-gray-600" />
+      </div>
+
+      {/* Vistas */}
+      <div className="mb-6 inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1">
+        <Pestana activa={vista === 'mapa'} onClick={() => setVista('mapa')}>
+          🗺️ Mapa
+        </Pestana>
+        <Pestana activa={vista === 'lista'} onClick={() => setVista('lista')}>
+          📋 Lista
+        </Pestana>
       </div>
 
       {error && (
@@ -257,61 +305,25 @@ function Tablero({ onSalir }: { onSalir: () => void }) {
         </p>
       )}
 
-      {/* Lista */}
-      <div className="space-y-3">
-        <AnimatePresence initial={false}>
-          {quehaceres.map((q) => (
-            <motion.div
-              key={q.id}
-              layout
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-            >
-              {editando === q.id ? (
-                <FormaEdicion
-                  quehacer={q}
-                  ocupado={ocupado === q.id}
-                  onGuardar={(cambios) => guardarEdicion(q.id, cambios)}
-                  onArchivar={() => archivar(q.id)}
-                  onCancelar={() => setEditando(null)}
-                />
-              ) : (
-                <Tarjeta
-                  quehacer={q}
-                  ocupado={ocupado === q.id}
-                  onHecho={() => marcarHecho(q.id)}
-                  onEditar={() => setEditando(q.id)}
-                />
-              )}
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {quehaceres.length === 0 && (
-        <p className="rounded-2xl border border-dashed border-gray-300 px-6 py-10 text-center text-gray-500">
-          Todavía no hay quehaceres. Agrega el primero abajo.
-        </p>
+      {vista === 'mapa' ? (
+        <MapaQuehaceres
+          quehaceres={quehaceres}
+          persona={persona}
+          acciones={acciones}
+          destello={destello}
+        />
+      ) : (
+        <ListaQuehaceres quehaceres={quehaceres} acciones={acciones} />
       )}
 
-      {/* Agregar */}
-      <div className="mt-4">
-        {mostrarForma ? (
-          <FormaNuevo onCrear={crear} onCancelar={() => setMostrarForma(false)} />
-        ) : (
-          <button
-            onClick={() => setMostrarForma(true)}
-            className="w-full rounded-2xl border-2 border-dashed border-gray-200 px-4 py-4 text-sm font-medium text-gray-500 transition-colors hover:border-blue-300 hover:text-blue-600"
-          >
-            + Agregar quehacer
-          </button>
-        )}
-      </div>
+      {juego && (
+        <div className="mt-8">
+          <MarcadorDepa juego={juego} />
+        </div>
+      )}
 
       {/* Pie */}
-      <div className="mt-10 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-gray-100 pt-5 text-sm">
+      <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-gray-100 pt-5 text-sm">
         <p className="mr-auto text-gray-500">
           Te llega un correo a las 7:00 a.m. cuando algo esté pendiente.
         </p>
@@ -328,249 +340,33 @@ function Tablero({ onSalir }: { onSalir: () => void }) {
   );
 }
 
+function Pestana({
+  activa,
+  onClick,
+  children,
+}: {
+  activa: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={activa}
+      className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${
+        activa ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 function Chip({ n, etiqueta, clase }: { n: number; etiqueta: string; clase: string }) {
   if (n === 0) return null;
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${clase}`}>
       {n} {etiqueta}
     </span>
-  );
-}
-
-/* --------------------------------------------------------------- tarjetas */
-
-function Tarjeta({
-  quehacer: q,
-  ocupado,
-  onHecho,
-  onEditar,
-}: {
-  quehacer: QuehacerCalculado;
-  ocupado: boolean;
-  onHecho: () => void;
-  onEditar: () => void;
-}) {
-  const estilo = ESTILO[q.estado];
-  const ancho = Math.min(100, Math.max(0, q.progreso * 100));
-
-  return (
-    <div
-      className={`group flex items-center gap-4 rounded-2xl border bg-white p-4 shadow-sm transition-all hover:shadow-md ${estilo.borde}`}
-    >
-      <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gray-50 text-2xl">
-        {q.emoji}
-      </span>
-
-      <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-2">
-          <h3 className="truncate font-semibold text-gray-900">{q.nombre}</h3>
-          <button
-            onClick={onEditar}
-            className="text-xs text-gray-400 opacity-0 transition-opacity hover:text-blue-600 group-hover:opacity-100 focus:opacity-100"
-            aria-label={`Editar ${q.nombre}`}
-          >
-            editar
-          </button>
-        </div>
-
-        <div className="mt-0.5 flex items-center gap-2 text-xs">
-          <span className={`h-1.5 w-1.5 rounded-full ${estilo.punto}`} />
-          <span className={`font-medium ${estilo.texto}`}>{etiquetaEstado(q)}</span>
-          <span className="text-gray-400">· {etiquetaFrecuencia(q.frecuencia_dias)}</span>
-        </div>
-
-        <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-gray-100">
-          <div
-            className={`h-full rounded-full transition-all duration-500 ${estilo.barra}`}
-            style={{ width: `${ancho}%` }}
-          />
-        </div>
-      </div>
-
-      <button
-        onClick={onHecho}
-        disabled={ocupado}
-        className="flex-shrink-0 rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-600 disabled:opacity-50"
-      >
-        {ocupado ? '…' : 'Hecho'}
-      </button>
-    </div>
-  );
-}
-
-function FormaEdicion({
-  quehacer: q,
-  ocupado,
-  onGuardar,
-  onArchivar,
-  onCancelar,
-}: {
-  quehacer: QuehacerCalculado;
-  ocupado: boolean;
-  onGuardar: (cambios: Record<string, unknown>) => void;
-  onArchivar: () => void;
-  onCancelar: () => void;
-}) {
-  const [nombre, setNombre] = useState(q.nombre);
-  const [emoji, setEmoji] = useState(q.emoji);
-  const [frecuencia, setFrecuencia] = useState(String(q.frecuencia_dias));
-
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onGuardar({ nombre, emoji, frecuencia_dias: Number(frecuencia) });
-      }}
-      className="rounded-2xl border border-blue-200 bg-blue-50/40 p-4"
-    >
-      <div className="flex flex-wrap items-center gap-3">
-        <SelectorEmoji valor={emoji} onCambio={setEmoji} />
-        <input
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          className="min-w-0 flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-          aria-label="Nombre del quehacer"
-        />
-        <SelectorFrecuencia valor={frecuencia} onCambio={setFrecuencia} />
-      </div>
-
-      <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-        <button
-          type="submit"
-          disabled={ocupado}
-          className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-        >
-          Guardar
-        </button>
-        <button type="button" onClick={onCancelar} className="text-gray-500 hover:text-gray-700">
-          Cancelar
-        </button>
-        {q.ultima_vez && (
-          <button
-            type="button"
-            onClick={() => onGuardar({ ultima_vez: null })}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            Reiniciar
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={onArchivar}
-          className="ml-auto text-red-600 hover:text-red-800"
-        >
-          Quitar
-        </button>
-      </div>
-
-      {q.ultima_vez && (
-        <p className="mt-2 text-xs text-gray-500">
-          Última vez: <span className="capitalize">{fechaLarga(q.ultima_vez)}</span>
-        </p>
-      )}
-    </form>
-  );
-}
-
-function FormaNuevo({
-  onCrear,
-  onCancelar,
-}: {
-  onCrear: (n: { nombre: string; emoji: string; frecuencia_dias: number }) => Promise<boolean>;
-  onCancelar: () => void;
-}) {
-  const [nombre, setNombre] = useState('');
-  const [emoji, setEmoji] = useState('🧽');
-  const [frecuencia, setFrecuencia] = useState('7');
-  const [guardando, setGuardando] = useState(false);
-
-  return (
-    <form
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setGuardando(true);
-        const ok = await onCrear({ nombre, emoji, frecuencia_dias: Number(frecuencia) });
-        setGuardando(false);
-        if (ok) setNombre('');
-      }}
-      className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
-    >
-      <div className="flex flex-wrap items-center gap-3">
-        <SelectorEmoji valor={emoji} onCambio={setEmoji} />
-        <input
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          placeholder="¿Qué hay que hacer?"
-          autoFocus
-          className="min-w-0 flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-          aria-label="Nombre del quehacer"
-        />
-        <SelectorFrecuencia valor={frecuencia} onCambio={setFrecuencia} />
-      </div>
-
-      <div className="mt-3 flex items-center gap-3 text-sm">
-        <button
-          type="submit"
-          disabled={guardando || !nombre.trim()}
-          className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-        >
-          {guardando ? 'Agregando…' : 'Agregar'}
-        </button>
-        <button type="button" onClick={onCancelar} className="text-gray-500 hover:text-gray-700">
-          Cancelar
-        </button>
-      </div>
-    </form>
-  );
-}
-
-function SelectorEmoji({ valor, onCambio }: { valor: string; onCambio: (e: string) => void }) {
-  return (
-    <select
-      value={EMOJIS.includes(valor) ? valor : EMOJIS[0]}
-      onChange={(e) => onCambio(e.target.value)}
-      className="rounded-xl border border-gray-300 bg-white px-2 py-2 text-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-      aria-label="Icono"
-    >
-      {(EMOJIS.includes(valor) ? EMOJIS : [valor, ...EMOJIS]).map((e) => (
-        <option key={e} value={e}>
-          {e}
-        </option>
-      ))}
-    </select>
-  );
-}
-
-function SelectorFrecuencia({ valor, onCambio }: { valor: string; onCambio: (v: string) => void }) {
-  const esSugerida = FRECUENCIAS_SUGERIDAS.some((f) => String(f.dias) === valor);
-
-  return (
-    <div className="flex items-center gap-2">
-      <select
-        value={esSugerida ? valor : 'otro'}
-        onChange={(e) => onCambio(e.target.value === 'otro' ? valor : e.target.value)}
-        className="rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-        aria-label="Frecuencia"
-      >
-        {FRECUENCIAS_SUGERIDAS.map((f) => (
-          <option key={f.dias} value={f.dias}>
-            {f.etiqueta}
-          </option>
-        ))}
-        <option value="otro">Otra…</option>
-      </select>
-
-      {!esSugerida && (
-        <input
-          type="number"
-          min={1}
-          max={365}
-          value={valor}
-          onChange={(e) => onCambio(e.target.value)}
-          className="w-20 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-          aria-label="Cada cuántos días"
-        />
-      )}
-    </div>
   );
 }
