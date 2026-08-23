@@ -12,6 +12,7 @@ import {
   type QuehacerCalculado,
 } from '@/lib/quehaceres';
 import { mueble, zona } from '@/lib/depa-mapa';
+import { saludDelDepa } from '@/lib/quehaceres-juego';
 
 // El cron de Vercel corre a las 13:00 UTC = 7:00 a.m. en CDMX (sin horario de verano).
 export const dynamic = 'force-dynamic';
@@ -53,7 +54,14 @@ function seccion(titulo: string, lista: QuehacerCalculado[]): string {
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">${lista.map(filaHTML).join('')}</table>`;
 }
 
-function construirCorreo(hoy: string, pendientes: QuehacerCalculado[], proximos: QuehacerCalculado[]) {
+function construirCorreo(
+  hoy: string,
+  pendientes: QuehacerCalculado[],
+  proximos: QuehacerCalculado[],
+  todos: QuehacerCalculado[]
+) {
+  const salud = saludDelDepa(todos);
+  const colorSalud = { bien: '#059669', regular: '#b45309', mal: '#dc2626' }[salud.tono];
   const vencidos = pendientes.filter((q) => q.estado === 'vencido');
   const deHoy = pendientes.filter((q) => q.estado === 'hoy');
 
@@ -78,6 +86,7 @@ function construirCorreo(hoy: string, pendientes: QuehacerCalculado[], proximos:
         <tr><td>
           <div style="font-size:13px;color:#9ca3af;text-transform:capitalize;">${fechaLarga(hoy)}</div>
           <h1 style="font-size:26px;font-weight:700;color:#111827;margin:6px 0 0;">Quehaceres del depa</h1>
+          <div style="font-size:14px;color:${colorSalud};margin-top:6px;font-weight:600;">Salud del depa: ${salud.porcentaje}% · ${salud.etiqueta.toLowerCase()}</div>
           ${seccion('Atrasados', vencidos)}
           ${seccion('Toca hoy', deHoy)}
           ${seccion('Ya casi', proximos)}
@@ -91,6 +100,7 @@ function construirCorreo(hoy: string, pendientes: QuehacerCalculado[], proximos:
 
   const text = [
     `Quehaceres del depa — ${fechaLarga(hoy)}`,
+    `Salud del depa: ${salud.porcentaje}% (${salud.etiqueta.toLowerCase()})`,
     '',
     ...pendientes.map((q) => `• ${q.nombre} — ${etiquetaEstado(q)} (${donde(q)})`),
     ...(proximos.length ? ['', 'Ya casi:', ...proximos.map((q) => `• ${q.nombre} — ${etiquetaEstado(q)}`)] : []),
@@ -141,7 +151,8 @@ export async function GET(req: NextRequest) {
   const { subject, html, text } = construirCorreo(
     hoy,
     pendientes.length ? pendientes : proximos,
-    pendientes.length ? proximos : []
+    pendientes.length ? proximos : [],
+    todos
   );
 
   try {

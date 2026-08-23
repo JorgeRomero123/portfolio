@@ -105,6 +105,76 @@ export function resumenDelJuego(
   };
 }
 
+// ------------------------------------------------------------------- salud
+
+export type Salud = {
+  /** 0 a 1. */
+  valor: number;
+  porcentaje: number;
+  etiqueta: string;
+  tono: 'bien' | 'regular' | 'mal';
+  /** Cuántos no se han pasado de su fecha. */
+  alDia: number;
+  total: number;
+  /** Los que más están jalando el número para abajo. */
+  peores: QuehacerCalculado[];
+};
+
+/**
+ * Qué tan limpio está el depa AHORITA.
+ *
+ * A diferencia del XP —que solo sube y mide todo lo que se ha hecho desde que
+ * existe el tool— esto baja solo con los días y se recupera al ponerse al
+ * corriente. Es el número que contesta "¿está limpio?" en vez de "¿cuánto
+ * llevamos hecho?".
+ *
+ * Cada quehacer aporta completo mientras no se pase de su fecha. Ya vencido,
+ * baja en proporción a su propio ritmo: llega a cero cuando lleva un ciclo
+ * entero de retraso. Así regar las plantas se desploma en tres días y voltear
+ * el colchón se tarda medio año, que es justo la diferencia entre los dos.
+ *
+ * Todos pesan igual. Es discutible —el baño importa más que el botiquín— pero
+ * un número que se explica en una frase se cree, y uno con pesos escondidos no.
+ */
+export function saludDelDepa(lista: QuehacerCalculado[]): Salud {
+  if (lista.length === 0) {
+    return {
+      valor: 1,
+      porcentaje: 100,
+      etiqueta: 'Nada que atender',
+      tono: 'bien',
+      alDia: 0,
+      total: 0,
+      peores: [],
+    };
+  }
+
+  const aporte = (q: QuehacerCalculado) => Math.min(1, Math.max(0, 2 - q.progreso));
+
+  const valor = lista.reduce((n, q) => n + aporte(q), 0) / lista.length;
+  const porcentaje = Math.round(valor * 100);
+
+  let etiqueta: string;
+  let tono: Salud['tono'];
+  if (valor >= 0.9) [etiqueta, tono] = ['Impecable', 'bien'];
+  else if (valor >= 0.7) [etiqueta, tono] = ['Va bien', 'bien'];
+  else if (valor >= 0.45) [etiqueta, tono] = ['Se está acumulando', 'regular'];
+  else [etiqueta, tono] = ['Urge meterle mano', 'mal'];
+
+  return {
+    valor,
+    porcentaje,
+    etiqueta,
+    tono,
+    alDia: lista.filter((q) => q.dias_restantes >= 0).length,
+    total: lista.length,
+    peores: lista
+      .filter((q) => aporte(q) < 1)
+      .sort((a, b) => aporte(a) - aporte(b))
+      .slice(0, 3),
+  };
+}
+
 // --------------------------------------------------------------- agrupación
 
 export type ResumenZona = {

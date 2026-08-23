@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fechaLarga, type QuehacerCalculado } from '@/lib/quehaceres';
-import { muebleDeQuehacer, type Juego } from '@/lib/quehaceres-juego';
+import { muebleDeQuehacer, saludDelDepa, type Juego } from '@/lib/quehaceres-juego';
 import type { Persona } from '@/lib/personas';
 import { usePersona } from './depa/usePersona';
 import { ChipPersona, SelectorPersona } from './depa/SelectorPersona';
@@ -186,9 +186,11 @@ function Tablero({
       vencidos: lista.filter((q) => q.estado === 'vencido').length,
       hoy: lista.filter((q) => q.estado === 'hoy').length,
       pronto: lista.filter((q) => q.estado === 'pronto').length,
-      alDia: lista.filter((q) => q.estado === 'ok').length,
     };
   }, [quehaceres]);
+
+  // Se deriva de lo que ya está cargado; no hace falta pedirle nada al servidor.
+  const salud = useMemo(() => saludDelDepa(quehaceres ?? []), [quehaceres]);
 
   /** Todas las escrituras pasan por aquí: marcan ocupado, recargan y reportan. */
   const escribir = useCallback(
@@ -286,8 +288,14 @@ function Tablero({
         <Chip n={resumen.vencidos} etiqueta="atrasados" clase="border-red-200 bg-red-50 text-red-700" />
         <Chip n={resumen.hoy} etiqueta="hoy" clase="border-blue-200 bg-blue-50 text-blue-700" />
         <Chip n={resumen.pronto} etiqueta="ya casi" clase="border-amber-200 bg-amber-50 text-amber-700" />
-        <Chip n={resumen.alDia} etiqueta="al día" clase="border-gray-200 bg-gray-50 text-gray-600" />
       </div>
+
+      {/* Cómo va el depa. Va arriba porque es el resumen de todo lo de abajo. */}
+      {juego && (
+        <div className="mb-6">
+          <MarcadorDepa juego={juego} salud={salud} />
+        </div>
+      )}
 
       {/* Vistas */}
       <div className="mb-6 inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1">
@@ -314,12 +322,6 @@ function Tablero({
         />
       ) : (
         <ListaQuehaceres quehaceres={quehaceres} acciones={acciones} />
-      )}
-
-      {juego && (
-        <div className="mt-8">
-          <MarcadorDepa juego={juego} />
-        </div>
       )}
 
       {/* Pie */}
