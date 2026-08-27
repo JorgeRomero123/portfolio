@@ -24,6 +24,7 @@ const categories: { label: string; tools: Tool[] }[] = [
       { name: 'Ficha Técnica', description: 'Generate real estate property listing PDFs', href: '/tools/ficha-tecnica', icon: '🏠', color: 'from-blue-600 to-indigo-600' },
       { name: 'YouTube Transcript', description: 'Extract transcripts from any YouTube video', href: '/tools/youtube-transcript', icon: '📝', color: 'from-blue-600 to-indigo-600' },
       { name: 'Client Intake', description: 'AI-assisted intake form for web projects', href: '/tools/client-intake', icon: '📋', color: 'from-blue-600 to-indigo-600' },
+      { name: 'Geospatial Data Explorer', description: 'Render 500k map points on the GPU with deck.gl', href: '/tools/geo-explorer', icon: '🌍', color: 'from-blue-600 to-indigo-600' },
       { name: 'Travel Time Calculator', description: 'Calculate driving times from multiple origins', href: '/tools/travel-time-calculator', icon: '🗺️', color: 'from-blue-600 to-indigo-600' },
       { name: 'Estudio Dental México', description: 'Estudio de mercado dental en México', href: '/tools/dental-market', icon: '🦷', color: 'from-blue-600 to-indigo-600' },
     ],
