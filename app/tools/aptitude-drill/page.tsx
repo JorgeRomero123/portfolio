@@ -4,7 +4,7 @@ import AptitudeDrill from '@/components/tools/AptitudeDrill';
 export const metadata = {
   title: 'Cognitive Aptitude Drill | Jorge Romero Romanis',
   description:
-    'A timed 40-question cognitive aptitude practice test in the UCAT format — numerical reasoning, number series, deductive logic, spatial patterns and error checking, with every question worked through afterwards.',
+    'A timed cognitive aptitude practice test in the two shapes employers actually send — numerical reasoning, number series, deductive logic, spatial patterns, error checking and English verbal — with every question generated fresh and worked through afterwards.',
 };
 
 export default function AptitudeDrillPage() {
@@ -30,10 +30,11 @@ export default function AptitudeDrillPage() {
           Cognitive Aptitude Drill
         </h1>
         <p className="mx-auto max-w-2xl text-lg text-gray-600">
-          Forty questions in twenty minutes, in the shape employers actually send:
-          numerical reasoning, number series, deductive logic, spatial patterns and
-          error checking, with no verbal section. Every question is generated fresh,
-          so no two runs repeat — and every answer is worked through afterwards.
+          Timed practice for the cognitive tests employers buy in: numerical reasoning,
+          number series, deductive logic, spatial patterns, error checking and English
+          verbal. Pick the shape they sent you — 40 in twenty minutes, or 50 in fifteen
+          with a verbal section. Every question is generated fresh, so no two runs
+          repeat, and every answer is worked through afterwards.
         </p>
       </div>
 

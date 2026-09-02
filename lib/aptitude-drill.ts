@@ -22,6 +22,8 @@
  * That is what makes the review screen able to say *why* you missed it.
  */
 
+import { generateVerbal } from './aptitude-drill-verbal';
+
 // ---------------------------------------------------------------- primitives
 
 export type Rng = () => number;
@@ -60,7 +62,7 @@ export function shuffle<T>(rng: Rng, xs: readonly T[]): T[] {
 }
 
 /** Pick `n` distinct members. Throws rather than looping forever if asked for too many. */
-function pickDistinct<T>(rng: Rng, xs: readonly T[], n: number): T[] {
+export function pickDistinct<T>(rng: Rng, xs: readonly T[], n: number): T[] {
   if (n > xs.length) throw new Error(`pickDistinct: asked for ${n} of ${xs.length}`);
   return shuffle(rng, xs).slice(0, n);
 }
@@ -106,10 +108,10 @@ export function describeFigure(f: FigureSpec): string {
 
 // ----------------------------------------------------------------- questions
 
-export type Category = 'Numerical' | 'Series' | 'Logic' | 'Spatial' | 'Detail';
+export type Category = 'Numerical' | 'Series' | 'Logic' | 'Spatial' | 'Detail' | 'Verbal';
 
 export const CATEGORIES: readonly Category[] = [
-  'Numerical', 'Series', 'Logic', 'Spatial', 'Detail',
+  'Numerical', 'Series', 'Logic', 'Spatial', 'Detail', 'Verbal',
 ] as const;
 
 export type Option =
@@ -135,7 +137,7 @@ export function optionLabel(o: Option): string {
   return o.kind === 'figure' ? describeFigure(o.fig) : o.text;
 }
 
-const text = (t: string, mono = false): Option => ({ kind: 'text', text: t, mono });
+export const text = (t: string, mono = false): Option => ({ kind: 'text', text: t, mono });
 const figure = (fig: FigureSpec): Option => ({ kind: 'figure', fig });
 
 /**
@@ -147,7 +149,7 @@ const figure = (fig: FigureSpec): Option => ({ kind: 'figure', fig });
  * Padding is a fallback, not the plan — every generator should supply enough
  * real errors that padding rarely fires.
  */
-function assemble(
+export function assemble(
   rng: Rng,
   count: number,
   answer: Option,
@@ -195,7 +197,7 @@ const pct = (n: number) => `${n}%`;
 // =============================================================== NUMERICAL
 
 /** Every question generator has the same shape. */
-type Generator = (rng: Rng) => Question;
+export type Generator = (rng: Rng) => Question;
 type NumericalTemplate = Generator;
 
 /** $X after a d% discount — what was the original? Reverse by dividing. */
@@ -997,22 +999,51 @@ const DETAIL: Generator[] = [digitPairs, codeOddOneOut, hexPairs];
 
 // ================================================================= assembly
 
-/** How many of each type make up a run, matching the shape of the real tests. */
-export const MIX: Record<Category, number> = {
-  Numerical: 12,
-  Series: 8,
-  Logic: 8,
-  Spatial: 8,
-  Detail: 4,
+/**
+ * Criteria sells more than one test and employers do not say which they bought.
+ * The two shapes below cover what actually turns up, and the platform states
+ * its own count and time limit before you start — read that screen and pick the
+ * matching mode, because the pacing is the part that differs most. 40-in-20 is
+ * 30 seconds a question; 50-in-15 is eighteen, and a strategy tuned for the
+ * first is a disaster in the second.
+ */
+export type DrillMode = 'noVerbal' | 'withVerbal';
+
+export interface ModeSpec {
+  label: string;
+  blurb: string;
+  seconds: number;
+  mix: Record<Category, number>;
+}
+
+export const MODES: Record<DrillMode, ModeSpec> = {
+  noVerbal: {
+    label: '40 questions · 20:00 · no verbal',
+    blurb: 'The UCAT shape — language-neutral, no English vocabulary. 30 seconds a question.',
+    seconds: 20 * 60,
+    mix: { Numerical: 12, Series: 8, Logic: 8, Spatial: 8, Detail: 4, Verbal: 0 },
+  },
+  withVerbal: {
+    label: '50 questions · 15:00 · with verbal',
+    blurb: 'The CCAT shape — a third of it is English vocabulary, analogies and spelling. 18 seconds a question.',
+    seconds: 15 * 60,
+    mix: { Numerical: 11, Series: 6, Logic: 5, Spatial: 8, Detail: 3, Verbal: 17 },
+  },
 };
 
-export const TOTAL_QUESTIONS = Object.values(MIX).reduce((a, b) => a + b, 0);
-export const DURATION_SECONDS = 20 * 60;
+export function modeTotal(mode: DrillMode): number {
+  return Object.values(MODES[mode].mix).reduce((a, b) => a + b, 0);
+}
+
+/** Kept for callers that predate the mode switch. */
+export const MIX = MODES.noVerbal.mix;
+export const TOTAL_QUESTIONS = modeTotal('noVerbal');
+export const DURATION_SECONDS = MODES.noVerbal.seconds;
 
 /**
- * Build one question of a given type, cycling templates so a run never leans on
- * a single generator. `offset` walks the template list; the RNG randomises the
- * values inside whichever template comes up.
+ * Build one question of a given type. `offset` walks the template list so a run
+ * never leans on a single generator; the RNG randomises the values inside
+ * whichever template comes up.
  */
 export function generateOne(rng: Rng, category: Category, offset: number): Question {
   switch (category) {
@@ -1021,22 +1052,27 @@ export function generateOne(rng: Rng, category: Category, offset: number): Quest
     case 'Logic': return LOGIC[offset % LOGIC.length](rng);
     case 'Spatial': return SPATIAL[offset % SPATIAL.length](rng);
     case 'Detail': return DETAIL[offset % DETAIL.length](rng);
+    case 'Verbal': return generateVerbal(rng, offset);
   }
 }
 
 /**
- * A full run: the mix above, template-cycled within each type, then shuffled so
+ * A full run: the mode's mix, template-cycled within each type, then shuffled so
  * the types interleave the way they do on the real thing.
  */
-export function generateRun(seed: number): { seed: number; questions: Question[] } {
+export function generateRun(seed: number, mode: DrillMode = 'noVerbal'): {
+  seed: number; mode: DrillMode; questions: Question[];
+} {
   const rng = makeRng(seed);
+  const { mix } = MODES[mode];
   const out: Question[] = [];
 
   for (const category of CATEGORIES) {
-    const n = MIX[category];
+    const n = mix[category];
+    if (!n) continue;
     const start = int(rng, 0, 20);
     for (let i = 0; i < n; i++) out.push(generateOne(rng, category, start + i));
   }
 
-  return { seed, questions: shuffle(rng, out) };
+  return { seed, mode, questions: shuffle(rng, out) };
 }

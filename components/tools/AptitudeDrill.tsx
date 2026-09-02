@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  CATEGORIES, DURATION_SECONDS,
-  generateRun, optionLabel, randomSeed,
-  type Category, type FigureSpec, type Option, type Question, type Slot,
+  CATEGORIES, MODES, generateRun, modeTotal, optionLabel, randomSeed,
+  type Category, type DrillMode, type FigureSpec, type Option, type Question, type Slot,
 } from '@/lib/aptitude-drill';
 
 // ------------------------------------------------------------------- figures
@@ -127,6 +126,7 @@ type Phase = 'idle' | 'running' | 'done';
 
 interface PastRun {
   seed: number;
+  shape?: DrillMode;
   score: number;
   attempted: number;
   seconds: number;
@@ -171,6 +171,8 @@ const COACHING: Record<Category, string> = {
     'Name the transformation out loud before you look at the options — "rotating 90° clockwise", "flip left-right". Deciding first stops the distractors pulling you around.',
   Detail:
     'Compare in chunks of three characters and check the ends before the middle. Case, accents and the 0/O collision are where the planted differences live.',
+  Verbal:
+    'Read the instruction word first — "opposite", "incorrectly", "best completes" — because the traps are built for someone who read the options first. On antonyms one option is always a synonym of the prompt; on analogies, name the relationship out loud before you scan the pairs.',
 };
 
 // ----------------------------------------------------------------- component
@@ -178,12 +180,15 @@ const COACHING: Record<Category, string> = {
 export default function AptitudeDrill() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [timed, setTimed] = useState(true);
+  const [mode, setMode] = useState<DrillMode>('noVerbal');
+  // A run in progress keeps the limit it began with, even if the selector moves.
+  const [runSeconds, setRunSeconds] = useState(MODES.noVerbal.seconds);
   const [seed, setSeed] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [flags, setFlags] = useState<boolean[]>([]);
   const [index, setIndex] = useState(0);
-  const [left, setLeft] = useState(DURATION_SECONDS);
+  const [left, setLeft] = useState(MODES.noVerbal.seconds);
   const [elapsed, setElapsed] = useState(0);
   const [history, setHistory] = useState<PastRun[]>([]);
   const [filter, setFilter] = useState<'all' | 'wrong' | 'blank'>('all');
@@ -192,21 +197,24 @@ export default function AptitudeDrill() {
 
   useEffect(() => setHistory(readHistory()), []);
 
-  const start = useCallback((withSeed?: number) => {
+  const start = useCallback((withSeed?: number, withMode?: DrillMode) => {
     const s = withSeed ?? randomSeed();
-    const run = generateRun(s);
+    const m = withMode ?? mode;
+    const run = generateRun(s, m);
+    setMode(m);
+    setRunSeconds(MODES[m].seconds);
     setSeed(s);
     setQuestions(run.questions);
     setAnswers(new Array(run.questions.length).fill(null));
     setFlags(new Array(run.questions.length).fill(false));
     setIndex(0);
-    setLeft(DURATION_SECONDS);
+    setLeft(MODES[m].seconds);
     setElapsed(0);
     startedAt.current = Date.now();
     setFilter('all');
     setPhase('running');
     window.scrollTo(0, 0);
-  }, []);
+  }, [mode]);
 
   const finish = useCallback(() => {
     setPhase((p) => {
@@ -306,6 +314,7 @@ export default function AptitudeDrill() {
     return JSON.stringify({
       tool: 'aptitude-drill',
       seed,
+      shape: mode,
       mode: timed ? 'timed' : 'untimed',
       at: new Date().toISOString().slice(0, 16).replace('T', ' '),
       score,
@@ -314,7 +323,9 @@ export default function AptitudeDrill() {
       timeUsed: mmss(elapsed),
       secPerQuestion: attempted ? Number((elapsed / attempted).toFixed(1)) : null,
       // [correct, asked] per type — terser than an object and just as readable
-      byType: Object.fromEntries(CATEGORIES.map((c) => [c, [byType[c].ok, byType[c].n]])),
+      byType: Object.fromEntries(
+        CATEGORIES.filter((c) => byType[c].n > 0).map((c) => [c, [byType[c].ok, byType[c].n]]),
+      ),
       questions: questions.map((q, i) => {
         const mine = answers[i];
         const blank = mine === null || mine === undefined;
@@ -328,7 +339,7 @@ export default function AptitudeDrill() {
         return row;
       }),
     });
-  }, [phase, questions, answers, result, seed, timed, elapsed]);
+  }, [phase, questions, answers, result, seed, timed, mode, elapsed]);
 
   const copyResults = useCallback(async () => {
     try {
@@ -347,26 +358,30 @@ export default function AptitudeDrill() {
     if (phase !== 'done' || seed === null || recorded.current === seed) return;
     recorded.current = seed;
     const entry: PastRun = {
-      seed, score: result.score, attempted: result.attempted,
+      seed, shape: mode, score: result.score, attempted: result.attempted,
       seconds: Math.round(elapsed), byType: result.byType,
       at: new Date().toISOString().slice(0, 16).replace('T', ' '),
     };
     setHistory((prev) => { const next = [...prev, entry]; writeHistory(next); return next; });
-  }, [phase, seed, result, elapsed]);
+  }, [phase, seed, mode, result, elapsed]);
 
   const answeredCount = answers.filter((a) => a !== null).length;
 
   // ==================================================================== idle
   if (phase === 'idle') {
-    const best = history.length ? Math.max(...history.map((h) => h.score)) : null;
+    const spec = MODES[mode];
+    const total = modeTotal(mode);
+    const sameShape = history.filter((h) => (h.shape ?? 'noVerbal') === mode);
+    const best = sameShape.length ? Math.max(...sameShape.map((h) => h.score)) : null;
+    const perQuestion = Math.round(spec.seconds / total);
     return (
       <div className="mx-auto max-w-3xl">
         <div className="mb-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-gray-200 bg-gray-200 sm:grid-cols-4">
           {[
-            ['40', 'Questions'],
-            ['20:00', 'Time limit'],
-            ['30s', 'Per question'],
-            [best === null ? '—' : `${best}/40`, 'Your best'],
+            [String(total), 'Questions'],
+            [mmss(spec.seconds), 'Time limit'],
+            [`${perQuestion}s`, 'Per question'],
+            [best === null ? '—' : `${best}/${total}`, 'Your best'],
           ].map(([v, k]) => (
             <div key={k} className="bg-white px-4 py-3">
               <div className="font-mono text-xl font-bold tabular-nums text-gray-900">{v}</div>
@@ -375,12 +390,32 @@ export default function AptitudeDrill() {
           ))}
         </div>
 
+        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-md">
+          <h2 className="mb-1 text-xl font-bold text-gray-900">Which test did they send?</h2>
+          <p className="mb-4 text-sm text-gray-600">
+            The platform states its question count and time limit before you start. Match it here —
+            the pacing is what differs most between the two.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(Object.keys(MODES) as DrillMode[]).map((m) => (
+              <button key={m} onClick={() => setMode(m)} aria-pressed={mode === m}
+                className={`rounded-lg border p-4 text-left transition
+                  ${mode === m ? 'border-blue-600 bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'}`}>
+                <span className={`block font-semibold ${mode === m ? 'text-blue-900' : 'text-gray-900'}`}>
+                  {MODES[m].label}
+                </span>
+                <span className="mt-1 block text-sm text-gray-600">{MODES[m].blurb}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-md">
           <h2 className="mb-4 text-xl font-bold text-gray-900">Before you start</h2>
           <ol className="space-y-3">
             {[
               ['Answer everything.', 'There is no penalty for a wrong answer, so a guess is free. Blank and wrong score the same.'],
-              ['Never spend more than 30 seconds on one question.', 'They are not ordered by difficulty — a hard one early costs you easy ones at the end.'],
+              [`Never spend more than ${perQuestion} seconds on one question.`, 'They are not ordered by difficulty — a hard one early costs you easy ones at the end.'],
               ['Skip freely, then sweep back.', 'Use the square strip to flag and return. Almost nobody finishes all forty.'],
               ['Keyboard beats mouse.', '1–5 selects, ← → move between questions, F flags one for review.'],
             ].map(([title, body], i) => (
@@ -413,6 +448,7 @@ export default function AptitudeDrill() {
                   <tr>
                     <th className="px-4 py-2 font-medium">When</th>
                     <th className="px-4 py-2 font-medium">Score</th>
+                    <th className="px-4 py-2 font-medium">Shape</th>
                     <th className="px-4 py-2 font-medium">Time</th>
                     <th className="px-4 py-2 font-medium">Pace</th>
                     <th className="px-4 py-2 font-medium">Seed</th>
@@ -422,13 +458,18 @@ export default function AptitudeDrill() {
                   {history.slice().reverse().map((h) => (
                     <tr key={`${h.seed}-${h.at}`}>
                       <td className="px-4 py-2 text-gray-600">{h.at}</td>
-                      <td className="px-4 py-2 font-mono font-semibold tabular-nums text-gray-900">{h.score}/40</td>
+                      <td className="px-4 py-2 font-mono font-semibold tabular-nums text-gray-900">
+                        {h.score}/{modeTotal(h.shape ?? 'noVerbal')}
+                      </td>
+                      <td className="px-4 py-2 text-xs text-gray-500">
+                        {(h.shape ?? 'noVerbal') === 'withVerbal' ? 'with verbal' : 'no verbal'}
+                      </td>
                       <td className="px-4 py-2 font-mono tabular-nums text-gray-600">{mmss(h.seconds)}</td>
                       <td className="px-4 py-2 font-mono tabular-nums text-gray-600">
                         {h.attempted ? `${(h.seconds / h.attempted).toFixed(1)}s` : '—'}
                       </td>
                       <td className="px-4 py-2">
-                        <button onClick={() => start(h.seed)}
+                        <button onClick={() => start(h.seed, h.shape ?? 'noVerbal')}
                           className="font-mono text-xs text-blue-600 hover:text-blue-700 hover:underline"
                           title="Replay this exact run">
                           {h.seed}
@@ -467,7 +508,7 @@ export default function AptitudeDrill() {
           {timed && (
             <div className="mt-2 h-1 rounded-full bg-gray-200">
               <div className={`h-full rounded-full transition-[width] duration-1000 ease-linear ${warn ? 'bg-red-500' : 'bg-blue-600'}`}
-                style={{ width: `${(left / DURATION_SECONDS) * 100}%` }} />
+                style={{ width: `${(left / runSeconds) * 100}%` }} />
             </div>
           )}
         </div>
@@ -496,9 +537,9 @@ export default function AptitudeDrill() {
             </span>
           </div>
 
-          <p className="text-lg leading-relaxed text-gray-900">{current.prompt}</p>
+          <p className="whitespace-pre-line text-lg leading-relaxed text-gray-900">{current.prompt}</p>
           {current.monoPrompt && (
-            <p className="mt-3 overflow-x-auto font-mono text-xl tracking-widest text-gray-900">{current.monoPrompt}</p>
+            <p className="mt-3 overflow-x-auto whitespace-pre font-mono text-base leading-relaxed tracking-wide text-gray-900 sm:text-lg">{current.monoPrompt}</p>
           )}
           {current.figures && <div className="mt-4"><StemRow slots={current.figures} /></div>}
 
@@ -612,7 +653,7 @@ export default function AptitudeDrill() {
 
       <h2 className="mt-10 mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500">By question type</h2>
       <div className="space-y-2 rounded-xl border border-gray-200 bg-white p-5">
-        {CATEGORIES.map((c) => {
+        {CATEGORIES.filter((c) => byType[c].n > 0).map((c) => {
           const p = byType[c];
           const pctOk = p.n ? (p.ok / p.n) * 100 : 0;
           return (
@@ -663,8 +704,8 @@ export default function AptitudeDrill() {
                 <span className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${chip[0]}`}>{chip[1]}</span>
               </div>
 
-              <p className="text-gray-900">{q.prompt}</p>
-              {q.monoPrompt && <p className="mt-2 overflow-x-auto font-mono text-lg tracking-widest text-gray-900">{q.monoPrompt}</p>}
+              <p className="whitespace-pre-line text-gray-900">{q.prompt}</p>
+              {q.monoPrompt && <p className="mt-2 overflow-x-auto whitespace-pre font-mono text-sm leading-relaxed text-gray-900">{q.monoPrompt}</p>}
               {q.figures && <div className="mt-2"><StemRow slots={q.figures} size={38} /></div>}
 
               {isFigure ? (
