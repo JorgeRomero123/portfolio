@@ -110,6 +110,23 @@ export const PROJECTS: Project[] = [
     ),
     tech: ['RBAC', 'SSE', 'State machine'],
   },
+  {
+    href: 'https://artoverlay.com',
+    tag: 'solo · free',
+    tagColor: '#0070f3',
+    tagBorder: '#bcd8fb',
+    title: 'Art Overlay',
+    body: (
+      <>
+        A tracing app that pins your reference image onto the live camera feed, so muralists,
+        tattoo artists and cake decorators can trace it by hand. Perspective correction for
+        tilted walls, curvature for mugs, background removal built in — and it all
+        {' '}{hi('runs on the phone, nothing uploads')}. Free forever, no account. It started as
+        one of the toys in the pile below and refused to stay there.
+      </>
+    ),
+    tech: ['Camera API', 'Canvas', 'On-device'],
+  },
 ];
 
 /** Mirrors /tools — kept in the same order so the two pages never disagree. */

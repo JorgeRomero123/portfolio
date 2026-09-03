@@ -428,7 +428,7 @@ export default function HomeExperience({
         <div data-reveal style={{ display: 'flex', alignItems: 'baseline', gap: 18, marginBottom: 48, flexWrap: 'wrap' }}>
           <span style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em' }}>02</span>
           <h2 style={{ fontSize: 'clamp(34px,5vw,60px)', fontWeight: 700, letterSpacing: '-0.03em' }}>Things I shipped</h2>
-          <span style={{ fontFamily: MONO, fontSize: 13, color: '#8494b0', letterSpacing: '0.04em', marginLeft: 'auto' }}>2 companies · 2 solo</span>
+          <span style={{ fontFamily: MONO, fontSize: 13, color: '#8494b0', letterSpacing: '0.04em', marginLeft: 'auto' }}>2 companies · 3 solo</span>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(330px,100%),1fr))', gap: 24 }}>
