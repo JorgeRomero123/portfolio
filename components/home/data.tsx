@@ -6,10 +6,12 @@ export const ACCENT = '#0070f3';
 export const MONO = 'var(--font-jetbrains-mono), monospace';
 export const SANS = 'var(--font-space-grotesk), sans-serif';
 
-export const NAV_LINKS = [
+/** `hideXs` drops the link below 430px, where five of them stop fitting. */
+export const NAV_LINKS: { href: string; label: string; hideXs?: boolean }[] = [
   { href: '#work', label: 'work' },
+  { href: '#clients', label: 'clients' },
   { href: '#tools', label: 'the pile' },
-  { href: '#explore', label: 'explore' },
+  { href: '#explore', label: 'explore', hideXs: true },
   { href: '#contact', label: 'contact' },
 ];
 
@@ -126,6 +128,39 @@ export const PROJECTS: Project[] = [
       </>
     ),
     tech: ['Camera API', 'Canvas', 'On-device'],
+  },
+];
+
+export type ClientSite = {
+  href: string;
+  name: string;
+  sector: string;
+  place: string;
+  body: string;
+};
+
+/** Real businesses, real invoices. Ordered by how long the site has been live. */
+export const CLIENT_SITES: ClientSite[] = [
+  {
+    href: 'https://emarts.com.mx',
+    name: 'e.marts',
+    sector: 'talleres de gouache',
+    place: 'Cuernavaca · Metepec',
+    body: 'Elizabeth teaches gouache to people who swear they cannot paint. Public workshops, private events and corporate team building — the site sells all three and hands the booking to WhatsApp.',
+  },
+  {
+    href: 'https://papeleria-raquel.com',
+    name: 'Papelería Raquel',
+    sector: 'papelería · mercería',
+    place: 'Antonio Barona, Cuernavaca',
+    body: 'Copies, CURP printing, binding, and thread by the metre. A neighbourhood shop that needed to be findable at 9pm when someone remembers the school supply list.',
+  },
+  {
+    href: 'https://www.depel.com.mx',
+    name: 'DEPEL',
+    sector: 'ingeniería eléctrica industrial',
+    place: 'Jiutepec, Morelos',
+    body: 'Turnkey industrial electrical work up to 34.5 kV, running since 1999. Pharma plants read the project portfolio, then pick up the phone.',
   },
 ];
 

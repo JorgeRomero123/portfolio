@@ -22,9 +22,11 @@ import { usePrefersReducedMotion } from './lib/usePrefersReducedMotion';
 import Counter from './Counter';
 import ProjectCard from './ProjectCard';
 import ToolWall from './ToolWall';
+import ClientSites from './ClientSites';
 import GalleryTile from './GalleryTile';
 import {
   ACCENT, MONO, SANS, NAV_LINKS, TECH, STATS, TRUTHS, PROJECTS, TOOL_COUNT,
+  CLIENT_SITES,
 } from './data';
 
 /**
@@ -222,6 +224,12 @@ export default function HomeExperience({
         .jrr-navlink{position:relative;}
         .jrr-navlink::after{content:'';position:absolute;left:0;bottom:-5px;width:100%;height:1px;background:${ACCENT};transform:scaleX(0);transform-origin:right;transition:transform .35s cubic-bezier(.2,.6,.2,1);}
         .jrr-navlink:hover::after{transform:scaleX(1);transform-origin:left;}
+        .jrr-client-arrow{transition:transform .3s cubic-bezier(.2,.6,.2,1),color .3s;}
+        .jrr-client:hover .jrr-client-arrow{transform:translate(3px,-3px);color:${ACCENT};}
+        @media (max-width:900px){
+          /* the column hairlines only make sense at the full 3-up width */
+          .jrr-client{border-right:none!important;}
+        }
         @media (max-width:860px){
           .jrr-navlinks{gap:18px!important;}
           .jrr-hint-drag{display:none!important;}
@@ -276,7 +284,7 @@ export default function HomeExperience({
               key={l.href}
               href={l.href}
               onClick={(e) => { e.preventDefault(); scrollTo(l.href); }}
-              className={`jrr-navlink${l.label === 'live demo' ? ' jrr-hide-xs' : ''}`}
+              className={`jrr-navlink${l.hideXs ? ' jrr-hide-xs' : ''}`}
               style={{ color: '#44557a', textDecoration: 'none', whiteSpace: 'nowrap' }}
             >
               {l.label}
@@ -438,10 +446,29 @@ export default function HomeExperience({
         </div>
       </section>
 
+      {/* ===== BUILT FOR CLIENTS ===== */}
+      <section id="clients" style={{ maxWidth: 1180, margin: '0 auto', padding: '0 clamp(24px,7vw,40px) clamp(60px,10vh,120px)' }}>
+        <div data-reveal style={{ display: 'flex', alignItems: 'baseline', gap: 18, marginBottom: 20, flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em' }}>03</span>
+          <h2 style={{ fontSize: 'clamp(34px,5vw,60px)', fontWeight: 700, letterSpacing: '-0.03em' }}>Built for clients</h2>
+          <span style={{ fontFamily: MONO, fontSize: 13, color: '#8494b0', letterSpacing: '0.04em', marginLeft: 'auto' }}>
+            {CLIENT_SITES.length} sites · méxico
+          </span>
+        </div>
+
+        <p data-reveal style={{ fontSize: 'clamp(16px,1.6vw,19px)', lineHeight: 1.6, color: '#64789b', maxWidth: '58ch', marginBottom: 44 }}>
+          Small businesses in Morelos and the Estado de México, none of which needed a
+          single-page-app — they needed to be found, understood, and contacted before the
+          customer gave up. Design, build, copy and deploy.
+        </p>
+
+        <ClientSites />
+      </section>
+
       {/* ===== THE PILE — 25 tools ===== */}
       <section id="tools" style={{ maxWidth: 1180, margin: '0 auto', padding: 'clamp(40px,8vh,90px) clamp(24px,7vw,40px) clamp(80px,12vh,140px)' }}>
         <div data-reveal style={{ display: 'flex', alignItems: 'baseline', gap: 18, marginBottom: 20, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em' }}>03</span>
+          <span style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em' }}>04</span>
           <h2 style={{ fontSize: 'clamp(34px,5vw,60px)', fontWeight: 700, letterSpacing: '-0.03em' }}>The pile</h2>
           <span style={{ fontFamily: MONO, fontSize: 13, color: '#8494b0', letterSpacing: '0.04em', marginLeft: 'auto' }}>{TOOL_COUNT} working tools</span>
         </div>
@@ -472,7 +499,7 @@ export default function HomeExperience({
         }}
       >
         <div style={{ padding: '0 clamp(24px,7vw,40px)', marginBottom: 32, display: 'flex', alignItems: 'baseline', gap: 18, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em' }}>04</span>
+          <span style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em' }}>05</span>
           <h2 style={{ fontSize: 'clamp(30px,4.5vw,54px)', fontWeight: 700, letterSpacing: '-0.03em' }}>Other things I make</h2>
           <span style={{ fontFamily: MONO, fontSize: 12, color: '#8494b0', marginLeft: 'auto' }}>keep scrolling →</span>
         </div>
@@ -558,7 +585,7 @@ export default function HomeExperience({
 
       {/* ===== CONTACT ===== */}
       <section id="contact" style={{ maxWidth: 1180, margin: '0 auto', padding: 'clamp(90px,16vh,180px) clamp(24px,7vw,40px) 70px' }}>
-        <div data-reveal style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em', marginBottom: 24 }}>05 · let&rsquo;s talk</div>
+        <div data-reveal style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em', marginBottom: 24 }}>06 · let&rsquo;s talk</div>
         <h2 data-reveal style={{ fontSize: 'clamp(44px,8vw,104px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 0.95 }}>
           Let&rsquo;s build<br />something <span style={{ color: ACCENT, fontStyle: 'italic' }}>you&rsquo;d actually use.</span>
         </h2>
