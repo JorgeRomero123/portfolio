@@ -260,6 +260,8 @@ export default function CfdiExcelProcessor() {
   const [dragActive, setDragActive] = useState(false);
   const [processingProgress, setProcessingProgress] = useState<{ current: number; total: number } | null>(null);
   const [searchFilter, setSearchFilter] = useState('');
+  // When off, the download is the plain report with no per-RFC subtotals
+  const [includeRfcSubtotals, setIncludeRfcSubtotals] = useState(true);
 
   /**
    * Reads the Excel file and returns raw data
@@ -501,7 +503,10 @@ export default function CfdiExcelProcessor() {
    * A second sheet, "Resumen por RFC", lists one line per counterparty RFC
    * with its invoice count and summed columns.
    */
-  const downloadProcessedExcel = useCallback((fileData: ProcessedFile) => {
+  const downloadProcessedExcel = useCallback((
+    fileData: ProcessedFile,
+    withRfcSubtotals: boolean
+  ) => {
     const wsData: (string | number | null)[][] = [];
     const emptyRow: (string | number | null)[] = fileData.headers.map(() => null);
 
@@ -540,7 +545,7 @@ export default function CfdiExcelProcessor() {
       groups: RfcGroup[]
     ) => {
       const rfcIndex = fileData.counterpartyRfcIndex;
-      if (rfcIndex < 0 || groups.length === 0) {
+      if (!withRfcSubtotals || rfcIndex < 0 || groups.length === 0) {
         wsData.push(...rows);
         return;
       }
@@ -637,7 +642,10 @@ export default function CfdiExcelProcessor() {
     XLSX.utils.book_append_sheet(wb, ws, 'Datos Procesados');
 
     // Second sheet: one line per counterparty RFC with its own totals
-    if (fileData.rfcGroups.length > 0 || fileData.nominaRfcGroups.length > 0) {
+    if (
+      withRfcSubtotals &&
+      (fileData.rfcGroups.length > 0 || fileData.nominaRfcGroups.length > 0)
+    ) {
       const rfcLabel = fileData.counterpartyColumn || 'RFC';
       const summaryHeaders = [rfcLabel, 'Razón Social', 'Facturas', ...COLUMNS_TO_SUM];
       const summaryData: (string | number | null)[][] = [summaryHeaders];
@@ -1113,25 +1121,41 @@ export default function CfdiExcelProcessor() {
                     {' '}• {activeFile.removedColumns.length} columnas eliminadas
                   </p>
                 </div>
-                <button
-                  onClick={() => downloadProcessedExcel(activeFile)}
-                  className="px-5 py-2.5 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center"
-                >
-                  <svg
-                    className="w-5 h-5 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <label className="flex items-start gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={includeRfcSubtotals}
+                      onChange={e => setIncludeRfcSubtotals(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 accent-blue-600 cursor-pointer"
                     />
-                  </svg>
-                  Descargar Excel
-                </button>
+                    <span className="text-sm text-gray-700">
+                      Sumatoria por RFC
+                      <span className="block text-xs text-gray-500">
+                        Sin marcar, descarga el reporte como antes
+                      </span>
+                    </span>
+                  </label>
+                  <button
+                    onClick={() => downloadProcessedExcel(activeFile, includeRfcSubtotals)}
+                    className="px-5 py-2.5 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center"
+                  >
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                    Descargar Excel
+                  </button>
+                </div>
               </div>
 
               {/* Regular Totals Grid */}
@@ -1156,7 +1180,7 @@ export default function CfdiExcelProcessor() {
 
               {/* Per-RFC Subtotals — one line per counterparty, however many
                   invoices it has in the file */}
-              {activeFile.rfcGroups.length > 0 && (
+              {includeRfcSubtotals && activeFile.rfcGroups.length > 0 && (
                 <div className="mb-6">
                   <h5 className="text-md font-semibold text-gray-700 mb-3">
                     Sumatoria por {activeFile.counterpartyColumn || 'RFC'} (
