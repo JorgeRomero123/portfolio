@@ -83,6 +83,18 @@ interface ColumnSums {
 }
 
 /**
+ * Subtotals for a single counterparty RFC.
+ * A month can contain many invoices from the same RFC; this collapses them
+ * into one line so you can see how much each counterparty represents.
+ */
+interface RfcGroup {
+  rfc: string;
+  razon: string;
+  rowCount: number;
+  sums: ColumnSums;
+}
+
+/**
  * Represents a processed Excel file with receptor info
  * Rows are separated into: regular, nómina (with totals), and pagos (no totals)
  */
@@ -102,6 +114,12 @@ interface ProcessedFile {
   pagosRows: (string | number | null)[][];
   originalRowCount: number;
   removedColumns: string[];
+  // Per-counterparty-RFC subtotals. The counterparty is the side that varies:
+  // "RFC Receptor" in an emitidos file, "RFC Emisor" in a recibidos file.
+  counterpartyColumn: string;
+  counterpartyRfcIndex: number;
+  rfcGroups: RfcGroup[];
+  nominaRfcGroups: RfcGroup[];
 }
 
 /**
@@ -164,6 +182,67 @@ function getSumColumnKey(header: string): string | null {
     col => normalizeColumnName(col) === normalized
   );
   return match || null;
+}
+
+/**
+ * Normalizes an RFC cell into a grouping key
+ */
+function rfcKey(value: unknown): string {
+  return String(value ?? '').trim().toUpperCase() || 'SIN RFC';
+}
+
+/**
+ * Groups rows by counterparty RFC and sums the financial columns for each one.
+ * A single RFC can appear in any number of rows within the same file; every
+ * one of them lands in the same group.
+ */
+function computeRfcGroups(
+  rows: (string | number | null)[][],
+  headers: string[],
+  rfcIndex: number,
+  razonIndex: number
+): RfcGroup[] {
+  if (rfcIndex < 0) return [];
+
+  const sumColumns: { index: number; key: string }[] = [];
+  headers.forEach((header, index) => {
+    const key = getSumColumnKey(header);
+    if (key) {
+      sumColumns.push({ index, key });
+    }
+  });
+
+  const groups = new Map<string, RfcGroup>();
+
+  for (const row of rows) {
+    const rfc = rfcKey(row[rfcIndex]);
+    let group = groups.get(rfc);
+
+    if (!group) {
+      const sums: ColumnSums = {};
+      COLUMNS_TO_SUM.forEach(col => {
+        sums[col] = 0;
+      });
+      group = {
+        rfc,
+        razon: razonIndex >= 0 ? String(row[razonIndex] ?? '').trim() : '',
+        rowCount: 0,
+        sums,
+      };
+      groups.set(rfc, group);
+    }
+
+    group.rowCount += 1;
+    // Keep the first non-empty razón social we see for this RFC
+    if (!group.razon && razonIndex >= 0) {
+      group.razon = String(row[razonIndex] ?? '').trim();
+    }
+    for (const { index, key } of sumColumns) {
+      group.sums[key] += parseNumericValue(row[index]);
+    }
+  }
+
+  return Array.from(groups.values()).sort((a, b) => a.rfc.localeCompare(b.rfc));
 }
 
 /**
@@ -359,6 +438,28 @@ export default function CfdiExcelProcessor() {
       pagosRows.sort(sortByRfc);
     }
 
+    // Subtotals per counterparty RFC (the side that varies within the file)
+    const razonCandidates = isEmitidos
+      ? ['Razon Receptor', 'Razón Receptor']
+      : ['Razon Emisor', 'Razón Emisor'];
+    const counterpartyRazonIndex = newHeaders.findIndex(h =>
+      razonCandidates.some(c => normalizeColumnName(c) === normalizeColumnName(h))
+    );
+    const counterpartyColumn = sortColumnIndex >= 0 ? newHeaders[sortColumnIndex] : '';
+
+    const rfcGroups = computeRfcGroups(
+      newRows,
+      newHeaders,
+      sortColumnIndex,
+      counterpartyRazonIndex
+    );
+    const nominaRfcGroups = computeRfcGroups(
+      nominaRows,
+      newHeaders,
+      sortColumnIndex,
+      counterpartyRazonIndex
+    );
+
     return {
       id: generateId(),
       fileName,
@@ -372,6 +473,10 @@ export default function CfdiExcelProcessor() {
       pagosRows,
       originalRowCount: dataRows.length,
       removedColumns,
+      counterpartyColumn,
+      counterpartyRfcIndex: sortColumnIndex,
+      rfcGroups,
+      nominaRfcGroups,
     };
   };
 
@@ -380,7 +485,8 @@ export default function CfdiExcelProcessor() {
    *
    * OUTPUT STRUCTURE:
    * 1. Headers
-   * 2. Regular data rows
+   * 2. Regular data rows, grouped by counterparty RFC with a SUBTOTAL row
+   *    after each group
    * 3. Empty row
    * 4. TOTALES row (regular)
    * 5. Empty row
@@ -391,6 +497,9 @@ export default function CfdiExcelProcessor() {
    * 10. Empty row
    * 11. 5 empty rows separator
    * 12. Pagos rows (if any) - no totals
+   *
+   * A second sheet, "Resumen por RFC", lists one line per counterparty RFC
+   * with its invoice count and summed columns.
    */
   const downloadProcessedExcel = useCallback((fileData: ProcessedFile) => {
     const wsData: (string | number | null)[][] = [];
@@ -410,11 +519,44 @@ export default function CfdiExcelProcessor() {
       });
     };
 
+    // Creates a subtotal row for one counterparty RFC
+    const createSubtotalRow = (group: RfcGroup): (string | number | null)[] => {
+      return fileData.headers.map((header, index) => {
+        if (index === 0) {
+          const razon = group.razon ? ` - ${group.razon}` : '';
+          return `SUBTOTAL ${group.rfc}${razon} (${group.rowCount} facturas)`;
+        }
+        const sumKey = getSumColumnKey(header);
+        if (sumKey && group.sums[sumKey] !== undefined) {
+          return group.sums[sumKey];
+        }
+        return null;
+      });
+    };
+
+    // Pushes rows grouped by counterparty RFC, with a subtotal after each group
+    const pushRowsWithSubtotals = (
+      rows: (string | number | null)[][],
+      groups: RfcGroup[]
+    ) => {
+      const rfcIndex = fileData.counterpartyRfcIndex;
+      if (rfcIndex < 0 || groups.length === 0) {
+        wsData.push(...rows);
+        return;
+      }
+      for (const group of groups) {
+        const groupRows = rows.filter(row => rfcKey(row[rfcIndex]) === group.rfc);
+        wsData.push(...groupRows);
+        wsData.push(createSubtotalRow(group));
+        wsData.push(emptyRow);
+      }
+    };
+
     // Add headers
     wsData.push(fileData.headers);
 
-    // Add regular rows
-    wsData.push(...fileData.rows);
+    // Add regular rows, with a subtotal after each RFC
+    pushRowsWithSubtotals(fileData.rows, fileData.rfcGroups);
 
     // Add empty row before totals
     wsData.push(emptyRow);
@@ -432,8 +574,8 @@ export default function CfdiExcelProcessor() {
         wsData.push(emptyRow);
       }
 
-      // Add Nómina rows
-      wsData.push(...fileData.nominaRows);
+      // Add Nómina rows, with a subtotal after each RFC
+      pushRowsWithSubtotals(fileData.nominaRows, fileData.nominaRfcGroups);
 
       // Add empty row before nómina totals
       wsData.push(emptyRow);
@@ -493,6 +635,58 @@ export default function CfdiExcelProcessor() {
     ws['!cols'] = colWidths;
 
     XLSX.utils.book_append_sheet(wb, ws, 'Datos Procesados');
+
+    // Second sheet: one line per counterparty RFC with its own totals
+    if (fileData.rfcGroups.length > 0 || fileData.nominaRfcGroups.length > 0) {
+      const rfcLabel = fileData.counterpartyColumn || 'RFC';
+      const summaryHeaders = [rfcLabel, 'Razón Social', 'Facturas', ...COLUMNS_TO_SUM];
+      const summaryData: (string | number | null)[][] = [summaryHeaders];
+
+      const pushSummarySection = (label: string, groups: RfcGroup[]) => {
+        if (groups.length === 0) return;
+        summaryData.push([label, ...summaryHeaders.slice(1).map(() => null)]);
+        for (const group of groups) {
+          summaryData.push([
+            group.rfc,
+            group.razon,
+            group.rowCount,
+            ...COLUMNS_TO_SUM.map(col => group.sums[col] ?? 0),
+          ]);
+        }
+        const totalRows = groups.reduce((acc, g) => acc + g.rowCount, 0);
+        summaryData.push([
+          `TOTAL ${label}`,
+          `${groups.length} RFC`,
+          totalRows,
+          ...COLUMNS_TO_SUM.map(col =>
+            groups.reduce((acc, g) => acc + (g.sums[col] ?? 0), 0)
+          ),
+        ]);
+        summaryData.push(summaryHeaders.map(() => null));
+      };
+
+      pushSummarySection('REGULARES', fileData.rfcGroups);
+      pushSummarySection('NÓMINA', fileData.nominaRfcGroups);
+
+      const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+      const summaryRange = XLSX.utils.decode_range(summaryWs['!ref'] || 'A1');
+
+      // Money columns start after RFC / Razón Social / Facturas
+      for (let rowIdx = 1; rowIdx <= summaryRange.e.r; rowIdx++) {
+        for (let colIdx = 3; colIdx < summaryHeaders.length; colIdx++) {
+          const cell = summaryWs[XLSX.utils.encode_cell({ r: rowIdx, c: colIdx })];
+          if (cell && typeof cell.v === 'number') {
+            cell.z = NUMBER_FORMAT;
+          }
+        }
+      }
+
+      summaryWs['!cols'] = summaryHeaders.map((header, index) => ({
+        wch: index === 1 ? 40 : Math.max(header.length + 2, 18),
+      }));
+
+      XLSX.utils.book_append_sheet(wb, summaryWs, 'Resumen por RFC');
+    }
 
     const baseName = fileData.fileName.replace(/\.[^/.]+$/, '');
     XLSX.writeFile(wb, `${baseName}_procesado.xlsx`);
@@ -959,6 +1153,83 @@ export default function CfdiExcelProcessor() {
                   ))}
                 </div>
               </div>
+
+              {/* Per-RFC Subtotals — one line per counterparty, however many
+                  invoices it has in the file */}
+              {activeFile.rfcGroups.length > 0 && (
+                <div className="mb-6">
+                  <h5 className="text-md font-semibold text-gray-700 mb-3">
+                    Sumatoria por {activeFile.counterpartyColumn || 'RFC'} (
+                    {activeFile.rfcGroups.length} RFC)
+                  </h5>
+                  <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2 text-left font-semibold text-gray-600 whitespace-nowrap">
+                            {activeFile.counterpartyColumn || 'RFC'}
+                          </th>
+                          <th className="px-4 py-2 text-left font-semibold text-gray-600 whitespace-nowrap">
+                            Razón Social
+                          </th>
+                          <th className="px-4 py-2 text-right font-semibold text-gray-600 whitespace-nowrap">
+                            Facturas
+                          </th>
+                          {COLUMNS_TO_SUM.map(col => (
+                            <th
+                              key={col}
+                              className="px-4 py-2 text-right font-semibold text-gray-600 whitespace-nowrap"
+                            >
+                              {col}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {activeFile.rfcGroups.map(group => (
+                          <tr key={group.rfc} className="hover:bg-gray-50">
+                            <td className="px-4 py-2 font-mono text-gray-900 whitespace-nowrap">
+                              {group.rfc}
+                            </td>
+                            <td className="px-4 py-2 text-gray-600 max-w-xs truncate">
+                              {group.razon || '—'}
+                            </td>
+                            <td className="px-4 py-2 text-right text-gray-600">
+                              {group.rowCount}
+                            </td>
+                            {COLUMNS_TO_SUM.map(col => (
+                              <td
+                                key={col}
+                                className="px-4 py-2 text-right text-gray-900 whitespace-nowrap"
+                              >
+                                {formatCurrency(group.sums[col] || 0)}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot className="bg-gray-50 font-semibold">
+                        <tr>
+                          <td className="px-4 py-2 text-gray-900" colSpan={2}>
+                            TOTAL
+                          </td>
+                          <td className="px-4 py-2 text-right text-gray-900">
+                            {activeFile.rows.length}
+                          </td>
+                          {COLUMNS_TO_SUM.map(col => (
+                            <td
+                              key={col}
+                              className="px-4 py-2 text-right text-gray-900 whitespace-nowrap"
+                            >
+                              {formatCurrency(activeFile.sums[col] || 0)}
+                            </td>
+                          ))}
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              )}
 
               {/* Nómina Totals Grid (only if there are nómina rows) */}
               {activeFile.nominaRows.length > 0 && (
