@@ -680,8 +680,8 @@
           "es": "Pinta con guía"
         },
         "howTo": {
-          "en": "Fill each sketched shape with the right colour. Click or tap; Tab and Enter work too.",
-          "es": "Rellena cada figura del boceto con el color correcto. Haz clic o toca; también funcionan Tab y Enter."
+          "en": "Pick a paint, then tap each sketched area with the matching number. Keys: 1–6 pick, arrows move, Enter paints.",
+          "es": "Elige una pintura y toca cada área bocetada con el mismo número. Teclas: 1–6 para elegir, flechas para moverte, Enter para pintar."
         }
       },
       "card": {
