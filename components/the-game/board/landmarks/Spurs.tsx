@@ -6,7 +6,7 @@
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import type { Group } from 'three';
-import { Baked, Kit, box, canvasTexture, cyl, glow, mat, once } from './kit';
+import { Baked, Kit, PLINTH, addPlinth, box, canvasTexture, cyl, glow, mat, once } from './kit';
 
 const BASE = 0.03;
 
@@ -88,8 +88,16 @@ function build(color: string) {
   return k.bake();
 }
 
+/** The stadium is built at 0.82 × 0.6 and scaled onto the shared plinth. */
+const FIT = 0.86;
+
 export default function Spurs({ color, reducedMotion }: { color: string; reducedMotion: boolean }) {
   const parts = once(`spurs:${color}`, () => build(color));
+  const plinth = once(`spurs:plinth:${color}`, () => {
+    const k = new Kit();
+    addPlinth(k, color);
+    return k.bake();
+  });
   const pitch = once('spurs:pitch', () => mat('#ffffff', { map: pitchTexture(), roughness: 0.9, flatShading: false }));
   const banner = once('spurs:banner', () => mat('#ffffff', { map: bannerTexture(), roughness: 0.7, flatShading: false }));
   const flag = useRef<Group>(null);
@@ -101,6 +109,8 @@ export default function Spurs({ color, reducedMotion }: { color: string; reduced
   });
   return (
     <group>
+      <Baked parts={plinth} />
+      <group position-y={PLINTH} scale={FIT}>
       <Baked parts={parts} />
       <mesh position={[0, BASE + 0.007, 0.0]} material={pitch} receiveShadow>
         <boxGeometry args={[0.5, 0.014, 0.3]} />
@@ -109,6 +119,7 @@ export default function Spurs({ color, reducedMotion }: { color: string; reduced
         <mesh position={[0, -0.04, 0]} material={banner} castShadow>
           <boxGeometry args={[0.4, 0.11, 0.008]} />
         </mesh>
+      </group>
       </group>
     </group>
   );

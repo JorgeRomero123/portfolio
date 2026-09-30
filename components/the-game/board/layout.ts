@@ -168,6 +168,13 @@ const PEAKS: readonly { x: number; z: number; s: number; h: number }[] = [
   { x: 1.4, z: -3.85, s: 0.7, h: 0.4 },
 ];
 
+/** Gentle mid-board hills inside the loop, between the front landmarks (behind the path, off it). */
+const HILLS: readonly { x: number; z: number; r: number; h: number }[] = [
+  { x: -0.05, z: 1.55, r: 0.55, h: 0.45 }, // between Software and Drone
+  { x: -2.15, z: 1.62, r: 0.5, h: 0.36 }, // between Kitchen and Software
+  { x: 1.95, z: 1.55, r: 0.45, h: 0.3 }, // between Drone and Spurs
+];
+
 /** Terrain height before flattening pads under tiles and landmarks. */
 export function rawHeight(x: number, z: number): number {
   const hill = hilliness(x, z);
@@ -178,6 +185,10 @@ export function rawHeight(x: number, z: number): number {
   for (const p of PLATEAUS) {
     const d = Math.hypot(x - p.x, z - p.z) + (fbm(x * 1.1 + 7, z * 1.1 - 5) - 0.5) * 0.7;
     h += p.h * smooth(p.r + 0.55, p.r, d);
+  }
+  for (const p of HILLS) {
+    const d2 = ((x - p.x) ** 2 + (z - p.z) ** 2) / (p.r * p.r);
+    h += p.h * Math.exp(-d2 * 1.4) * (0.85 + 0.3 * fbm(x * 2.1 + 3, z * 2.1));
   }
   // Outer ring: rolling hills, taller towards the back, plus a few peaks (snow on the tallest).
   const outer = smooth(1.08, 1.4, q);
@@ -231,6 +242,27 @@ export function groundHeight(x: number, z: number): number {
     if (d2 < 0.72) h = lerp(h, padXYZ[s][1], smooth(0.84, LANDMARK_PAD_RADIUS + 0.04, Math.sqrt(d2)));
   }
   return h;
+}
+
+/**
+ * Soft per-section weights at a point (warped Gaussian falloff around each patch, normalised), written
+ * into `out` (length SECTION_COUNT). Returns how strongly the point belongs to any patch (0–1), so
+ * colours blend smoothly across section borders instead of a hard seam.
+ */
+export function sectionWeights(x: number, z: number, out: Float32Array): number {
+  const wx = x + (fbm(x * 0.7 + 5, z * 0.7) - 0.5) * 0.9;
+  const wz = z + (fbm(x * 0.7 - 9, z * 0.7 + 4) - 0.5) * 0.9;
+  let sum = 0;
+  let dmin = Infinity;
+  for (let i = 0; i < patchXZ.length; i++) {
+    const d2 = (wx - patchXZ[i][0]) ** 2 + (wz - patchXZ[i][1]) ** 2;
+    const w = Math.exp(-d2 / 0.9);
+    out[i] = w;
+    sum += w;
+    dmin = Math.min(dmin, d2);
+  }
+  for (let i = 0; i < patchXZ.length; i++) out[i] = sum > 1e-9 ? out[i] / sum : 0;
+  return smooth(3.0, 1.0, Math.sqrt(dmin));
 }
 
 /** Which section's terrain patch a point belongs to (warped Voronoi) and how strongly (0–1). */

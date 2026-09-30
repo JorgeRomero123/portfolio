@@ -7,9 +7,9 @@ import { useFrame } from '@react-three/fiber';
 import type { Group } from 'three';
 import { Baked, Kit, PLINTH, addPlinth, box, canvasTexture, cyl, mat, once } from './kit';
 
-const ALBUM_Y = 0.44;
-const ORBIT_R = 0.34;
-const ORBIT_Y = 0.4;
+const ALBUM_Y = 0.5;
+const ORBIT_R = 0.38;
+const ORBIT_Y = 0.35;
 
 function photo(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
   const sky = g.createLinearGradient(0, y, 0, y + h);
@@ -94,8 +94,8 @@ const TEX = {
 function build(color: string) {
   const k = new Kit();
   addPlinth(k, color);
-  k.add(mat('#f6efe2'), cyl(0.1, 0.13, 0.14, 8), [0, PLINTH + 0.07, 0]);
-  k.add(mat(color, { roughness: 0.6 }), cyl(0.105, 0.105, 0.02, 8), [0, PLINTH + 0.13, 0]);
+  k.add(mat('#f6efe2'), cyl(0.13, 0.17, 0.2, 8), [0, PLINTH + 0.1, 0]);
+  k.add(mat(color, { roughness: 0.6 }), cyl(0.135, 0.135, 0.03, 8), [0, PLINTH + 0.19, 0]);
   return k.bake();
 }
 
@@ -103,9 +103,9 @@ function buildAlbum(color: string) {
   // Open book: two covers in a shallow V along a spine on local z; pages on top get the texture.
   const k = new Kit();
   const cover = mat(color, { roughness: 0.55 });
-  k.add(cover, box(0.2, 0.014, 0.26), [-0.098, 0, 0], [0, 0, -0.16]);
-  k.add(cover, box(0.2, 0.014, 0.26), [0.098, 0, 0], [0, 0, 0.16]);
-  k.add(cover, cyl(0.014, 0.014, 0.26, 6), [0, -0.012, 0], [Math.PI / 2, 0, 0]);
+  k.add(cover, box(0.29, 0.024, 0.38), [-0.142, 0, 0], [0, 0, -0.16]);
+  k.add(cover, box(0.29, 0.024, 0.38), [0.142, 0, 0], [0, 0, 0.16]);
+  k.add(cover, cyl(0.022, 0.022, 0.38, 6), [0, -0.018, 0], [Math.PI / 2, 0, 0]);
   return k.bake();
 }
 
@@ -144,31 +144,31 @@ export default function MyAlbumLink({ color, reducedMotion }: { color: string; r
   return (
     <group>
       <Baked parts={parts} />
-      <group ref={book} position={[0, ALBUM_Y, 0]} rotation-x={0.55}>
+      <group ref={book} position={[0, ALBUM_Y, 0]} rotation-x={0.6}>
         <Baked parts={album} />
-        <mesh position={[-0.098, 0.009, 0]} rotation-z={-0.16} material={m.pages}>
-          <boxGeometry args={[0.19, 0.006, 0.25]} />
+        <mesh position={[-0.142, 0.016, 0]} rotation-z={-0.16} material={m.pages}>
+          <boxGeometry args={[0.27, 0.012, 0.36]} />
         </mesh>
-        <mesh position={[0.098, 0.009, 0]} rotation-z={0.16} material={m.pages}>
-          <boxGeometry args={[0.19, 0.006, 0.25]} />
+        <mesh position={[0.142, 0.016, 0]} rotation-z={0.16} material={m.pages}>
+          <boxGeometry args={[0.27, 0.012, 0.36]} />
         </mesh>
       </group>
       <mesh position={[0, ORBIT_Y, 0]} rotation-x={Math.PI / 2} material={m.ring}>
-        <torusGeometry args={[ORBIT_R, 0.004, 3, 48]} />
+        <torusGeometry args={[ORBIT_R, 0.008, 3, 48]} />
       </mesh>
       <group ref={orbit} position={[0, ORBIT_Y, 0]}>
         {[
           <mesh key="p" material={m.photo} castShadow>
-            <boxGeometry args={[0.12, 0.1, 0.008]} />
+            <boxGeometry args={[0.18, 0.15, 0.014]} />
           </mesh>,
           <mesh key="v" material={m.video} castShadow>
-            <boxGeometry args={[0.13, 0.09, 0.008]} />
+            <boxGeometry args={[0.19, 0.13, 0.014]} />
           </mesh>,
           <mesh key="s" material={m.sphere} castShadow>
-            <sphereGeometry args={[0.05, 14, 10]} />
+            <sphereGeometry args={[0.075, 16, 10]} />
           </mesh>,
           <mesh key="d" material={m.pdf} castShadow>
-            <boxGeometry args={[0.085, 0.11, 0.006]} />
+            <boxGeometry args={[0.13, 0.17, 0.012]} />
           </mesh>,
         ].map((el, i) => (
           <group key={i} position={place(i)}>

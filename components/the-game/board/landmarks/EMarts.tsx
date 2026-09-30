@@ -9,9 +9,9 @@ import { Baked, Kit, PLINTH, addPlinth, ball, box, canvasTexture, cyl, mat, once
 
 const TOP = PLINTH + 0.22; // table top surface
 const EASELS = [
-  { x: -0.2, ry: 0.25 },
+  { x: -0.21, ry: 0.25 },
   { x: 0.0, ry: 0 },
-  { x: 0.2, ry: -0.25 },
+  { x: 0.21, ry: -0.25 },
 ];
 const EASEL_Z = -0.07;
 const DABS = ['#ec4899', '#f59e0b', '#3b82f6', '#22c55e', '#ffffff'];
@@ -101,10 +101,10 @@ function build(color: string) {
     const c = Math.cos(e.ry);
     const s = Math.sin(e.ry);
     const P = (x: number, y: number, z: number): [number, number, number] => [e.x + x * c + z * s, y, EASEL_Z - x * s + z * c];
-    k.add(wood, strut(P(-0.05, TOP, 0.02), P(0, TOP + 0.21, -0.01), 0.006, 'box'));
-    k.add(wood, strut(P(0.05, TOP, 0.02), P(0, TOP + 0.21, -0.01), 0.006, 'box'));
-    k.add(wood, strut(P(0, TOP, -0.07), P(0, TOP + 0.2, -0.015), 0.005, 'box'));
-    k.add(wood, box(0.13, 0.01, 0.02), P(0, TOP + 0.05, 0.022), [0, e.ry, 0]);
+    k.add(wood, strut(P(-0.07, TOP, 0.02), P(0, TOP + 0.3, -0.01), 0.01, 'box'));
+    k.add(wood, strut(P(0.07, TOP, 0.02), P(0, TOP + 0.3, -0.01), 0.01, 'box'));
+    k.add(wood, strut(P(0, TOP, -0.09), P(0, TOP + 0.28, -0.015), 0.009, 'box'));
+    k.add(wood, box(0.19, 0.016, 0.03), P(0, TOP + 0.05, 0.026), [0, e.ry, 0]);
   }
   // Brush jar + brushes
   k.add(mat('#bae6fd', { roughness: 0.2, transparent: true, opacity: 0.8 }), cyl(0.032, 0.028, 0.07, 8), [0.27, TOP + 0.035, 0.1]);
@@ -189,12 +189,12 @@ export default function EMarts({ color }: { color: string; reducedMotion: boolea
       {EASELS.map((e, i) => (
         <mesh
           key={i}
-          position={[e.x + Math.sin(e.ry) * 0.02, TOP + 0.13, EASEL_Z + Math.cos(e.ry) * 0.02]}
+          position={[e.x + Math.sin(e.ry) * 0.03, TOP + 0.165, EASEL_Z + Math.cos(e.ry) * 0.03]}
           rotation={[-0.14, e.ry, 0, 'YXZ']}
           material={canvases[i]}
           castShadow
         >
-          <boxGeometry args={[0.12, 0.15, 0.008]} />
+          <boxGeometry args={[0.18, 0.22, 0.014]} />
         </mesh>
       ))}
     </group>

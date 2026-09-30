@@ -1,6 +1,6 @@
 'use client';
 
-// Two tiny animated vehicles: a sailboat circling the lake and a little plane looping over the board.
+// Two tiny animated vehicles: a sailboat circling the lake and a little plane looping high above it.
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import type { Group } from 'three';
@@ -50,7 +50,8 @@ function Plane() {
 
 // Parametric loops: position at angle a, heading = derivative direction.
 const BOAT = { rx: 1.3, rz: 0.5, speed: 0.16 };
-const PLANE = { rx: 4.4, rz: 2.5, y: 2.3, speed: 0.12 };
+// The plane circles high over the lake only (never over the path or a landmark), at half scale.
+const PLANE = { rx: 1.6, rz: 0.5, cz: 0.3, y: 1.55, speed: 0.22, scale: 0.5 };
 
 export function Vehicles({ reducedMotion }: { reducedMotion: boolean }) {
   const boat = useRef<Group>(null);
@@ -67,7 +68,7 @@ export function Vehicles({ reducedMotion }: { reducedMotion: boolean }) {
     }
     if (plane.current) {
       const a = -tt * PLANE.speed + 2;
-      plane.current.position.set(Math.cos(a) * PLANE.rx, PLANE.y + Math.sin(tt * 0.7) * 0.15, Math.sin(a) * PLANE.rz);
+      plane.current.position.set(Math.cos(a) * PLANE.rx, PLANE.y + Math.sin(tt * 0.7) * 0.08, PLANE.cz + Math.sin(a) * PLANE.rz);
       plane.current.rotation.set(0, Math.atan2(Math.sin(a) * PLANE.rx, -Math.cos(a) * PLANE.rz), 0);
       plane.current.rotateZ(0.35);
     }
@@ -79,7 +80,9 @@ export function Vehicles({ reducedMotion }: { reducedMotion: boolean }) {
         <Boat />
       </group>
       <group ref={plane}>
-        <Plane />
+        <group scale={PLANE.scale}>
+          <Plane />
+        </group>
       </group>
     </>
   );

@@ -144,9 +144,13 @@ export function canvasTexture(key: string, w: number, h: number, draw: (g: Canva
   });
 }
 
-/** Cream plinth with a thin accent band, shared by most landmarks. Top surface at y = PLINTH. */
+/**
+ * Shared base for every landmark (same diameter everywhere, so models read at one scale): a cream
+ * plinth sitting in a chunky band of the section colour. Top surface at y = PLINTH.
+ */
 export const PLINTH = 0.045;
-export function addPlinth(kit: Kit, color: string, r = 0.47) {
-  kit.add(mat('#f6efe2'), cyl(r - 0.01, r, PLINTH, 10), [0, PLINTH / 2, 0]);
-  kit.add(mat(color, { roughness: 0.6 }), cyl(r + 0.012, r + 0.018, 0.016, 10), [0, 0.008, 0]);
+export const PLINTH_R = 0.46;
+export function addPlinth(kit: Kit, color: string, r = PLINTH_R) {
+  kit.add(mat('#f6efe2'), cyl(r - 0.012, r, PLINTH, 10), [0, PLINTH / 2, 0]);
+  kit.add(mat(color, { roughness: 0.6 }), cyl(r + 0.03, r + 0.04, 0.034, 10), [0, 0.017, 0]);
 }

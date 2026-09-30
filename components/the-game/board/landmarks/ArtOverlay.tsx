@@ -8,13 +8,14 @@ import { useFrame } from '@react-three/fiber';
 import { BufferGeometry, DoubleSide, Float32BufferAttribute, MeshBasicMaterial, type Mesh } from 'three';
 import { Baked, Kit, PLINTH, addPlinth, box, canvasTexture, glow, mat, once, strut } from './kit';
 
-const WALL_Z = -0.3;
-const WALL_W = 0.5;
-const WALL_H = 0.36;
-const WALL_Y = PLINTH + 0.3;
-const PHONE: [number, number, number] = [0.14, PLINTH + 0.17, 0.2];
-const ART_W = 0.44;
-const ART_H = 0.3;
+const WALL_Z = -0.25;
+const WALL_W = 0.62;
+const WALL_H = 0.44;
+const WALL_Y = PLINTH + 0.33;
+const PHONE: [number, number, number] = [0.17, PLINTH + 0.2, 0.2];
+const ART_W = 0.56;
+const ART_H = 0.38;
+const EASEL: [number, number] = [-0.21, 0.16];
 
 function drawDesign(g: CanvasRenderingContext2D, w: number, h: number, stroke: string, fills: boolean) {
   g.lineCap = 'round';
@@ -70,32 +71,32 @@ function build(color: string) {
   const white = mat('#fdfaf4');
   const graphite = mat('#2b2f38');
   // Wall panel on two feet
-  k.add(white, box(WALL_W + 0.04, WALL_H + 0.04, 0.03), [0, WALL_Y, WALL_Z]);
-  k.add(mat(color, { roughness: 0.6 }), box(WALL_W + 0.06, 0.02, 0.035), [0, WALL_Y - WALL_H / 2 - 0.03, WALL_Z]);
-  for (const x of [-0.2, 0.2]) k.add(graphite, box(0.03, WALL_Y - WALL_H / 2 - 0.02 - PLINTH, 0.08), [x, PLINTH + (WALL_Y - WALL_H / 2 - 0.02 - PLINTH) / 2, WALL_Z]);
+  k.add(white, box(WALL_W + 0.05, WALL_H + 0.05, 0.05), [0, WALL_Y, WALL_Z]);
+  k.add(mat(color, { roughness: 0.6 }), box(WALL_W + 0.07, 0.035, 0.06), [0, WALL_Y - WALL_H / 2 - 0.04, WALL_Z]);
+  for (const x of [-0.24, 0.24]) k.add(graphite, box(0.05, WALL_Y - WALL_H / 2 - 0.03 - PLINTH, 0.12), [x, PLINTH + (WALL_Y - WALL_H / 2 - 0.03 - PLINTH) / 2, WALL_Z]);
   // Phone stand: base, stem, cradle; phone faces the wall (-z), tilted slightly up.
-  k.add(graphite, box(0.1, 0.012, 0.08), [PHONE[0], PLINTH + 0.006, PHONE[2]]);
-  k.add(graphite, strut([PHONE[0], PLINTH, PHONE[2]], [PHONE[0], PHONE[1] - 0.05, PHONE[2] + 0.01], 0.008));
-  k.add(mat('#111827'), box(0.07, 0.13, 0.01), PHONE, [-0.12, 0, 0]);
-  k.add(mat('#9ca3af'), box(0.012, 0.012, 0.006), [PHONE[0] - 0.02, PHONE[1] + 0.045, PHONE[2] + 0.004], [-0.12, 0, 0]);
+  k.add(graphite, box(0.15, 0.02, 0.11), [PHONE[0], PLINTH + 0.01, PHONE[2]]);
+  k.add(graphite, strut([PHONE[0], PLINTH, PHONE[2]], [PHONE[0], PHONE[1] - 0.08, PHONE[2] + 0.01], 0.016));
+  k.add(mat(color, { roughness: 0.5 }), box(0.13, 0.215, 0.022), PHONE, [-0.12, 0, 0]);
+  k.add(mat('#111827'), box(0.11, 0.19, 0.026), PHONE, [-0.12, 0, 0]);
   // Easel (front left), facing the viewer
   const wood = mat('#b98352');
-  const ex = -0.25;
-  const ez = 0.14;
-  k.add(wood, strut([ex - 0.08, PLINTH, ez + 0.03], [ex, PLINTH + 0.5, ez - 0.02], 0.009, 'box'));
-  k.add(wood, strut([ex + 0.08, PLINTH, ez + 0.03], [ex, PLINTH + 0.5, ez - 0.02], 0.009, 'box'));
-  k.add(wood, strut([ex, PLINTH, ez - 0.14], [ex, PLINTH + 0.46, ez - 0.02], 0.008, 'box'));
-  k.add(wood, box(0.2, 0.015, 0.03), [ex, PLINTH + 0.18, ez + 0.01], [-0.1, 0, 0]);
+  const ex = EASEL[0];
+  const ez = EASEL[1];
+  k.add(wood, strut([ex - 0.12, PLINTH, ez + 0.04], [ex, PLINTH + 0.62, ez - 0.02], 0.016, 'box'));
+  k.add(wood, strut([ex + 0.12, PLINTH, ez + 0.04], [ex, PLINTH + 0.62, ez - 0.02], 0.016, 'box'));
+  k.add(wood, strut([ex, PLINTH, ez - 0.18], [ex, PLINTH + 0.56, ez - 0.02], 0.014, 'box'));
+  k.add(wood, box(0.3, 0.025, 0.05), [ex, PLINTH + 0.2, ez + 0.02], [-0.1, 0, 0]);
   // Paint pots by the easel
-  k.add(mat(color), box(0.05, 0.04, 0.05), [ex + 0.15, PLINTH + 0.02, ez + 0.14]);
-  k.add(mat('#60a5fa'), box(0.045, 0.035, 0.045), [ex + 0.21, PLINTH + 0.0175, ez + 0.1], [0, 0.4, 0]);
+  k.add(mat(color), box(0.08, 0.07, 0.08), [ex + 0.2, PLINTH + 0.035, ez + 0.16]);
+  k.add(mat('#60a5fa'), box(0.07, 0.06, 0.07), [ex + 0.09, PLINTH + 0.03, ez + 0.23], [0, 0.4, 0]);
   return k.bake();
 }
 
 /** Open pyramid from the phone to the drawing's corners. */
 function beamGeometry() {
   const [px, py, pz] = PHONE;
-  const z = WALL_Z + 0.017;
+  const z = WALL_Z + 0.028;
   const c = [
     [-ART_W / 2, WALL_Y - ART_H / 2],
     [ART_W / 2, WALL_Y - ART_H / 2],
@@ -106,7 +107,7 @@ function beamGeometry() {
   for (let i = 0; i < 4; i++) {
     const a = c[i];
     const b = c[(i + 1) % 4];
-    pos.push(px, py, pz - 0.006, a[0], a[1], z, b[0], b[1], z);
+    pos.push(px, py, pz - 0.016, a[0], a[1], z, b[0], b[1], z);
   }
   const g = new BufferGeometry();
   g.setAttribute('position', new Float32BufferAttribute(pos, 3));
@@ -158,15 +159,15 @@ export default function ArtOverlay({ color, reducedMotion }: { color: string; re
   return (
     <group>
       <Baked parts={parts} />
-      <mesh ref={art} position={[0, WALL_Y, WALL_Z + 0.016]} material={wallArt}>
+      <mesh ref={art} position={[0, WALL_Y, WALL_Z + 0.027]} material={wallArt}>
         <planeGeometry args={[ART_W, ART_H]} />
       </mesh>
       <mesh ref={beamRef} geometry={beam.geo} material={beam.mat} renderOrder={3} />
-      <mesh position={[PHONE[0], PHONE[1], PHONE[2] - 0.0055]} rotation={[-0.12, Math.PI, 0]} material={glow('#fed7aa', 1)}>
-        <planeGeometry args={[0.06, 0.115]} />
+      <mesh position={[PHONE[0], PHONE[1], PHONE[2] - 0.014]} rotation={[-0.12, Math.PI, 0]} material={glow('#fed7aa', 1)}>
+        <planeGeometry args={[0.095, 0.17]} />
       </mesh>
-      <mesh position={[-0.25, PLINTH + 0.3, 0.155]} rotation-x={-0.1} material={canvasMat} castShadow>
-        <boxGeometry args={[0.26, 0.19, 0.012]} />
+      <mesh position={[EASEL[0], PLINTH + 0.37, EASEL[1] + 0.025]} rotation-x={-0.1} material={canvasMat} castShadow>
+        <boxGeometry args={[0.34, 0.26, 0.02]} />
       </mesh>
     </group>
   );

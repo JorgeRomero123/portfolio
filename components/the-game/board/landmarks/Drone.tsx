@@ -8,15 +8,16 @@ import { useFrame } from '@react-three/fiber';
 import type { Group, Mesh } from 'three';
 import { Baked, Kit, ball, box, cone, cyl, glow, mat, once } from './kit';
 
-const ORBIT_R = 0.26;
-const ORBIT_Y = 0.52;
+const ORBIT_R = 0.22;
+const ORBIT_Y = 0.55;
 const ORBIT_Z = -0.06;
 const ARM = 0.11;
 
 function buildPad(color: string) {
   const k = new Kit();
   const dark = mat('#3b4150');
-  k.add(mat('#f6efe2'), cyl(0.46, 0.47, 0.03, 8), [0, 0.015, 0], [0, Math.PI / 8, 0]);
+  k.add(mat('#f6efe2'), cyl(0.45, 0.46, 0.03, 10), [0, 0.015, 0]);
+  k.add(mat(color, { roughness: 0.6 }), cyl(0.49, 0.5, 0.022, 10), [0, 0.011, 0]);
   k.add(dark, cyl(0.36, 0.37, 0.04, 8), [0, 0.02, 0], [0, Math.PI / 8, 0]);
   k.add(mat(color, { roughness: 0.5 }), cyl(0.3, 0.3, 0.044, 24), [0, 0.022, 0]);
   k.add(dark, cyl(0.26, 0.26, 0.046, 24), [0, 0.023, 0]);
@@ -76,7 +77,7 @@ export default function Drone({ color, reducedMotion }: { color: string; reduced
     <group>
       <Baked parts={pad} />
       <group ref={drone}>
-        <group scale={1.25}>
+        <group scale={1.55}>
           <Baked parts={body} />
           {[
             [ARM, ARM],

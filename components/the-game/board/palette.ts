@@ -19,20 +19,26 @@ export function tone(c: Color, s: number, l: number): Color {
 }
 
 /**
- * Ground tint per section patch: same hue family as the accent, but hand-spread in saturation and
- * lightness so neighbouring patches (and the pink / lilac / slate trio) read as distinct districts.
+ * Ground per section patch: a calm land palette of six muted hues (sage, teal-sage, meadow,
+ * dusty lavender, wheat, clay). Section accents live on the landmark rings and tile sides instead.
  */
+const SAGE = '#aec3a2';
+const TEAL_SAGE = '#9dbfae';
+const MEADOW = '#afc68f';
+const LAVENDER = '#b9b3c6';
+const WHEAT = '#d3c898';
+const CLAY = '#d5b995';
 const GROUND: Record<SectionId, string> = {
-  software: '#9cc2f2',
-  drone: '#7fd6cc',
-  spurs: '#8f9dc4',
-  pano360: '#b9a3f5',
-  boardgames: '#9ad47e',
-  music: '#d88fd9',
-  beer: '#f2c768',
-  artoverlay: '#f7a36b',
-  myalbumlink: '#6fc7ae',
-  emarts: '#f9b6cf',
-  kitchen: '#f0907f',
+  software: SAGE,
+  drone: TEAL_SAGE,
+  spurs: MEADOW,
+  pano360: LAVENDER,
+  boardgames: MEADOW,
+  music: LAVENDER,
+  beer: WHEAT,
+  artoverlay: CLAY,
+  myalbumlink: TEAL_SAGE,
+  emarts: WHEAT,
+  kitchen: CLAY,
 };
 export const SECTION_GROUND: readonly Color[] = SECTION_IDS.map((id) => new Color(GROUND[id]));

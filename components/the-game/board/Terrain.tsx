@@ -5,16 +5,16 @@
 // Relief (plateaus, back-corner peaks) comes from layout.rawHeight; a sand beach rings the lake.
 import { useEffect, useMemo } from 'react';
 import { BufferGeometry, Color, Float32BufferAttribute } from 'three';
-import { BOARD, groundHeight, lakeDist, sectionAt } from './layout';
+import { BOARD, SECTION_COUNT, groundHeight, lakeDist, sectionWeights } from './layout';
 import { hash, smooth } from './noise';
 import { SECTION_GROUND } from './palette';
 
 const CS = 0.19;
-const MEADOW = new Color('#9ccb73');
-const FOREST = new Color('#6fa55a');
+const MEADOW = new Color('#a9c38c');
+const FOREST = new Color('#7fa06a');
 const SAND = new Color('#f1dfae');
 const WET_SAND = new Color('#e2cf98');
-const SHALLOW = new Color('#8fd0cf');
+const SHALLOW = new Color('#98cfcb');
 const DEEP = new Color('#2d7c8e');
 const ROCK = new Color('#a79d8c');
 const SNOW = new Color('#f8f6f0');
@@ -44,6 +44,8 @@ function buildTerrain(): BufferGeometry {
   const pos: number[] = [];
   const col: number[] = [];
   const c = new Color();
+  const tint = new Color();
+  const w = new Float32Array(SECTION_COUNT);
   const faceColor = (a: GV, b: GV, d: GV) => {
     const h = (a.h + b.h + d.h) / 3;
     const x = (a.x + b.x + d.x) / 3;
@@ -57,14 +59,20 @@ function buildTerrain(): BufferGeometry {
     } else if (h < 0.045) {
       c.copy(SAND);
     } else {
-      const s = sectionAt(x, z);
-      // Meadow that darkens into forest green on the outer hills, section tint in each patch core.
-      c.copy(MEADOW).lerp(FOREST, smooth(0.3, 0.7, h) * (1 - s.weight));
-      c.lerp(SECTION_GROUND[s.index], 0.2 + 0.72 * s.weight);
+      // Smoothly blended patch colour (no seams), fading to meadow / forest on the outer hills.
+      const strength = sectionWeights(x, z, w);
+      tint.setRGB(0, 0, 0);
+      for (let i = 0; i < SECTION_COUNT; i++) {
+        tint.r += SECTION_GROUND[i].r * w[i];
+        tint.g += SECTION_GROUND[i].g * w[i];
+        tint.b += SECTION_GROUND[i].b * w[i];
+      }
+      c.copy(MEADOW).lerp(FOREST, smooth(0.3, 0.75, h) * (1 - strength));
+      c.lerp(tint, 0.15 + 0.8 * strength);
       if (h > 0.62) c.lerp(ROCK, smooth(0.62, 0.95, h));
       if (h > 1.0) c.lerp(SNOW, smooth(1.0, 1.15, h));
     }
-    c.offsetHSL(0, 0, (hash(a.x * 0.37, b.z * 0.53) - 0.5) * 0.05);
+    c.offsetHSL(0, 0, (hash(a.x * 0.37, b.z * 0.53) - 0.5) * 0.025);
     return c;
   };
   const push = (a: GV, b: GV, d: GV) => {

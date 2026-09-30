@@ -33,20 +33,33 @@ export const LANDMARKS: Record<SectionId, LandmarkComponent> = {
   kitchen: Kitchen,
 };
 
-/** Height (above the pad) of each model's top, where its board label is pinned. */
-export const LANDMARK_TOP: Record<SectionId, number> = {
-  software: 0.78,
-  drone: 0.66,
-  spurs: 0.62,
-  pano360: 0.82,
-  boardgames: 0.6,
-  music: 0.5,
-  beer: 0.62,
-  artoverlay: 0.56,
-  myalbumlink: 0.62,
-  emarts: 0.5,
-  kitchen: 0.84,
+/**
+ * Where each board label's stem lands, in the model's local space: `y` is the top of the model's
+ * tallest main element and `back` how far behind the pad centre (local -z) that element sits, so the
+ * label lands on the model itself (e.g. the stadium's banner, the artoverlay wall) and not on empty
+ * space in front of it.
+ */
+export const LANDMARK_LABEL: Record<SectionId, { y: number; back: number }> = {
+  software: { y: 0.74, back: 0.14 },
+  drone: { y: 0.72, back: 0.06 },
+  spurs: { y: 0.46, back: 0.22 },
+  pano360: { y: 0.84, back: 0 },
+  boardgames: { y: 0.62, back: 0.27 },
+  music: { y: 0.5, back: 0.12 },
+  beer: { y: 0.58, back: 0.15 },
+  artoverlay: { y: 0.68, back: 0.25 },
+  myalbumlink: { y: 0.68, back: 0 },
+  emarts: { y: 0.6, back: 0.08 },
+  kitchen: { y: 0.84, back: 0.27 },
 };
+
+/** World position of a landmark's label anchor. */
+export function landmarkLabelAnchor(id: SectionId): [number, number, number] {
+  const { x, y, z } = SECTION_LAYOUT[id].landmark;
+  const { y: top, back } = LANDMARK_LABEL[id];
+  const yaw = landmarkYaw(id);
+  return [x - Math.sin(yaw) * back, y + top, z - Math.cos(yaw) * back];
+}
 
 /**
  * Yaw for a landmark model. Models face the path (layout's rotY), nudged towards the default

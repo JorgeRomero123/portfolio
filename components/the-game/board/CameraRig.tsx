@@ -18,6 +18,9 @@ export interface RigController {
 }
 
 const { ACTION } = CameraControlsImpl;
+/** Follow-view target offset from the pawn (x, z), away from the camera. */
+const FOLLOW_LEAD: [number, number] = [0, -0.5];
+const FOLLOW_LEAD_PORTRAIT: [number, number] = [-0.45, 0];
 const BOUNDS = new Box3(new Vector3(-BOARD.halfW - 1, -0.5, -BOARD.halfD - 1), new Vector3(BOARD.halfW + 1, 3, BOARD.halfD + 1));
 
 // Dev-only debug view: /the-game?lm=<sectionId> frames that landmark in a close 3/4 view (for
@@ -66,6 +69,10 @@ export function CameraRig({
   }, [reducedMotion]);
 
   const portrait = size.width / size.height < 1.2;
+  const portraitRef = useRef(portrait);
+  useEffect(() => {
+    portraitRef.current = portrait;
+  }, [portrait]);
 
   const frameBoard = useCallback(
     (transition: boolean) => {
@@ -108,11 +115,14 @@ export function CameraRig({
       if (!c || !p) return;
       const lm = debugLandmark();
       if (lm) return frameLandmark(c, lm);
-      const d = portrait ? 10.5 : 8.2;
-      const tilt = portrait ? 0.55 : 0.82;
+      // Steep enough that the view past the pawn is board, not the near frame wall; the target
+      // leads a little away from the camera so the board also fills the area behind the HUD bar.
+      const d = portrait ? 10 : 7.8;
+      const tilt = portrait ? 0.42 : 0.64;
       const ox = portrait ? d * Math.sin(tilt) : 0;
       const oz = portrait ? 0 : d * Math.sin(tilt);
-      c.setLookAt(p.x + ox, p.y + 0.15 + d * Math.cos(tilt), p.z + oz, p.x, p.y + 0.15, p.z, transition);
+      const [lx, lz] = portrait ? FOLLOW_LEAD_PORTRAIT : FOLLOW_LEAD;
+      c.setLookAt(p.x + lx + ox, p.y + 0.15 + d * Math.cos(tilt), p.z + lz + oz, p.x + lx, p.y + 0.15, p.z + lz, transition);
       lastFollow.current.copy(p);
     },
     [pawnRef, portrait],
@@ -172,7 +182,8 @@ export function CameraRig({
     if (mode.current === 'follow' && !debugLandmark()) {
       const p = pawnRef.current?.position;
       if (p && p.distanceToSquared(lastFollow.current) > 1e-6) {
-        c.moveTo(p.x, p.y + 0.15, p.z, !reduced.current);
+        const [lx, lz] = portraitRef.current ? FOLLOW_LEAD_PORTRAIT : FOLLOW_LEAD;
+        c.moveTo(p.x + lx, p.y + 0.15, p.z + lz, !reduced.current);
         lastFollow.current.copy(p);
       }
     }
