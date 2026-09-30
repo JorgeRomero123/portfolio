@@ -164,8 +164,8 @@
           "es": "Consigue la toma"
         },
         "howTo": {
-          "en": "Keep the drone framed on the target while the wind pushes it. Drag, or use the arrow keys.",
-          "es": "Mantén el dron encuadrado en el objetivo mientras el viento lo empuja. Arrastra o usa las flechas."
+          "en": "Fly through the camera frames and line up the crosshair as each one passes. Hold or drag to steer, or use the arrow keys / WASD.",
+          "es": "Vuela a través de los encuadres y alinea la mira cuando pase cada uno. Mantén presionado o arrastra para dirigir, o usa las flechas / WASD."
         }
       },
       "card": {
