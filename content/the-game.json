@@ -560,8 +560,8 @@
           "es": "Cálcalo"
         },
         "howTo": {
-          "en": "Trace the outline as closely as you can. Drag, or steer with the arrow keys.",
-          "es": "Calca el contorno lo más preciso que puedas. Arrastra o guía con las flechas."
+          "en": "Trace the projected outline before time runs out. Drag with mouse or finger, or steer the pen with the arrow keys (Shift = fine; it snaps to the line).",
+          "es": "Calca el contorno proyectado antes de que se acabe el tiempo. Arrastra con el mouse o el dedo, o guía el plumón con las flechas (Shift = fino; se pega a la línea)."
         }
       },
       "card": {
