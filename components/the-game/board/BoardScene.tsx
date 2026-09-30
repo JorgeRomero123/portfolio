@@ -13,7 +13,7 @@ import { Die, type DieController } from './Die';
 import { Foliage } from './Foliage';
 import { Frame } from './Frame';
 import { Labels } from './Labels';
-import { LANDMARKS } from './landmarks';
+import { LANDMARKS, landmarkYaw } from './landmarks';
 import { BOARD, SECTION_LAYOUT, TILES, wrapTile } from './layout';
 import { PAGE_BG } from './palette';
 import { Pawn, type PawnController } from './Pawn';
@@ -53,9 +53,9 @@ function Landmarks({ reducedMotion }: { reducedMotion: boolean }) {
     <group>
       {SECTION_IDS.map((id) => {
         const L = LANDMARKS[id];
-        const { x, y, z, rotY } = SECTION_LAYOUT[id].landmark;
+        const { x, y, z } = SECTION_LAYOUT[id].landmark;
         return (
-          <group key={id} position={[x, y, z]} rotation-y={rotY}>
+          <group key={id} position={[x, y, z]} rotation-y={landmarkYaw(id)}>
             <L color={sectionById(id).color} reducedMotion={reducedMotion} />
           </group>
         );

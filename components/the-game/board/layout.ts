@@ -25,12 +25,12 @@ export const LANDMARK_SLOT = 2;
 export const SECTION_COUNT = SECTION_IDS.length;
 export const TILE_COUNT = SECTION_COUNT * TILES_PER_SECTION;
 export const START_TILE = 0;
-/** Slab thickness; a tile's `y` is its top surface. */
-export const TILE_THICKNESS = 0.07;
+/** Slab thickness; a tile's `y` is its top surface (slabs stand a little proud of the ground). */
+export const TILE_THICKNESS = 0.1;
 /** Distance from the landmark tile to the landmark pad centre (towards the inside of the loop). */
-export const LANDMARK_PAD_OFFSET = 0.66;
-/** Radius of the flat pad under each landmark model. Keep landmark models within ~0.45. */
-export const LANDMARK_PAD_RADIUS = 0.45;
+export const LANDMARK_PAD_OFFSET = 0.8;
+/** Radius of the flat pad under each landmark model. Keep landmark models within ~0.5. */
+export const LANDMARK_PAD_RADIUS = 0.5;
 
 /** Per-section terrain character: hilliness, tree density, share of pines, rock density. */
 export const SECTION_TERRAIN: Record<SectionId, { hill: number; trees: number; pine: number; rocks: number }> = {
@@ -150,17 +150,48 @@ function hilliness(x: number, z: number): number {
   return sw > 1e-6 ? s / sw : 0.6;
 }
 
+/** Normalised distance from the lake centre: < 1 is lake (plus a noisy shore); ~1–1.15 is the beach. */
+export function lakeDist(x: number, z: number): number {
+  return Math.hypot(x / 2.35, z / 1.12) + (fbm(x * 0.8 + 11, z * 0.8 - 3) - 0.5) * 0.55;
+}
+
+/** Raised plateaus the path climbs onto (flat-topped, noisy cliff edge). */
+const PLATEAUS: readonly { x: number; z: number; r: number; h: number }[] = [
+  { x: 4.5, z: -0.35, r: 1.55, h: 0.3 }, // 360° + board games
+  { x: -3.3, z: -1.75, r: 1.35, h: 0.2 }, // myalbumlink + artoverlay
+];
+/** Peaks in the outer ring (between path and frame), kept to the back so they never hide the path. */
+const PEAKS: readonly { x: number; z: number; s: number; h: number }[] = [
+  { x: -5.1, z: -3.45, s: 1.25, h: 1.1 },
+  { x: -2.9, z: -3.9, s: 0.8, h: 0.55 },
+  { x: 5.0, z: -3.35, s: 0.95, h: 0.8 },
+  { x: 1.4, z: -3.85, s: 0.7, h: 0.4 },
+];
+
 /** Terrain height before flattening pads under tiles and landmarks. */
 export function rawHeight(x: number, z: number): number {
   const hill = hilliness(x, z);
   // 1 on the path loop, < 1 inside, > 1 outside.
   const q = Math.pow(Math.pow(Math.abs(x) / RX, EXP) + Math.pow(Math.abs(z) / RZ, EXP), 1 / EXP);
-  let h = 0.09 + (fbm(x * 0.6 + 3, z * 0.6 + 9) - 0.45) * 0.24 * hill;
-  // Rolling ridge between the path and the frame.
-  h += smooth(1.1, 1.42, q) * fbm(x * 0.45 + 50, z * 0.45 + 20) * (0.2 + 0.8 * hill) * 0.95;
+  let h = 0.1 + (fbm(x * 0.6 + 3, z * 0.6 + 9) - 0.45) * 0.26 * hill;
+  // Plateaus.
+  for (const p of PLATEAUS) {
+    const d = Math.hypot(x - p.x, z - p.z) + (fbm(x * 1.1 + 7, z * 1.1 - 5) - 0.5) * 0.7;
+    h += p.h * smooth(p.r + 0.55, p.r, d);
+  }
+  // Outer ring: rolling hills, taller towards the back, plus a few peaks (snow on the tallest).
+  const outer = smooth(1.08, 1.4, q);
+  if (outer > 0) {
+    const back = smooth(1.5, -3.2, z);
+    let o = fbm(x * 0.55 + 50, z * 0.55 + 20) * (0.18 + 0.5 * back + 0.25 * hill);
+    for (const p of PEAKS) {
+      const d2 = ((x - p.x) ** 2 + (z - p.z) ** 2) / (p.s * p.s);
+      o += p.h * Math.exp(-d2 * 1.6) * (0.8 + 0.4 * fbm(x * 1.7, z * 1.7));
+    }
+    h += outer * o;
+  }
   // Central lake.
-  const ld = Math.hypot(x / 2.35, z / 1.12) + (fbm(x * 0.8 + 11, z * 0.8 - 3) - 0.5) * 0.55;
-  h -= smooth(1.0, 0.5, ld) * 0.62;
+  h -= smooth(1.0, 0.5, lakeDist(x, z)) * 0.7;
   // Settle down to the frame so the cream wall lip reads as a border.
   const edge = Math.min(BOARD.halfW - Math.abs(x), BOARD.halfD - Math.abs(z));
   return lerp(0.06, h, smooth(0.05, 0.55, edge));
@@ -169,12 +200,11 @@ export function rawHeight(x: number, z: number): number {
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
 const tileBase: number[] = (() => {
-  const raw = pathXZ.map(([x, z]) => clamp(rawHeight(x, z), 0.07, 0.26));
-  return raw.map((_, i) => {
-    const a = raw[(i - 1 + TILE_COUNT) % TILE_COUNT];
-    const b = raw[(i + 1) % TILE_COUNT];
-    return (a + 2 * raw[i] + b) / 4;
-  });
+  const raw = pathXZ.map(([x, z]) => clamp(rawHeight(x, z), 0.07, 0.5));
+  // Two smoothing passes so plateau climbs read as a gentle stair, not a jump.
+  const pass = (v: number[]) =>
+    v.map((_, i) => (v[(i - 1 + TILE_COUNT) % TILE_COUNT] + 2 * v[i] + v[(i + 1) % TILE_COUNT]) / 4);
+  return pass(pass(raw));
 })();
 
 const padXYZ: [number, number, number][] = SECTION_IDS.map((_, s) => {
@@ -182,7 +212,7 @@ const padXYZ: [number, number, number][] = SECTION_IDS.map((_, s) => {
   const [nx, nz] = inwardOf(i);
   const x = pathXZ[i][0] + nx * LANDMARK_PAD_OFFSET;
   const z = pathXZ[i][1] + nz * LANDMARK_PAD_OFFSET;
-  return [x, clamp(rawHeight(x, z), 0.08, 0.26), z];
+  return [x, clamp(rawHeight(x, z), 0.08, 0.5), z];
 });
 
 /** Terrain height including the flat pads under tiles and landmark models. */
@@ -192,13 +222,13 @@ export function groundHeight(x: number, z: number): number {
     const dx = x - pathXZ[i][0];
     const dz = z - pathXZ[i][1];
     const d2 = dx * dx + dz * dz;
-    if (d2 < 0.2) h = lerp(h, tileBase[i] - 0.01, smooth(0.44, 0.22, Math.sqrt(d2)));
+    if (d2 < 0.25) h = lerp(h, tileBase[i] - 0.01, smooth(0.48, 0.24, Math.sqrt(d2)));
   }
   for (let s = 0; s < padXYZ.length; s++) {
     const dx = x - padXYZ[s][0];
     const dz = z - padXYZ[s][2];
     const d2 = dx * dx + dz * dz;
-    if (d2 < 0.5) h = lerp(h, padXYZ[s][1], smooth(0.7, LANDMARK_PAD_RADIUS, Math.sqrt(d2)));
+    if (d2 < 0.72) h = lerp(h, padXYZ[s][1], smooth(0.84, LANDMARK_PAD_RADIUS + 0.04, Math.sqrt(d2)));
   }
   return h;
 }
@@ -258,3 +288,18 @@ export const LANDMARK_AT_TILE: readonly (SectionId | null)[] = TILES.map((t) => 
 
 export const landmarkTileOf = (id: SectionId) => SECTION_LAYOUT[id].landmarkTile;
 export const wrapTile = (i: number) => ((i % TILE_COUNT) + TILE_COUNT) % TILE_COUNT;
+
+/** Distance (xz) from a point to the path polyline through the tile centres. */
+export function distToPath(x: number, z: number): number {
+  let best = Infinity;
+  for (let i = 0; i < TILE_COUNT; i++) {
+    const [ax, az] = pathXZ[i];
+    const [bx, bz] = pathXZ[(i + 1) % TILE_COUNT];
+    const dx = bx - ax;
+    const dz = bz - az;
+    const t = Math.min(1, Math.max(0, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
+    const d = Math.hypot(x - ax - dx * t, z - az - dz * t);
+    if (d < best) best = d;
+  }
+  return best;
+}

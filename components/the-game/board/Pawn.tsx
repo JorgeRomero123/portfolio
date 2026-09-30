@@ -4,13 +4,13 @@
 // controller (hop / jump) whose promises resolve when the animation lands.
 import { useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { LatheGeometry, Vector2, Vector3, type Group } from 'three';
+import { LatheGeometry, Vector2, Vector3, type Group, type Mesh, type MeshBasicMaterial } from 'three';
 import type { HatId } from '../types';
 import { Hat, HEAD_R, HEAD_Y } from './Hats';
 import { TILES, wrapTile } from './layout';
 import { ACCENT } from './palette';
 
-export const PAWN_SCALE = 1.25;
+export const PAWN_SCALE = 1.85;
 
 export interface PawnController {
   hopTo(tile: number): Promise<void>;
@@ -67,6 +67,8 @@ export function Pawn({
   const lathe = useMemo(() => new LatheGeometry(PROFILE, 7), []);
   useEffect(() => () => lathe.dispose(), [lathe]);
   const body = useRef<Group>(null);
+  const halo = useRef<Mesh>(null);
+  const pulse = useRef(0);
   const tw = useRef<Tween>({
     active: false,
     from: new Vector3(),
@@ -125,7 +127,10 @@ export function Pawn({
         s.active = true;
         s.resolve = resolve;
       });
-    ctlRef.current = { hopTo: (i) => start(i, 'hop'), jumpTo: (i) => start(i, 'jump') };
+    ctlRef.current = {
+      hopTo: (i) => start(i, 'hop'),
+      jumpTo: (i) => start(i, 'jump'),
+    };
     return () => {
       ctlRef.current = null;
     };
@@ -152,6 +157,22 @@ export function Pawn({
         r?.();
       }
     }
+    // Soft ground ring under the pawn (stays on the ground during hops; pulses unless reduced motion).
+    const ring = halo.current;
+    if (ring) {
+      const k = s.active ? Math.min(1, s.t) : 1;
+      ring.position.set(g.position.x, (s.active ? s.from.y + (s.to.y - s.from.y) * k : g.position.y) + 0.006, g.position.z);
+      const m = ring.material as MeshBasicMaterial;
+      if (reduced.current) {
+        ring.scale.setScalar(1);
+        m.opacity = 0.5;
+      } else {
+        pulse.current = (pulse.current + dt / 1.6) % 1;
+        const u = pulse.current;
+        ring.scale.setScalar(0.85 + 0.45 * u);
+        m.opacity = 0.6 * (1 - u) * (s.active ? 0.4 : 1);
+      }
+    }
     if (body.current) {
       if (s.squash < 1 && !reduced.current) {
         s.squash = Math.min(1, s.squash + dt / 0.2);
@@ -164,19 +185,25 @@ export function Pawn({
   });
 
   return (
-    <group ref={groupRef}>
-      <group ref={body} scale={1}>
-        <group scale={PAWN_SCALE}>
-          <mesh geometry={lathe} castShadow receiveShadow>
-            <meshStandardMaterial color={ACCENT} flatShading roughness={0.45} />
-          </mesh>
-          <mesh position={[0, HEAD_Y, 0]} castShadow receiveShadow>
-            <icosahedronGeometry args={[HEAD_R, 1]} />
-            <meshStandardMaterial color={ACCENT} flatShading roughness={0.45} />
-          </mesh>
-          {hat && <Hat id={hat} reducedMotion={reducedMotion} />}
+    <>
+      <mesh ref={halo} rotation-x={-Math.PI / 2} renderOrder={1}>
+        <ringGeometry args={[0.2, 0.26, 28]} />
+        <meshBasicMaterial color={ACCENT} transparent opacity={0.5} depthWrite={false} />
+      </mesh>
+      <group ref={groupRef}>
+        <group ref={body} scale={1}>
+          <group scale={PAWN_SCALE}>
+            <mesh geometry={lathe} castShadow receiveShadow>
+              <meshStandardMaterial color={ACCENT} flatShading roughness={0.45} />
+            </mesh>
+            <mesh position={[0, HEAD_Y, 0]} castShadow receiveShadow>
+              <icosahedronGeometry args={[HEAD_R, 1]} />
+              <meshStandardMaterial color={ACCENT} flatShading roughness={0.45} />
+            </mesh>
+            {hat && <Hat id={hat} reducedMotion={reducedMotion} />}
+          </group>
         </group>
       </group>
-    </group>
+    </>
   );
 }

@@ -2,20 +2,22 @@
 
 // Faceted, flat-shaded terrain generated around the board layout (prototype technique):
 // jittered grid, per-face colour from its section patch, per-face lightness jitter.
+// Relief (plateaus, back-corner peaks) comes from layout.rawHeight; a sand beach rings the lake.
 import { useEffect, useMemo } from 'react';
 import { BufferGeometry, Color, Float32BufferAttribute } from 'three';
-import { BOARD, groundHeight, sectionAt } from './layout';
+import { BOARD, groundHeight, lakeDist, sectionAt } from './layout';
 import { hash, smooth } from './noise';
-import { SECTION_COLORS, tone } from './palette';
+import { SECTION_GROUND } from './palette';
 
-const CS = 0.2;
-const NEUTRAL = new Color('#a9c784');
-const SAND = new Color('#efe4c2');
-const SHALLOW = new Color('#e2dcbb');
-const DEEP = new Color('#5b98a3');
-const ROCK = new Color('#b9b1a2');
-const SNOW = new Color('#f7f5ef');
-const LAND = SECTION_COLORS.map((c) => tone(c, 0.5, 0.66));
+const CS = 0.19;
+const MEADOW = new Color('#9ccb73');
+const FOREST = new Color('#6fa55a');
+const SAND = new Color('#f1dfae');
+const WET_SAND = new Color('#e2cf98');
+const SHALLOW = new Color('#8fd0cf');
+const DEEP = new Color('#2d7c8e');
+const ROCK = new Color('#a79d8c');
+const SNOW = new Color('#f8f6f0');
 
 interface GV {
   x: number;
@@ -46,17 +48,23 @@ function buildTerrain(): BufferGeometry {
     const h = (a.h + b.h + d.h) / 3;
     const x = (a.x + b.x + d.x) / 3;
     const z = (a.z + b.z + d.z) / 3;
+    const ld = lakeDist(x, z);
     if (h < -0.01) {
-      c.lerpColors(SHALLOW, DEEP, Math.pow(Math.min(1, -h / 0.5), 0.6));
+      c.lerpColors(SHALLOW, DEEP, Math.pow(Math.min(1, -h / 0.45), 0.7));
+    } else if (ld < 1.13 && h < 0.2) {
+      // Lake beach: wet band at the waterline, dry sand behind.
+      c.copy(h < 0.03 ? WET_SAND : SAND);
     } else if (h < 0.045) {
       c.copy(SAND);
     } else {
       const s = sectionAt(x, z);
-      c.copy(NEUTRAL).lerp(LAND[s.index], 0.18 + 0.5 * s.weight);
-      if (h > 0.34) c.lerp(ROCK, smooth(0.34, 0.6, h));
-      if (h > 0.66) c.lerp(SNOW, smooth(0.66, 0.8, h));
+      // Meadow that darkens into forest green on the outer hills, section tint in each patch core.
+      c.copy(MEADOW).lerp(FOREST, smooth(0.3, 0.7, h) * (1 - s.weight));
+      c.lerp(SECTION_GROUND[s.index], 0.2 + 0.72 * s.weight);
+      if (h > 0.62) c.lerp(ROCK, smooth(0.62, 0.95, h));
+      if (h > 1.0) c.lerp(SNOW, smooth(1.0, 1.15, h));
     }
-    c.offsetHSL(0, 0, (hash(a.x * 0.37, b.z * 0.53) - 0.5) * 0.055);
+    c.offsetHSL(0, 0, (hash(a.x * 0.37, b.z * 0.53) - 0.5) * 0.05);
     return c;
   };
   const push = (a: GV, b: GV, d: GV) => {

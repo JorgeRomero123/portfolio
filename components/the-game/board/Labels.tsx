@@ -1,12 +1,15 @@
 'use client';
 
-// Localized section labels floating over each landmark (drei Html, no occlusion, no pointer events),
-// with a halo so they read on any terrain. Narrow screens get short labels, only near the pawn.
+// Localized section labels pinned to the top of each landmark model (drei Html, no occlusion, no
+// pointer events): the label's bottom-centre sits on a short stem that touches the model, so it
+// stays on its landmark at any zoom. One rule for every section: full titles on wide screens,
+// short names on narrow ones; the section the pawn is in is emphasised.
 import { Html } from '@react-three/drei';
 import { sectionById } from '../content';
 import { SHORT_LABELS, STRINGS } from '../strings';
 import { SECTION_IDS, type Lang } from '../types';
-import { SECTION_COUNT, SECTION_LAYOUT, START_TILE, TILES } from './layout';
+import { LANDMARK_TOP } from './landmarks';
+import { SECTION_LAYOUT, START_TILE, TILES } from './layout';
 
 const HALO = '0 0 2px #fff, 0 0 3px #fff, 0 0 6px #fff, 0 0 9px #fff';
 
@@ -15,29 +18,34 @@ export function Labels({ lang, narrow, pawnSection }: { lang: Lang; narrow: bool
   return (
     <group>
       {SECTION_IDS.map((id, i) => {
-        const d = Math.min(Math.abs(i - pawnSection), SECTION_COUNT - Math.abs(i - pawnSection));
-        if (narrow && d > 2) return null;
         const { x, y, z } = SECTION_LAYOUT[id].landmark;
         const sec = sectionById(id);
+        const here = i === pawnSection;
         return (
-          <Html key={id} position={[x, y + 0.8, z]} center pointerEvents="none" zIndexRange={[10, 0]}>
+          <Html key={id} position={[x, y + LANDMARK_TOP[id], z]} pointerEvents="none" zIndexRange={[10, 0]}>
             <div
               aria-hidden
-              className={`flex items-center gap-1.5 whitespace-nowrap font-semibold tracking-[0.01em] text-gray-900 select-none ${
-                narrow ? 'text-[11px]' : 'text-[12.5px]'
-              }`}
-              style={{ textShadow: HALO }}
+              className="flex flex-col items-center select-none"
+              style={{ transform: 'translate(-50%, -100%)' }}
             >
-              <span
-                className="inline-block h-2 w-2 shrink-0 rounded-full"
-                style={{ background: sec.color, boxShadow: '0 0 0 1.5px #fff' }}
-              />
-              {narrow ? SHORT_LABELS[id][lang] : sec.title[lang]}
+              <div
+                className={`flex items-center gap-1 whitespace-nowrap font-semibold tracking-[0.01em] text-gray-900 ${
+                  narrow ? (here ? 'text-[11px]' : 'text-[9.5px]') : here ? 'text-[13.5px]' : 'text-[12px]'
+                }`}
+                style={{ textShadow: HALO }}
+              >
+                <span
+                  className={`inline-block shrink-0 rounded-full ${narrow ? 'h-1.5 w-1.5' : 'h-2 w-2'}`}
+                  style={{ background: sec.color, boxShadow: '0 0 0 1.5px #fff' }}
+                />
+                {narrow ? SHORT_LABELS[id][lang] : sec.title[lang]}
+              </div>
+              <span className="block h-2 w-px" style={{ background: sec.color, boxShadow: '0 0 0 1px rgba(255,255,255,.8)' }} />
             </div>
           </Html>
         );
       })}
-      <Html position={[start.x, start.y + 0.68, start.z]} center pointerEvents="none" zIndexRange={[10, 0]}>
+      <Html position={[start.x, start.y + 0.78, start.z]} center pointerEvents="none" zIndexRange={[10, 0]}>
         <div
           aria-hidden
           className="whitespace-nowrap font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-[#0070f3] select-none"

@@ -51,7 +51,7 @@ export function Water({ reducedMotion }: { reducedMotion: boolean }) {
 
   return (
     <mesh ref={mesh} geometry={geometry} receiveShadow>
-      <meshStandardMaterial color="#5fb0bf" transparent opacity={0.74} roughness={0.3} metalness={0.05} flatShading />
+      <meshStandardMaterial color="#48acc4" transparent opacity={0.8} roughness={0.3} metalness={0.05} flatShading />
     </mesh>
   );
 }
