@@ -1,6 +1,6 @@
 // UI chrome strings for /the-game (HUD, overlays, aria labels). Spanish is Mexican Spanish (tú).
 // Section titles live in content/the-game.json; SHORT_LABELS are the compact board labels for narrow screens.
-import type { Lang, SectionId } from './types';
+import type { HatId, Lang, SectionId } from './types';
 
 export interface UiStrings {
   title: string;
@@ -44,12 +44,14 @@ export interface UiStrings {
   pickStepsTitle: string;
   pickStepsHint: string;
   steps: (n: number) => string;
-  // landmark prompt (temporary)
+  // landmark prompt
   landedOn: (section: string) => string;
   passing: (section: string) => string;
   play: string;
   justLook: string;
   keepGoing: string;
+  passport: string;
+  passportAria: (n: number, total: number) => string;
 }
 
 export const STRINGS: Record<Lang, UiStrings> = {
@@ -98,6 +100,8 @@ export const STRINGS: Record<Lang, UiStrings> = {
     play: 'Play',
     justLook: 'Just look',
     keepGoing: 'Keep going',
+    passport: 'Passport',
+    passportAria: (n, t) => `Passport: ${n} of ${t} stamps`,
   },
   es: {
     title: 'El Juego',
@@ -144,6 +148,8 @@ export const STRINGS: Record<Lang, UiStrings> = {
     play: 'Jugar',
     justLook: 'Solo ver',
     keepGoing: 'Seguir',
+    passport: 'Pasaporte',
+    passportAria: (n, t) => `Pasaporte: ${n} de ${t} sellos`,
   },
 };
 
@@ -160,4 +166,211 @@ export const SHORT_LABELS: Record<SectionId, Record<Lang, string>> = {
   myalbumlink: { en: 'myalbumlink', es: 'myalbumlink' },
   emarts: { en: 'e.marts', es: 'e.marts' },
   kitchen: { en: 'Kitchen', es: 'Cocina' },
+};
+
+/** Strings for the landmark flow (prompt, section card, mini-game host, wheel, passport) and the overview. */
+export interface FlowStrings {
+  // prompt
+  playHint: string;
+  // section card
+  stampEarned: string;
+  stampMissing: string;
+  funFact: string;
+  storyCard: string;
+  readStory: string;
+  playAgain: string;
+  opensNewTab: string;
+  // mini-game host
+  miniGame: string;
+  skipGame: string;
+  loadingGame: string;
+  gameError: string;
+  youWon: string;
+  soClose: string;
+  lostBody: string;
+  tryAgain: string;
+  // stamp
+  stampTitle: string;
+  stampBody: (section: string) => string;
+  spinWheel: string;
+  // wheel
+  wheelTitle: string;
+  wheelHint: string;
+  spin: string;
+  spinning: string;
+  youGot: string;
+  slice: Record<'story' | 'fact' | 'dart' | 'move' | 'hat', string>;
+  prizeStory: string;
+  prizeFact: string;
+  prizeDart: string;
+  prizeDartBody: string;
+  prizeMove: string;
+  prizeMoveBody: string;
+  prizeHat: (hat: string) => string;
+  prizeHatBody: string;
+  wearIt: string;
+  wearing: string;
+  takeOff: string;
+  continue: string;
+  // passport
+  passportTitle: string;
+  passportIntro: (n: number, total: number) => string;
+  stampsHeading: string;
+  notYet: string;
+  hatsHeading: string;
+  noHats: string;
+  storiesHeading: string;
+  noStories: string;
+  reset: string;
+  resetConfirm: string;
+  resetYes: string;
+  resetDone: string;
+  // final reward
+  finalKicker: string;
+  finalTitle: string;
+  finalBody: string;
+  emailJorge: string;
+  // overview
+  overviewSections: string;
+  overviewSectionsIntro: string;
+  ratherPlay: string;
+  backToGame: string;
+  hats: Record<HatId, string>;
+}
+
+export const FLOW_STRINGS: Record<Lang, FlowStrings> = {
+  en: {
+    playHint: 'Win the mini-game to earn this stamp.',
+    stampEarned: 'Stamp collected',
+    stampMissing: 'Win the mini-game to earn this stamp',
+    funFact: 'Fun fact',
+    storyCard: 'Story card',
+    readStory: 'Read the story',
+    playAgain: 'Play again',
+    opensNewTab: '(opens in a new tab)',
+    miniGame: 'Mini-game',
+    skipGame: 'Skip mini-game',
+    loadingGame: 'Loading the mini-game…',
+    gameError: 'This mini-game couldn’t load. Skip it to see the landmark.',
+    youWon: 'You won!',
+    soClose: 'So close!',
+    lostBody: 'Give it another go, or just have a look around this landmark.',
+    tryAgain: 'Try again',
+    stampTitle: 'Stamp earned!',
+    stampBody: (s) => `${s} is now in your passport.`,
+    spinWheel: 'Spin the prize wheel',
+    wheelTitle: 'Prize wheel',
+    wheelHint: 'Every slice is a prize. Spin it!',
+    spin: 'Spin',
+    spinning: 'Spinning…',
+    youGot: 'You got',
+    slice: { story: 'Story', fact: 'Fun fact', dart: 'Dart', move: 'Move', hat: 'Hat' },
+    prizeStory: 'A story card',
+    prizeFact: 'A fun fact',
+    prizeDart: 'A steady dart',
+    prizeDartBody: 'Your hand barely shakes on the next throw. Find it next to the dice.',
+    prizeMove: 'A free move',
+    prizeMoveBody: 'Pick exactly how many spaces to move, 1 to 6. Find it next to the dice.',
+    prizeHat: (h) => `A new hat: ${h}`,
+    prizeHatBody: 'Your pawn can wear it on the board.',
+    wearIt: 'Wear it',
+    wearing: 'Wearing',
+    takeOff: 'Take it off',
+    continue: 'Continue',
+    passportTitle: 'Your passport',
+    passportIntro: (n, t) => `${n} of ${t} stamps. Win a landmark’s mini-game to earn its stamp.`,
+    stampsHeading: 'Stamps',
+    notYet: 'Not yet',
+    hatsHeading: 'Hats',
+    noHats: 'No hats yet. Win them on the prize wheel.',
+    storiesHeading: 'Story cards',
+    noStories: 'No story cards yet. Win them on the prize wheel.',
+    reset: 'Reset progress',
+    resetConfirm: 'Erase every stamp, hat and prize?',
+    resetYes: 'Yes, reset',
+    resetDone: 'Progress reset.',
+    finalKicker: 'All 11 stamps!',
+    finalTitle: 'You toured all of Jorge. Now say hi.',
+    finalBody: 'You’ve seen the whole board. If any of it made you think of a project or a role, Jorge would love to hear from you.',
+    emailJorge: 'Email Jorge',
+    overviewSections: 'Eleven landmarks',
+    overviewSectionsIntro: 'Every stop on the board, in one scroll.',
+    ratherPlay: 'Rather play?',
+    backToGame: 'Back to the board',
+    hats: {
+      propeller: 'Propeller cap',
+      chef: 'Chef’s hat',
+      scarf: 'Navy and white scarf',
+      headphones: 'Headphones',
+      beanie: 'Beanie',
+      beret: 'Beret',
+    },
+  },
+  es: {
+    playHint: 'Gana el minijuego para conseguir este sello.',
+    stampEarned: 'Sello conseguido',
+    stampMissing: 'Gana el minijuego para conseguir este sello',
+    funFact: 'Dato curioso',
+    storyCard: 'Tarjeta de historia',
+    readStory: 'Leer la historia',
+    playAgain: 'Jugar otra vez',
+    opensNewTab: '(se abre en otra pestaña)',
+    miniGame: 'Minijuego',
+    skipGame: 'Saltar minijuego',
+    loadingGame: 'Cargando el minijuego…',
+    gameError: 'Este minijuego no pudo cargar. Sáltalo para ver el lugar.',
+    youWon: '¡Ganaste!',
+    soClose: '¡Casi!',
+    lostBody: 'Inténtalo otra vez o nada más échale un ojo a este lugar.',
+    tryAgain: 'Intentar otra vez',
+    stampTitle: '¡Sello conseguido!',
+    stampBody: (s) => `${s} ya está en tu pasaporte.`,
+    spinWheel: 'Girar la ruleta de premios',
+    wheelTitle: 'Ruleta de premios',
+    wheelHint: 'Cada rebanada es un premio. ¡Gírala!',
+    spin: 'Girar',
+    spinning: 'Girando…',
+    youGot: 'Te tocó',
+    slice: { story: 'Historia', fact: 'Dato', dart: 'Dardo', move: 'Mover', hat: 'Gorro' },
+    prizeStory: 'Una tarjeta de historia',
+    prizeFact: 'Un dato curioso',
+    prizeDart: 'Un dardo firme',
+    prizeDartBody: 'En tu próximo tiro casi no te va a temblar la mano. Lo encuentras junto al dado.',
+    prizeMove: 'Un movimiento libre',
+    prizeMoveBody: 'Elige exactamente cuántas casillas avanzar, de 1 a 6. Lo encuentras junto al dado.',
+    prizeHat: (h) => `Un gorro nuevo: ${h}`,
+    prizeHatBody: 'Tu ficha lo puede usar en el tablero.',
+    wearIt: 'Ponérselo',
+    wearing: 'Lo trae puesto',
+    takeOff: 'Quitárselo',
+    continue: 'Continuar',
+    passportTitle: 'Tu pasaporte',
+    passportIntro: (n, t) => `${n} de ${t} sellos. Gana el minijuego de cada lugar para conseguir su sello.`,
+    stampsHeading: 'Sellos',
+    notYet: 'Todavía no',
+    hatsHeading: 'Gorros',
+    noHats: 'Todavía no tienes gorros. Gánalos en la ruleta de premios.',
+    storiesHeading: 'Tarjetas de historia',
+    noStories: 'Todavía no tienes tarjetas de historia. Gánalas en la ruleta de premios.',
+    reset: 'Reiniciar progreso',
+    resetConfirm: '¿Borrar todos los sellos, gorros y premios?',
+    resetYes: 'Sí, reiniciar',
+    resetDone: 'Progreso reiniciado.',
+    finalKicker: '¡Los 11 sellos!',
+    finalTitle: 'Recorriste todo el mundo de Jorge. Ahora salúdalo.',
+    finalBody: 'Ya viste todo el tablero. Si algo te hizo pensar en un proyecto o en una vacante, a Jorge le encantaría saber de ti.',
+    emailJorge: 'Escribirle a Jorge',
+    overviewSections: 'Once lugares',
+    overviewSectionsIntro: 'Cada parada del tablero, en un solo scroll.',
+    ratherPlay: '¿Mejor quieres jugar?',
+    backToGame: 'Volver al tablero',
+    hats: {
+      propeller: 'Gorra con hélice',
+      chef: 'Gorro de chef',
+      scarf: 'Bufanda azul marino y blanco',
+      headphones: 'Audífonos',
+      beanie: 'Gorro tejido',
+      beret: 'Boina',
+    },
+  },
 };

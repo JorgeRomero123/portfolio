@@ -1,6 +1,6 @@
 'use client';
 
-// Top HUD: title + skip link on the left; view, language and sound toggles on the right.
+// Top HUD: title + skip link on the left; passport, view, language and sound toggles on the right.
 import { STRINGS } from '../strings';
 import type { Lang } from '../types';
 import type { ViewMode } from '../board/types';
@@ -26,6 +26,15 @@ function PawnIcon() {
     </svg>
   );
 }
+function PassportIcon() {
+  return (
+    <svg viewBox="0 0 20 20" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth={1.7} aria-hidden>
+      <rect x="4" y="2.5" width="12" height="15" rx="2" />
+      <circle cx="10" cy="9" r="3" />
+      <path d="M7 14h6" strokeLinecap="round" />
+    </svg>
+  );
+}
 function SoundIcon({ on }: { on: boolean }) {
   return (
     <svg viewBox="0 0 20 20" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth={1.7} aria-hidden>
@@ -45,12 +54,16 @@ export function TopBar({
   onToggleView,
   soundOn,
   onToggleSound,
+  stampCount,
+  onOpenPassport,
 }: {
   lang: Lang;
   view: ViewMode;
   onToggleView: () => void;
   soundOn: boolean;
   onToggleSound: () => void;
+  stampCount: number;
+  onOpenPassport: () => void;
 }) {
   const s = STRINGS[lang];
   const viewLabel = view === 'follow' ? s.viewBoard : s.followPawn;
@@ -67,6 +80,10 @@ export function TopBar({
         <a
           href="#overview"
           data-testid="skip-game"
+          onClick={() => {
+            // Move keyboard focus with the jump (the target has tabIndex -1).
+            window.setTimeout(() => document.getElementById('overview')?.focus({ preventScroll: true }), 0);
+          }}
           className={`inline-flex h-11 items-center gap-1.5 rounded-xl border border-gray-200 bg-white/90 px-3 text-sm font-semibold text-gray-800 shadow-sm backdrop-blur hover:border-gray-400 ${focusRing}`}
         >
           {s.skip}
@@ -74,6 +91,24 @@ export function TopBar({
         </a>
       </div>
       <div className="pointer-events-auto flex shrink-0 gap-2">
+        <button
+          type="button"
+          data-testid="passport"
+          aria-label={s.passportAria(stampCount, 11)}
+          onClick={onOpenPassport}
+          className={`${iconButton} relative ${focusRing}`}
+        >
+          <PassportIcon />
+          <span className="hidden text-sm font-semibold lg:inline">{s.passport}</span>
+          <span
+            aria-hidden
+            className={`absolute -right-1.5 -top-1.5 min-w-5 rounded-full px-1 text-center text-[11px] font-bold leading-5 tabular-nums ${
+              stampCount > 0 ? 'bg-[#0070f3] text-white' : 'border border-gray-200 bg-white text-gray-500'
+            }`}
+          >
+            {stampCount}
+          </span>
+        </button>
         <button
           type="button"
           data-testid="view-board"

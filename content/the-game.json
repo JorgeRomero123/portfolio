@@ -1,15 +1,775 @@
 {
+  "intro": {
+    "eyebrow": {
+      "en": "A board game about Jorge",
+      "es": "Un juego de mesa sobre Jorge"
+    },
+    "heading": {
+      "en": "The Game",
+      "es": "El Juego"
+    },
+    "body": {
+      "en": "Eleven landmarks, one for each thing Jorge builds or loves. Roll the dice, stop at a landmark, play a quick mini-game and collect all eleven stamps in your passport.",
+      "es": "Once lugares, uno por cada cosa que Jorge construye o que le encanta. Tira el dado, detente en un lugar, juega un minijuego rápido y junta los once sellos en tu pasaporte."
+    }
+  },
+  "summary": {
+    "heading": {
+      "en": "The short version",
+      "es": "La versión corta"
+    },
+    "kicker": {
+      "en": "For people who won’t play",
+      "es": "Para quien no va a jugar"
+    },
+    "role": {
+      "en": "Jorge Romero Romanis is a full-stack software engineer based in México (React, TypeScript, Next.js). He builds for millions, then goes and builds something silly.",
+      "es": "Jorge Romero Romanis es ingeniero de software full-stack en México (React, TypeScript, Next.js). Construye para millones y luego se va a construir algo por puro gusto."
+    },
+    "bullets": [
+      {
+        "en": "Technical co-lead of PayPal Fastlane’s profile-management portal, from empty repo to production: 200k+ monthly users and an expansion across continents.",
+        "es": "Co-líder técnico del portal de gestión de perfiles de PayPal Fastlane, de un repo vacío a producción: más de 200 mil usuarios al mes y una expansión entre continentes."
+      },
+      {
+        "en": "Drove front-end UX on Microsoft Bing’s 0-to-1 Image Inspiration Feed, where daily active users grew 400% over 9 months.",
+        "es": "Llevó el desarrollo de UX del front end en el Image Inspiration Feed de Microsoft Bing, un producto nuevo cuyos usuarios activos diarios crecieron 400% en 9 meses."
+      },
+      {
+        "en": "Builds and runs two SaaS products solo (MyAlbumLink and LabWiseLink), billing, auth and the boring parts included.",
+        "es": "Construye y opera solo dos productos SaaS (MyAlbumLink y LabWiseLink), con cobros, autenticación y todas las partes aburridas incluidas."
+      },
+      {
+        "en": "Also does photography, drone video and 360° tours for real clients, and has 25 browser tools on this site.",
+        "es": "También hace fotografía, video con dron y recorridos 360° para clientes reales, y tiene 25 herramientas web en este sitio."
+      }
+    ]
+  },
+  "contact": {
+    "email": "jorgeromanis@yahoo.com.mx",
+    "aboutHref": "/about",
+    "homeContactHref": "/#contact",
+    "heading": {
+      "en": "Let’s build something you’d actually use.",
+      "es": "Construyamos algo que de verdad vayas a usar."
+    },
+    "body": {
+      "en": "Hiring, a project, or just want to say hi? Email is the fastest way to reach Jorge.",
+      "es": "¿Buscas contratar, tienes un proyecto o solo quieres saludar? El correo es la forma más rápida de contactar a Jorge."
+    },
+    "aboutLabel": {
+      "en": "More about Jorge",
+      "es": "Más sobre Jorge"
+    },
+    "homeLabel": {
+      "en": "Back to the main site",
+      "es": "Volver al sitio principal"
+    }
+  },
   "sections": [
-    { "id": "software",    "color": "#0070f3", "title": { "en": "Software engineering", "es": "Ingeniería de software" } },
-    { "id": "drone",       "color": "#06b6d4", "title": { "en": "Drone videography", "es": "Video con dron" } },
-    { "id": "spurs",       "color": "#132257", "title": { "en": "Tottenham Hotspur", "es": "Tottenham Hotspur" } },
-    { "id": "pano360",     "color": "#7c3aed", "title": { "en": "360° content", "es": "Contenido 360°" } },
-    { "id": "boardgames",  "color": "#16a34a", "title": { "en": "Board games", "es": "Juegos de mesa" } },
-    { "id": "music",       "color": "#c026d3", "title": { "en": "Music", "es": "Música" } },
-    { "id": "beer",        "color": "#d97706", "title": { "en": "Craft beer", "es": "Cerveza artesanal" } },
-    { "id": "artoverlay",  "color": "#f97316", "title": { "en": "artoverlay.com", "es": "artoverlay.com" } },
-    { "id": "myalbumlink", "color": "#0d9488", "title": { "en": "myalbumlink.com", "es": "myalbumlink.com" } },
-    { "id": "emarts",      "color": "#ec4899", "title": { "en": "e.marts", "es": "e.marts" } },
-    { "id": "kitchen",     "color": "#dc2626", "title": { "en": "Kitchen", "es": "Cocina" } }
+    {
+      "id": "software",
+      "color": "#0070f3",
+      "title": {
+        "en": "Software engineering",
+        "es": "Ingeniería de software"
+      },
+      "tagline": {
+        "en": "Built for millions, then something silly.",
+        "es": "Para millones, y luego algo por puro gusto."
+      },
+      "landmark": {
+        "en": "A desk with a glowing monitor, a mug and a plant",
+        "es": "Un escritorio con un monitor encendido, una taza y una planta"
+      },
+      "game": {
+        "name": {
+          "en": "Ship It",
+          "es": "¡A producción!"
+        },
+        "howTo": {
+          "en": "Stop the build bar in the green zone to ship. Click, tap or press Space.",
+          "es": "Detén la barra del build en la zona verde para publicar. Haz clic, toca o presiona Espacio."
+        }
+      },
+      "card": {
+        "body": {
+          "en": "Jorge was technical co-lead of PayPal Fastlane’s profile-management portal, from an empty repo to 200k+ monthly users. At Microsoft he drove front-end UX on Bing’s Image Inspiration Feed, where daily active users grew 400% in 9 months. On the side he runs two SaaS products solo: MyAlbumLink and LabWiseLink, a dental-lab order platform with 5-role access control and real-time alerts.",
+          "es": "Jorge fue co-líder técnico del portal de gestión de perfiles de PayPal Fastlane, de un repo vacío a más de 200 mil usuarios al mes. En Microsoft llevó la UX del front end en el Image Inspiration Feed de Bing, donde los usuarios activos diarios crecieron 400% en 9 meses. Por su cuenta opera solo dos productos SaaS: MyAlbumLink y LabWiseLink, una plataforma de pedidos para laboratorios dentales con control de acceso de 5 roles y alertas en tiempo real."
+        },
+        "links": [
+          {
+            "href": "/#work",
+            "label": {
+              "en": "Selected work",
+              "es": "Trabajo destacado"
+            }
+          },
+          {
+            "href": "https://www.labwiselink.com",
+            "label": {
+              "en": "LabWiseLink",
+              "es": "LabWiseLink"
+            }
+          },
+          {
+            "href": "/tools",
+            "label": {
+              "en": "25 browser tools",
+              "es": "25 herramientas web"
+            }
+          }
+        ]
+      },
+      "story": {
+        "title": {
+          "en": "From an empty repo to 200k users a month",
+          "es": "De un repo vacío a 200 mil usuarios al mes"
+        },
+        "body": {
+          "en": "Fastlane’s profile portal started as an empty repository. Jorge co-led it technically into production, kept the Next.js app healthy at 200k+ monthly users and led its expansion across continents.",
+          "es": "El portal de perfiles de Fastlane empezó como un repositorio vacío. Jorge lo co-lideró técnicamente hasta producción, mantuvo sana la app de Next.js con más de 200 mil usuarios al mes y encabezó su expansión a otros continentes."
+        },
+        "href": "/#work"
+      },
+      "funFacts": [
+        {
+          "en": "This site has 25 tools on it, built for an audience of mostly Jorge.",
+          "es": "Este sitio tiene 25 herramientas, hechas para un público que es, sobre todo, Jorge."
+        },
+        {
+          "en": "Half of his side projects are in Spanish, because that’s who he builds them for.",
+          "es": "La mitad de sus proyectos personales están en español, porque es para quien los construye."
+        }
+      ]
+    },
+    {
+      "id": "drone",
+      "color": "#06b6d4",
+      "title": {
+        "en": "Drone videography",
+        "es": "Video con dron"
+      },
+      "tagline": {
+        "en": "The view from a hundred metres up.",
+        "es": "La vista desde cien metros de altura."
+      },
+      "landmark": {
+        "en": "A landing pad with a windsock and a drone circling above",
+        "es": "Una plataforma de aterrizaje con manga de viento y un dron volando en círculos"
+      },
+      "game": {
+        "name": {
+          "en": "Steady Shot",
+          "es": "Toma estable"
+        },
+        "howTo": {
+          "en": "Keep the drone framed on the target while the wind pushes it. Drag, or use the arrow keys.",
+          "es": "Mantén el dron encuadrado en el objetivo mientras el viento lo empuja. Arrastra o usa las flechas."
+        }
+      },
+      "card": {
+        "body": {
+          "en": "Jorge shoots aerial video with a drone, for real clients and for himself. His reel includes Día de Muertos celebrations seen from above and aerial footage of houses, next to travel videos from the Sagrada Familia in Barcelona and the Alhambra in Granada.",
+          "es": "Jorge graba video aéreo con dron, para clientes reales y por gusto. Su reel incluye celebraciones de Día de Muertos vistas desde arriba y tomas aéreas de casas, junto a videos de viaje de la Sagrada Familia en Barcelona y la Alhambra en Granada."
+        },
+        "links": [
+          {
+            "href": "/videos",
+            "label": {
+              "en": "Watch the videos",
+              "es": "Ver los videos"
+            }
+          }
+        ]
+      },
+      "story": {
+        "title": {
+          "en": "Día de Muertos from above",
+          "es": "Día de Muertos desde arriba"
+        },
+        "body": {
+          "en": "A celebration full of colour, seen from where nobody else is standing. Jorge’s drone footage of Día de Muertos is on the videos page.",
+          "es": "Una celebración llena de color, vista desde donde nadie más está parado. Las tomas con dron de Día de Muertos que grabó Jorge están en la página de videos."
+        },
+        "href": "/videos"
+      },
+      "funFacts": [
+        {
+          "en": "TODO(jorge): drone model and camera gear you fly with",
+          "es": "TODO(jorge): modelo de dron y equipo de cámara que usas"
+        },
+        {
+          "en": "TODO(jorge): a favourite or funny moment from a flight",
+          "es": "TODO(jorge): un momento favorito o chistoso de algún vuelo"
+        }
+      ]
+    },
+    {
+      "id": "spurs",
+      "color": "#132257",
+      "title": {
+        "en": "Tottenham Hotspur",
+        "es": "Tottenham Hotspur"
+      },
+      "tagline": {
+        "en": "A Spurs fan in México, for his sins.",
+        "es": "Aficionado de los Spurs en México, para su desgracia."
+      },
+      "landmark": {
+        "en": "A little navy-and-white stadium with a COYS banner",
+        "es": "Un estadio chiquito azul marino y blanco con una manta de COYS"
+      },
+      "game": {
+        "name": {
+          "en": "Top Bins",
+          "es": "Al ángulo"
+        },
+        "howTo": {
+          "en": "Time your shot to hit the top corner. Click, tap or press Space.",
+          "es": "Calcula el tiro para meterla al ángulo. Haz clic, toca o presiona Espacio."
+        }
+      },
+      "card": {
+        "body": {
+          "en": "Jorge supports Tottenham Hotspur from México, “for my sins”, in his own words. There’s a whole route on this site about it, and it’s the start of a small treasure hunt.",
+          "es": "Jorge le va al Tottenham Hotspur desde México, “para mi desgracia”, como él mismo dice. Hay una ruta entera de este sitio dedicada a eso, y es el inicio de una pequeña búsqueda del tesoro."
+        },
+        "links": [
+          {
+            "href": "/coys",
+            "label": {
+              "en": "COYS",
+              "es": "COYS"
+            }
+          }
+        ]
+      },
+      "story": {
+        "title": {
+          "en": "Come on you Spurs",
+          "es": "Come on you Spurs"
+        },
+        "body": {
+          "en": "The /coys page looks simple. It isn’t: look closely and it points you somewhere else on the site, and there’s a prize at the end.",
+          "es": "La página /coys se ve sencilla. No lo es: si la miras con calma te manda a otra parte del sitio, y al final hay un premio."
+        },
+        "href": "/coys"
+      },
+      "funFacts": [
+        {
+          "en": "The /coys page on this site is the first clue of a hidden treasure hunt.",
+          "es": "La página /coys de este sitio es la primera pista de una búsqueda del tesoro escondida."
+        },
+        {
+          "en": "TODO(jorge): how you became a Spurs fan, or a match you’ll never forget",
+          "es": "TODO(jorge): cómo te hiciste aficionado de los Spurs, o un partido que nunca vas a olvidar"
+        }
+      ]
+    },
+    {
+      "id": "pano360",
+      "color": "#7c3aed",
+      "title": {
+        "en": "360° content",
+        "es": "Contenido 360°"
+      },
+      "tagline": {
+        "en": "Look everywhere at once.",
+        "es": "Mira para todos lados a la vez."
+      },
+      "landmark": {
+        "en": "A 360° camera on a tripod inside a slowly turning sphere",
+        "es": "Una cámara 360° en tripié dentro de una esfera que gira despacio"
+      },
+      "game": {
+        "name": {
+          "en": "Stitch It",
+          "es": "Únelo"
+        },
+        "howTo": {
+          "en": "Line up the panorama seam, then lock it. Drag or use the arrow keys; Space to lock.",
+          "es": "Alinea la unión del panorama y fíjala. Arrastra o usa las flechas; Espacio para fijar."
+        }
+      },
+      "card": {
+        "body": {
+          "en": "Jorge shoots 360° photos and builds virtual tours, including for real clients through recorrido360.mx. His gallery has panoramas from Granada and Cádiz you can drag around, and he built the 360° tour engine himself.",
+          "es": "Jorge toma fotos 360° y arma recorridos virtuales, también para clientes reales a través de recorrido360.mx. En su galería hay panoramas de Granada y Cádiz que puedes girar, y el motor de recorridos 360° lo construyó él mismo."
+        },
+        "links": [
+          {
+            "href": "/gallery360",
+            "label": {
+              "en": "360° gallery",
+              "es": "Galería 360°"
+            }
+          },
+          {
+            "href": "/tours",
+            "label": {
+              "en": "Virtual tours",
+              "es": "Recorridos virtuales"
+            }
+          },
+          {
+            "href": "https://recorrido360.mx",
+            "label": {
+              "en": "recorrido360.mx",
+              "es": "recorrido360.mx"
+            }
+          }
+        ]
+      },
+      "story": {
+        "title": {
+          "en": "Step inside Granada",
+          "es": "Métete a Granada"
+        },
+        "body": {
+          "en": "The 360° gallery drops you in the middle of Granada and Cádiz. Drag to look around, up at the ceilings and down at the streets.",
+          "es": "La galería 360° te deja en medio de Granada y Cádiz. Arrastra para mirar alrededor, hacia los techos y hacia las calles."
+        },
+        "href": "/gallery360"
+      },
+      "funFacts": [
+        {
+          "en": "Jorge built his own 360° tour engine, one of the “browser toys nobody asked for” on his home page.",
+          "es": "Jorge construyó su propio motor de recorridos 360°, uno de los “juguetes web que nadie pidió” de su página principal."
+        },
+        {
+          "en": "TODO(jorge): the 360° camera you use, or the hardest place you’ve shot",
+          "es": "TODO(jorge): la cámara 360° que usas, o el lugar más difícil donde has tomado fotos"
+        }
+      ]
+    },
+    {
+      "id": "boardgames",
+      "color": "#16a34a",
+      "title": {
+        "en": "Board games",
+        "es": "Juegos de mesa"
+      },
+      "tagline": {
+        "en": "One more round?",
+        "es": "¿Otra partida?"
+      },
+      "landmark": {
+        "en": "A game room: a shelf of board games and a table set with meeples and dice",
+        "es": "Un cuarto de juegos: un librero lleno de juegos de mesa y una mesa con fichas y dados"
+      },
+      "game": {
+        "name": {
+          "en": "Pairs",
+          "es": "Memorama"
+        },
+        "howTo": {
+          "en": "Flip the tiles and find every pair. Click or tap, or use the arrow keys and Enter.",
+          "es": "Voltea las fichas y encuentra todos los pares. Haz clic o toca, o usa las flechas y Enter."
+        }
+      },
+      "card": {
+        "body": {
+          "en": "Jorge loves board games, so this page is one. He also builds small games for the browser: a wheel of fortune and a jigsaw puzzle live in his tools.",
+          "es": "A Jorge le encantan los juegos de mesa, así que esta página es uno. También hace juegos pequeños para el navegador: una ruleta de la fortuna y un rompecabezas viven entre sus herramientas."
+        },
+        "links": [
+          {
+            "href": "/tools/wheel-of-fortune",
+            "label": {
+              "en": "Wheel of Fortune",
+              "es": "Ruleta de la fortuna"
+            }
+          },
+          {
+            "href": "/tools/puzzle",
+            "label": {
+              "en": "The Puzzle",
+              "es": "El rompecabezas"
+            }
+          }
+        ]
+      },
+      "story": {
+        "title": {
+          "en": "TODO(jorge): story title about board games",
+          "es": "TODO(jorge): título de la historia sobre juegos de mesa"
+        },
+        "body": {
+          "en": "TODO(jorge): a short story about your board-game nights",
+          "es": "TODO(jorge): una historia corta sobre tus noches de juegos de mesa"
+        },
+        "href": "/tools"
+      },
+      "funFacts": [
+        {
+          "en": "TODO(jorge): favourite board games (2–3 titles)",
+          "es": "TODO(jorge): juegos de mesa favoritos (2–3 títulos)"
+        },
+        {
+          "en": "TODO(jorge): the game you always win (or always lose)",
+          "es": "TODO(jorge): el juego que siempre ganas (o siempre pierdes)"
+        }
+      ]
+    },
+    {
+      "id": "music",
+      "color": "#c026d3",
+      "title": {
+        "en": "Music",
+        "es": "Música"
+      },
+      "tagline": {
+        "en": "A calm room, a sofa, great speakers.",
+        "es": "Un cuarto tranquilo, un sillón y buenas bocinas."
+      },
+      "landmark": {
+        "en": "A calm listening corner: a sofa, big speakers and a spinning record",
+        "es": "Un rincón tranquilo para escuchar: un sillón, bocinas grandes y un disco girando"
+      },
+      "game": {
+        "name": {
+          "en": "Sound Check",
+          "es": "Prueba de sonido"
+        },
+        "howTo": {
+          "en": "Hit each note as it reaches the line. Tap or press Space.",
+          "es": "Pega cada nota cuando llegue a la línea. Toca o presiona Espacio."
+        }
+      },
+      "card": {
+        "body": {
+          "en": "Jorge’s music corner is a calm room, a sofa and great speakers. He’s currently learning guitar and singing, so naturally he built two apps that listen to him and grade him.",
+          "es": "El rincón musical de Jorge es un cuarto tranquilo, un sillón y buenas bocinas. Ahora está aprendiendo guitarra y canto, así que, claro, hizo dos apps que lo escuchan y lo califican."
+        },
+        "links": [
+          {
+            "href": "/tools/guitarra",
+            "label": {
+              "en": "Aprende Guitarra",
+              "es": "Aprende Guitarra"
+            }
+          },
+          {
+            "href": "/tools/canto",
+            "label": {
+              "en": "Aprende a Cantar",
+              "es": "Aprende a Cantar"
+            }
+          }
+        ]
+      },
+      "story": {
+        "title": {
+          "en": "An app that grades his singing",
+          "es": "Una app que califica cómo canta"
+        },
+        "body": {
+          "en": "Learning to sing is humbling, so Jorge made it measurable: Aprende a Cantar teaches by levels, transposes exercises to your vocal range and checks your pitch through the microphone.",
+          "es": "Aprender a cantar te baja los humos, así que Jorge lo hizo medible: Aprende a Cantar enseña por niveles, transpone los ejercicios a tu rango vocal y revisa tu afinación con el micrófono."
+        },
+        "href": "/tools/canto"
+      },
+      "funFacts": [
+        {
+          "en": "He’s learning guitar and singing, and built Aprende Guitarra and Aprende a Cantar to practise.",
+          "es": "Está aprendiendo guitarra y canto, e hizo Aprende Guitarra y Aprende a Cantar para practicar."
+        },
+        {
+          "en": "TODO(jorge): the speakers in that calm room",
+          "es": "TODO(jorge): las bocinas de ese cuarto tranquilo"
+        },
+        {
+          "en": "TODO(jorge): an album you’d put on for a first-time guest",
+          "es": "TODO(jorge): un disco que le pondrías a alguien que viene por primera vez"
+        }
+      ]
+    },
+    {
+      "id": "beer",
+      "color": "#d97706",
+      "title": {
+        "en": "Craft beer",
+        "es": "Cerveza artesanal"
+      },
+      "tagline": {
+        "en": "Small batches, big opinions.",
+        "es": "Lotes pequeños, opiniones grandes."
+      },
+      "landmark": {
+        "en": "A small taproom with a row of taps",
+        "es": "Una pequeña cervecería con una fila de grifos"
+      },
+      "game": {
+        "name": {
+          "en": "Perfect Pour",
+          "es": "El tarro perfecto"
+        },
+        "howTo": {
+          "en": "Fill the glass to the line without spilling the foam. Hold to pour, or hold Space.",
+          "es": "Llena el tarro hasta la línea sin tirar la espuma. Mantén presionado para servir, o mantén Espacio."
+        }
+      },
+      "card": {
+        "body": {
+          "en": "Jorge loves craft beer. This landmark is a small taproom with a row of taps, ready to pour.",
+          "es": "A Jorge le encanta la cerveza artesanal. Este lugar es una pequeña cervecería con una fila de grifos, lista para servir."
+        },
+        "links": []
+      },
+      "story": {
+        "title": {
+          "en": "TODO(jorge): story title about craft beer",
+          "es": "TODO(jorge): título de la historia sobre cerveza artesanal"
+        },
+        "body": {
+          "en": "TODO(jorge): a short craft-beer story (a brewery visit, a first favourite)",
+          "es": "TODO(jorge): una historia corta de cerveza artesanal (una visita a una cervecería, tu primera favorita)"
+        },
+        "href": "/about"
+      },
+      "funFacts": [
+        {
+          "en": "TODO(jorge): favourite beers or styles (2–3)",
+          "es": "TODO(jorge): cervezas o estilos favoritos (2–3)"
+        },
+        {
+          "en": "TODO(jorge): a favourite brewery or taproom",
+          "es": "TODO(jorge): una cervecería o taproom favorito"
+        }
+      ]
+    },
+    {
+      "id": "artoverlay",
+      "color": "#f97316",
+      "title": {
+        "en": "artoverlay.com",
+        "es": "artoverlay.com"
+      },
+      "tagline": {
+        "en": "Trace anything onto anything.",
+        "es": "Calca lo que sea sobre lo que sea."
+      },
+      "landmark": {
+        "en": "A painted wall with a phone projecting a design onto it",
+        "es": "Una pared pintada con un celular proyectando un diseño encima"
+      },
+      "game": {
+        "name": {
+          "en": "Trace It",
+          "es": "Cálcalo"
+        },
+        "howTo": {
+          "en": "Trace the outline as closely as you can. Drag, or steer with the arrow keys.",
+          "es": "Calca el contorno lo más preciso que puedas. Arrastra o guía con las flechas."
+        }
+      },
+      "card": {
+        "body": {
+          "en": "Jorge built artoverlay.com, a free browser tool that overlays a reference image on your phone’s camera so you can trace designs onto real surfaces: murals, stencils, cakes, embroidery. It corrects perspective, removes backgrounds and processes everything locally. No app, no account, no paywall.",
+          "es": "Jorge hizo artoverlay.com, una herramienta gratis en el navegador que pone una imagen de referencia sobre la cámara de tu celular para que calques diseños en superficies reales: murales, esténciles, pasteles, bordados. Corrige la perspectiva, quita fondos y procesa todo en tu dispositivo. Sin app, sin cuenta y sin pagar."
+        },
+        "links": [
+          {
+            "href": "https://artoverlay.com",
+            "label": {
+              "en": "Open artoverlay.com",
+              "es": "Abrir artoverlay.com"
+            }
+          }
+        ]
+      },
+      "story": {
+        "title": {
+          "en": "The toy that refused to stay in the pile",
+          "es": "El juguete que no se quiso quedar en la pila"
+        },
+        "body": {
+          "en": "Art Overlay started as one of the small tools on this site and refused to stay there. Now it’s its own product for muralists, tattoo artists and cake decorators: still free, still running entirely on the phone.",
+          "es": "Art Overlay empezó como una de las herramientas pequeñas de este sitio y no se quiso quedar ahí. Ahora es un producto propio para muralistas, tatuadores y decoradores de pasteles: sigue siendo gratis y sigue corriendo completo en el celular."
+        },
+        "href": "https://artoverlay.com"
+      },
+      "funFacts": [
+        {
+          "en": "Nothing you trace with Art Overlay is uploaded: the camera, the image and the processing all stay on your phone.",
+          "es": "Nada de lo que calcas con Art Overlay se sube: la cámara, la imagen y el procesamiento se quedan en tu celular."
+        },
+        {
+          "en": "It even handles curved surfaces, like tracing around a mug.",
+          "es": "Hasta funciona en superficies curvas, como calcar alrededor de una taza."
+        }
+      ]
+    },
+    {
+      "id": "myalbumlink",
+      "color": "#0d9488",
+      "title": {
+        "en": "myalbumlink.com",
+        "es": "myalbumlink.com"
+      },
+      "tagline": {
+        "en": "Stop sending twenty things. Send one album link.",
+        "es": "Deja de mandar veinte cosas. Manda un link de álbum."
+      },
+      "landmark": {
+        "en": "A floating photo album with pages fanning out",
+        "es": "Un álbum de fotos flotando con las páginas abiertas en abanico"
+      },
+      "game": {
+        "name": {
+          "en": "One Link",
+          "es": "Un solo link"
+        },
+        "howTo": {
+          "en": "Catch the photos, videos and PDFs in the album before they scatter. Drag, or use the arrow keys.",
+          "es": "Atrapa las fotos, videos y PDFs en el álbum antes de que se dispersen. Arrastra o usa las flechas."
+        }
+      },
+      "card": {
+        "body": {
+          "en": "MyAlbumLink bundles photos, videos, 360° tours and PDFs into one shareable link, for real estate, photographers and events. Jorge built and runs it solo: auto-compressed uploads, watermarking, passcodes, per-album analytics and tiered Stripe subscriptions.",
+          "es": "MyAlbumLink junta fotos, videos, recorridos 360° y PDFs en un solo link para compartir, pensado para inmobiliarias, fotógrafos y eventos. Jorge lo construyó y lo opera solo: cargas que se comprimen solas, marca de agua, contraseñas, estadísticas por álbum y suscripciones por niveles con Stripe."
+        },
+        "links": [
+          {
+            "href": "https://myalbumlink.com",
+            "label": {
+              "en": "Open myalbumlink.com",
+              "es": "Abrir myalbumlink.com"
+            }
+          }
+        ]
+      },
+      "story": {
+        "title": {
+          "en": "One link instead of twenty",
+          "es": "Un link en vez de veinte"
+        },
+        "body": {
+          "en": "A listing has photos, a video, a 360° tour and a PDF, and they usually arrive as twenty separate messages. MyAlbumLink turns them into one floating album anyone can open.",
+          "es": "Una propiedad tiene fotos, un video, un recorrido 360° y un PDF, y casi siempre llegan en veinte mensajes distintos. MyAlbumLink los convierte en un solo álbum que cualquiera puede abrir."
+        },
+        "href": "https://myalbumlink.com"
+      },
+      "funFacts": [
+        {
+          "en": "MyAlbumLink is multi-tenant SaaS built and run entirely by one person.",
+          "es": "MyAlbumLink es un SaaS multi-tenant construido y operado por una sola persona."
+        }
+      ]
+    },
+    {
+      "id": "emarts",
+      "color": "#ec4899",
+      "title": {
+        "en": "e.marts",
+        "es": "e.marts"
+      },
+      "tagline": {
+        "en": "Your first real painting, step by step.",
+        "es": "Tu primera pintura de verdad, paso a paso."
+      },
+      "landmark": {
+        "en": "An easel with a half-finished painting and a row of brushes",
+        "es": "Un caballete con una pintura a medio terminar y una fila de pinceles"
+      },
+      "game": {
+        "name": {
+          "en": "Paint by the Lines",
+          "es": "Pinta sobre el trazo"
+        },
+        "howTo": {
+          "en": "Fill each sketched shape with the right colour. Click or tap; Tab and Enter work too.",
+          "es": "Rellena cada figura del boceto con el color correcto. Haz clic o toca; también funcionan Tab y Enter."
+        }
+      },
+      "card": {
+        "body": {
+          "en": "e.marts runs guided painting workshops and private events in Cuernavaca, Metepec and CDMX, where first-timers finish a real painting step by step on a pre-sketched design. It’s Jorge’s wife Eli’s business, and he designed and built the site, which sells the workshops and events and hands the booking to WhatsApp. It’s one he’s proud of.",
+          "es": "e.marts organiza talleres de pintura guiados y eventos privados en Cuernavaca, Metepec y CDMX, donde quien nunca ha pintado termina una pintura de verdad, paso a paso, sobre un diseño ya bocetado. Es el negocio de Eli, la esposa de Jorge, y él diseñó y construyó el sitio, que vende los talleres y eventos y manda las reservas a WhatsApp. Es uno de los que más orgullo le dan."
+        },
+        "links": [
+          {
+            "href": "https://emarts.com.mx",
+            "label": {
+              "en": "Visit emarts.com.mx",
+              "es": "Visitar emarts.com.mx"
+            }
+          }
+        ]
+      },
+      "story": {
+        "title": {
+          "en": "A site for people who swear they can’t paint",
+          "es": "Un sitio para quienes juran que no saben pintar"
+        },
+        "body": {
+          "en": "Eli teaches people who swear they can’t paint, and they leave with a finished painting. Jorge built emarts.com.mx to sell public workshops, private events and team building, with booking one tap away on WhatsApp.",
+          "es": "Eli les enseña a personas que juran que no saben pintar, y se van con una pintura terminada. Jorge hizo emarts.com.mx para vender talleres abiertos, eventos privados y team building, con la reserva a un toque en WhatsApp."
+        },
+        "href": "https://emarts.com.mx"
+      },
+      "funFacts": [
+        {
+          "en": "Every e.marts workshop starts from a pre-sketched design, so even first-timers finish a real painting.",
+          "es": "Cada taller de e.marts empieza con un diseño ya bocetado, así que hasta quien pinta por primera vez termina una pintura de verdad."
+        }
+      ]
+    },
+    {
+      "id": "kitchen",
+      "color": "#dc2626",
+      "title": {
+        "en": "Kitchen",
+        "es": "Cocina"
+      },
+      "tagline": {
+        "en": "Something’s always on the stove.",
+        "es": "Siempre hay algo en la estufa."
+      },
+      "landmark": {
+        "en": "A little kitchen with a stove, pans and a chopping board",
+        "es": "Una cocinita con estufa, sartenes y una tabla para picar"
+      },
+      "game": {
+        "name": {
+          "en": "Mise en Place",
+          "es": "Todo listo"
+        },
+        "howTo": {
+          "en": "Chop each ingredient on the beat. Tap or press Space.",
+          "es": "Pica cada ingrediente al ritmo. Toca o presiona Espacio."
+        }
+      },
+      "card": {
+        "body": {
+          "en": "Jorge loves to cook. This landmark is a little kitchen with a stove, a few pans and a chopping board ready to go.",
+          "es": "A Jorge le encanta cocinar. Este lugar es una cocinita con estufa, unas sartenes y una tabla para picar lista para empezar."
+        },
+        "links": []
+      },
+      "story": {
+        "title": {
+          "en": "TODO(jorge): story title about cooking",
+          "es": "TODO(jorge): título de la historia sobre cocina"
+        },
+        "body": {
+          "en": "TODO(jorge): a short kitchen story (a signature dish, who taught you)",
+          "es": "TODO(jorge): una historia corta de cocina (tu platillo estrella, quién te enseñó)"
+        },
+        "href": "/about"
+      },
+      "funFacts": [
+        {
+          "en": "TODO(jorge): signature dish",
+          "es": "TODO(jorge): tu platillo estrella"
+        },
+        {
+          "en": "TODO(jorge): a dish you want to master next",
+          "es": "TODO(jorge): un platillo que quieres dominar después"
+        }
+      ]
+    }
   ]
 }

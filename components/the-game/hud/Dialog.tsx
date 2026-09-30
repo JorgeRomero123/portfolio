@@ -25,8 +25,11 @@ export function Dialog({
   reducedMotion: boolean;
   panelClassName?: string;
   backdropClassName?: string;
-  /** 'bottom' docks the panel above the turn controls so the pawn (screen centre) stays visible. */
-  placement?: 'center' | 'bottom';
+  /**
+   * 'bottom' docks the panel above the turn controls so the pawn (screen centre) stays visible.
+   * 'sheet' is a bottom sheet on phones (full width, flush with the bottom) and centred from `sm` up.
+   */
+  placement?: 'center' | 'bottom' | 'sheet';
 }) {
   const panel = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
@@ -72,7 +75,7 @@ export function Dialog({
 
   return (
     <motion.div
-      className={`absolute inset-0 z-40 flex justify-center p-4 ${placement === 'bottom' ? 'items-end pb-40 sm:pb-44' : 'items-center'} ${backdropClassName}`}
+      className={`absolute inset-0 z-40 flex justify-center ${PLACEMENT[placement]} ${backdropClassName}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -96,6 +99,12 @@ export function Dialog({
     </motion.div>
   );
 }
+
+const PLACEMENT = {
+  center: 'items-center p-4',
+  bottom: 'items-end p-4 pb-40 sm:pb-44',
+  sheet: 'items-end p-0 pt-3 sm:items-center sm:p-4',
+} as const;
 
 export const cardClass = 'rounded-2xl border border-gray-200 bg-white shadow-[0_10px_40px_rgba(15,23,42,0.12)]';
 export const focusRing =

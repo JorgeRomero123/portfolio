@@ -14,27 +14,45 @@
  *   'play'     → the pawn stops there (turn ends),
  *   'look'     → when passing, movement resumes afterwards,
  *   'continue' → when passing, movement resumes.
- * A landed prompt always ends the turn. Rewards/stamps are granted inside the handler (task 2)
+ * A landed prompt always ends the turn. Rewards/stamps are granted inside the handler
  * via updateProgress(); the shell re-reads progress after each await.
- * Task 2: pass your handler as the `onLandmark` prop (or replace `useLandmarkPrompt` below).
+ * Default handler: overlays/LandmarkFlow (prompt → mini-game → stamp → prize wheel → section card),
+ * loaded with next/dynamic on first use. An `onLandmark` prop overrides it.
+ * While a full-cover overlay (mini-game, wheel, passport…) is open the board's `active` is false,
+ * so the 3D render pauses.
+ *
+ * Dev-only (NODE_ENV !== 'production'): `?debug=passport | prompt:<id> | card:<id> | game:<id> |
+ * win:<id> | wheel:<id> | stamp:<id> | final:<id> | lost:<id>` opens that overlay directly.
  * ─────────────────────────────────────────────────────────────────────────────────────────────
  */
 import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react';
+import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
 import { usePrefersReducedMotion } from '@/components/home/lib/usePrefersReducedMotion';
 import { sectionById } from './content';
 import { useLang } from './lang';
 import { getProgress, useProgress } from './progress';
 import { STRINGS } from './strings';
-import type { LandmarkHandler, SectionId } from './types';
+import { SECTION_IDS, type LandmarkChoice, type LandmarkHandler, type SectionId } from './types';
 import { LANDMARK_AT_TILE, TILES, landmarkTileOf, wrapTile } from './board/layout';
 import type { BoardApi, BoardProps, DieValue, ViewMode } from './board/types';
 import { DartOverlay, type DartResult } from './hud/DartOverlay';
-import { useLandmarkPrompt } from './hud/LandmarkPrompt';
+import { PAUSING_STEPS, type FlowStep } from './overlays/flow';
 import { SectionPicker } from './hud/SectionPicker';
 import { StepPicker } from './hud/StepPicker';
 import { TopBar } from './hud/TopBar';
 import { TurnControls } from './hud/TurnControls';
+
+const loadFlow = () => import('./overlays/LandmarkFlow');
+const LandmarkFlow = dynamic(loadFlow, { ssr: false, loading: () => null });
+const Passport = dynamic(() => import('./overlays/Passport'), { ssr: false, loading: () => null });
+
+interface LandmarkRequest {
+  section: SectionId;
+  landed: boolean;
+  resolve: (c: LandmarkChoice) => void;
+  debugStart?: FlowStep | 'win';
+}
 
 type Phase = 'idle' | 'rolling' | 'aiming' | 'picking-section' | 'picking-steps' | 'moving' | 'landmark';
 
@@ -59,8 +77,48 @@ export default function GameShell({
   const [steadyDart, setSteadyDart] = useState(false);
   const apiRef = useRef<BoardApi | null>(null);
   const busy = useRef(false);
-  const { prompt, node: landmarkPrompt } = useLandmarkPrompt(lang, reducedMotion);
-  const onLandmark = onLandmarkProp ?? prompt;
+  const [landmarkReq, setLandmarkReqState] = useState<LandmarkRequest | null>(null);
+  const reqRef = useRef<LandmarkRequest | null>(null);
+  const setLandmarkReq = useCallback((req: LandmarkRequest | null) => {
+    reqRef.current = req;
+    setLandmarkReqState(req);
+  }, []);
+  const [flowStep, setFlowStep] = useState<FlowStep | null>(null);
+  const [passportOpen, setPassportOpen] = useState(false);
+  const defaultLandmark = useCallback<LandmarkHandler>((section, { landed }) => {
+    const opener = document.activeElement as HTMLElement | null;
+    return new Promise<LandmarkChoice>((resolve) => {
+      setLandmarkReq({
+        section,
+        landed,
+        resolve: (c) => {
+          // Restore focus to whatever had it (the roll button is re-enabled by then), else the roll button.
+          window.setTimeout(() => {
+            const target = opener && document.contains(opener) && !(opener as HTMLButtonElement).disabled ? opener : null;
+            (target ?? document.querySelector<HTMLElement>('[data-testid="roll-dice"]'))?.focus({ preventScroll: true });
+          }, 60);
+          resolve(c);
+        },
+      });
+    });
+  }, [setLandmarkReq]);
+  const onLandmark = onLandmarkProp ?? defaultLandmark;
+  const endLandmark = useCallback(
+    (c: LandmarkChoice) => {
+      const req = reqRef.current;
+      setLandmarkReq(null);
+      setFlowStep(null);
+      req?.resolve(c);
+      // Never leave focus on <body> once the overlays close.
+      window.setTimeout(() => {
+        if (document.activeElement === document.body || !document.activeElement)
+          document.querySelector<HTMLElement>('[data-testid="roll-dice"]')?.focus({ preventScroll: true });
+      }, 120);
+    },
+    [setLandmarkReq],
+  );
+  // Pause the 3D render while something covers the stage.
+  const boardActive = active && !passportOpen && !(flowStep && PAUSING_STEPS.includes(flowStep));
 
   const pawnTile = wrapTile(progress.pawnTile);
   // Latest strings/handler for use inside long-running async turns.
@@ -68,6 +126,40 @@ export default function GameShell({
   useEffect(() => {
     live.current = { s, lang, onLandmark };
   }, [s, lang, onLandmark]);
+
+  // Warm the overlay chunk once the board is up so the first prompt opens instantly.
+  useEffect(() => {
+    if (ready) void loadFlow();
+  }, [ready]);
+
+  // Dev-only debug hook: ?debug=passport | <step>:<sectionId>. Runs once the board is ready.
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production' || !ready) return;
+    const id = window.setTimeout(openDebug, 0);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, when the board becomes ready
+  }, [ready]);
+  function openDebug() {
+    const q = new URLSearchParams(window.location.search).get('debug');
+    if (!q) return;
+    if (q === 'passport') {
+      setPassportOpen(true);
+      return;
+    }
+    const [stepName, id] = q.split(':') as [FlowStep | 'win', SectionId];
+    if (!(SECTION_IDS as readonly string[]).includes(id)) return;
+    busy.current = true;
+    setPhase('landmark');
+    setLandmarkReq({
+      section: id,
+      landed: true,
+      debugStart: stepName,
+      resolve: () => {
+        setPhase('idle');
+        busy.current = false;
+      },
+    });
+  }
 
   const setView = useCallback((m: ViewMode) => {
     setViewState(m);
@@ -190,7 +282,7 @@ export default function GameShell({
   useEffect(() => {
     if (!active) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+      if (e.metaKey || e.ctrlKey || e.altKey || e.repeat || passportOpen) return;
       const t = e.target as HTMLElement | null;
       if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
       const k = e.key.toLowerCase();
@@ -207,7 +299,7 @@ export default function GameShell({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [active, phase, ready, roll, openDart, toggleView]);
+  }, [active, phase, ready, roll, openDart, toggleView, passportOpen]);
 
   const disabled = phase !== 'idle' || !ready;
 
@@ -220,7 +312,7 @@ export default function GameShell({
           hat={progress.wornHat}
           lang={lang}
           reducedMotion={reducedMotion}
-          active={active}
+          active={boardActive}
           onReady={() => setReady(true)}
         />
       </div>
@@ -258,6 +350,8 @@ export default function GameShell({
         onToggleView={toggleView}
         soundOn={progress.soundOn}
         onToggleSound={() => updateProgress((p) => ({ soundOn: !p.soundOn }))}
+        stampCount={progress.stamps.length}
+        onOpenPassport={() => setPassportOpen(true)}
       />
       <TurnControls
         lang={lang}
@@ -296,7 +390,21 @@ export default function GameShell({
           <StepPicker key="steps" lang={lang} reducedMotion={reducedMotion} onPick={pickFreeMove} onClose={cancelOverlay} />
         )}
       </AnimatePresence>
-      {landmarkPrompt}
+      {landmarkReq && (
+        <LandmarkFlow
+          key={`${landmarkReq.section}-${landmarkReq.debugStart ?? ''}`}
+          section={landmarkReq.section}
+          landed={landmarkReq.landed}
+          debugStart={landmarkReq.debugStart}
+          lang={lang}
+          reducedMotion={reducedMotion}
+          onStep={setFlowStep}
+          onDone={endLandmark}
+        />
+      )}
+      <AnimatePresence>
+        {passportOpen && <Passport key="passport" lang={lang} reducedMotion={reducedMotion} onClose={() => setPassportOpen(false)} />}
+      </AnimatePresence>
     </div>
   );
 }
