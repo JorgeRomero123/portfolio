@@ -88,8 +88,8 @@
           "es": "Aplasta los bugs"
         },
         "howTo": {
-          "en": "Stop the build bar in the green zone to ship. Click, tap or press Space.",
-          "es": "Detén la barra del build en la zona verde para publicar. Haz clic, toca o presiona Espacio."
+          "en": "Squash bugs before they reach PROD; don't hit the glowing green code. Click or tap a bug, or pick a line with ↑ ↓ and press Space.",
+          "es": "Aplasta los bugs antes de que lleguen a PROD; no toques el código verde que brilla. Haz clic o toca un bug, o elige una línea con ↑ ↓ y presiona Espacio."
         }
       },
       "card": {
