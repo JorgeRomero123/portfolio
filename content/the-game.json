@@ -84,8 +84,8 @@
       },
       "game": {
         "name": {
-          "en": "Ship It",
-          "es": "¡A producción!"
+          "en": "Squash the bugs",
+          "es": "Aplasta los bugs"
         },
         "howTo": {
           "en": "Stop the build bar in the green zone to ship. Click, tap or press Space.",
@@ -160,8 +160,8 @@
       },
       "game": {
         "name": {
-          "en": "Steady Shot",
-          "es": "Toma estable"
+          "en": "Get the shot",
+          "es": "Consigue la toma"
         },
         "howTo": {
           "en": "Keep the drone framed on the target while the wind pushes it. Drag, or use the arrow keys.",
@@ -222,8 +222,8 @@
       },
       "game": {
         "name": {
-          "en": "Top Bins",
-          "es": "Al ángulo"
+          "en": "Penalty",
+          "es": "Penal"
         },
         "howTo": {
           "en": "Time your shot to hit the top corner. Click, tap or press Space.",
@@ -284,8 +284,8 @@
       },
       "game": {
         "name": {
-          "en": "Stitch It",
-          "es": "Únelo"
+          "en": "Find it in 360",
+          "es": "Encuéntralo en 360"
         },
         "howTo": {
           "en": "Line up the panorama seam, then lock it. Drag or use the arrow keys; Space to lock.",
@@ -360,8 +360,8 @@
       },
       "game": {
         "name": {
-          "en": "Pairs",
-          "es": "Memorama"
+          "en": "Meeple memory",
+          "es": "Memorama de meeples"
         },
         "howTo": {
           "en": "Flip the tiles and find every pair. Click or tap, or use the arrow keys and Enter.",
@@ -429,8 +429,8 @@
       },
       "game": {
         "name": {
-          "en": "Sound Check",
-          "es": "Prueba de sonido"
+          "en": "Tap the beat",
+          "es": "Sigue el ritmo"
         },
         "howTo": {
           "en": "Hit each note as it reaches the line. Tap or press Space.",
@@ -502,8 +502,8 @@
       },
       "game": {
         "name": {
-          "en": "Perfect Pour",
-          "es": "El tarro perfecto"
+          "en": "Perfect pour",
+          "es": "El servido perfecto"
         },
         "howTo": {
           "en": "Fill the glass to the line without spilling the foam. Hold to pour, or hold Space.",
@@ -556,7 +556,7 @@
       },
       "game": {
         "name": {
-          "en": "Trace It",
+          "en": "Trace it",
           "es": "Cálcalo"
         },
         "howTo": {
@@ -618,7 +618,7 @@
       },
       "game": {
         "name": {
-          "en": "One Link",
+          "en": "One link",
           "es": "Un solo link"
         },
         "howTo": {
@@ -676,8 +676,8 @@
       },
       "game": {
         "name": {
-          "en": "Paint by the Lines",
-          "es": "Pinta sobre el trazo"
+          "en": "Paint by guide",
+          "es": "Pinta con guía"
         },
         "howTo": {
           "en": "Fill each sketched shape with the right colour. Click or tap; Tab and Enter work too.",
@@ -734,8 +734,8 @@
       },
       "game": {
         "name": {
-          "en": "Mise en Place",
-          "es": "Todo listo"
+          "en": "Order up",
+          "es": "¡Orden lista!"
         },
         "howTo": {
           "en": "Chop each ingredient on the beat. Tap or press Space.",
