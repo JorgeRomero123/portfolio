@@ -364,8 +364,8 @@
           "es": "Memorama de meeples"
         },
         "howTo": {
-          "en": "Flip the tiles and find every pair. Click or tap, or use the arrow keys and Enter.",
-          "es": "Voltea las fichas y encuentra todos los pares. Haz clic o toca, o usa las flechas y Enter."
+          "en": "Flip two tiles at a time and match all 6 pairs before the clock runs out. Click or tap, or use the arrow keys and Enter.",
+          "es": "Voltea dos fichas a la vez y encuentra los 6 pares antes de que se acabe el tiempo. Haz clic o toca, o usa las flechas y Enter."
         }
       },
       "card": {
