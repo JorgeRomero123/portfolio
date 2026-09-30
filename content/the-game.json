@@ -1,0 +1,15 @@
+{
+  "sections": [
+    { "id": "software",    "color": "#0070f3", "title": { "en": "Software engineering", "es": "Ingeniería de software" } },
+    { "id": "drone",       "color": "#06b6d4", "title": { "en": "Drone videography", "es": "Video con dron" } },
+    { "id": "spurs",       "color": "#132257", "title": { "en": "Tottenham Hotspur", "es": "Tottenham Hotspur" } },
+    { "id": "pano360",     "color": "#7c3aed", "title": { "en": "360° content", "es": "Contenido 360°" } },
+    { "id": "boardgames",  "color": "#16a34a", "title": { "en": "Board games", "es": "Juegos de mesa" } },
+    { "id": "music",       "color": "#c026d3", "title": { "en": "Music", "es": "Música" } },
+    { "id": "beer",        "color": "#d97706", "title": { "en": "Craft beer", "es": "Cerveza artesanal" } },
+    { "id": "artoverlay",  "color": "#f97316", "title": { "en": "artoverlay.com", "es": "artoverlay.com" } },
+    { "id": "myalbumlink", "color": "#0d9488", "title": { "en": "myalbumlink.com", "es": "myalbumlink.com" } },
+    { "id": "emarts",      "color": "#ec4899", "title": { "en": "e.marts", "es": "e.marts" } },
+    { "id": "kitchen",     "color": "#dc2626", "title": { "en": "Kitchen", "es": "Cocina" } }
+  ]
+}
