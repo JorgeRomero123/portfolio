@@ -88,8 +88,8 @@
           "es": "Aplasta los bugs"
         },
         "howTo": {
-          "en": "Squash bugs before they reach PROD; don't hit the glowing green code. Click or tap a bug, or pick a line with ↑ ↓ and press Space.",
-          "es": "Aplasta los bugs antes de que lleguen a PROD; no toques el código verde que brilla. Haz clic o toca un bug, o elige una línea con ↑ ↓ y presiona Espacio."
+          "en": "Squash the red bugs before they reach PROD. Leave the green features and the glowing green code alone. Click or tap a bug, or pick a line with ↑ ↓ and press Space.",
+          "es": "Aplasta los bugs rojos antes de que lleguen a PROD. No toques los features verdes ni el código verde que brilla. Haz clic o toca un bug, o elige una línea con ↑ ↓ y presiona Espacio."
         }
       },
       "card": {
