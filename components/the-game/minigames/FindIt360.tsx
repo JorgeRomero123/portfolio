@@ -1,8 +1,9 @@
 "use client";
 
-// "Find it in 360" (360° content): six little gems are hidden as Pannellum hot spots in one of
-// the 360° photos. Look around (drag, or arrow keys with the viewer focused) and tap a gem, or
-// centre it in the reticle and press Enter/Space. 55 s from the moment the photo is ready; win = all 6.
+// "Find it in 360" (360° content): twenty small gems in assorted colours are hidden as Pannellum
+// hot spots all over one of the 360° photos. Look around (drag, or arrow keys with the viewer
+// focused) and tap a gem, or centre it in the reticle and press Enter/Space. 60 s from the moment
+// the photo is ready; win = all 20.
 // A radar ring points roughly at the nearest remaining gem; after 10 s without a find it gets precise.
 import {
   useCallback,
@@ -30,11 +31,11 @@ import {
 } from "./findit360/geo";
 
 const COLOR = "#7c3aed";
-const GEMS = 6;
-const SECONDS = 55;
+const GEMS = 20;
+const SECONDS = 60;
 const PRECISE_AFTER = 10_000;
 const GRAB_DEG = 12; // Enter/Space grabs a gem this close to the centre of view
-const TAP_PX = 30; // pointer taps within this radius of a gem's centre count
+const TAP_PX = 20; // pointer taps within this radius of a gem's centre count
 const LOAD_TIMEOUT = 30_000;
 // Arrow-key look speed in °/s: Pannellum's own keyboard pan (~13°/s) is far too slow for a
 // 40 s hunt round 360°, so the game drives the view itself while an arrow is held.
@@ -124,16 +125,25 @@ const T = {
   },
 };
 
-// Faceted low-poly gem, drawn in the section colour.
-const GEM_SVG = `<svg viewBox="0 0 32 32" width="100%" height="100%" aria-hidden="true" focusable="false">
-<polygon points="4,12 10,4 16,12" fill="#a78bfa"/><polygon points="10,4 22,4 16,12" fill="#c4b5fd"/>
-<polygon points="22,4 28,12 16,12" fill="#8b5cf6"/><polygon points="4,12 16,12 16,30" fill="#7c3aed"/>
-<polygon points="16,12 28,12 16,30" fill="#5b21b6"/>
+// Faceted low-poly gem. Each shade set is [left facet, top facet, right facet, lower left, lower right].
+const GEM_COLORS = [
+  ["#a78bfa", "#c4b5fd", "#8b5cf6", "#7c3aed", "#5b21b6"], // violet
+  ["#60a5fa", "#93c5fd", "#3b82f6", "#2563eb", "#1e40af"], // blue
+  ["#34d399", "#6ee7b7", "#10b981", "#059669", "#065f46"], // emerald
+  ["#fbbf24", "#fcd34d", "#f59e0b", "#d97706", "#92400e"], // amber
+  ["#fb7185", "#fda4af", "#f43f5e", "#e11d48", "#9f1239"], // rose
+  ["#22d3ee", "#67e8f9", "#06b6d4", "#0891b2", "#155e75"], // cyan
+];
+const gemSvg = ([a, b, c, d, e]: string[]) =>
+  `<svg viewBox="0 0 32 32" width="100%" height="100%" aria-hidden="true" focusable="false">
+<polygon points="4,12 10,4 16,12" fill="${a}"/><polygon points="10,4 22,4 16,12" fill="${b}"/>
+<polygon points="22,4 28,12 16,12" fill="${c}"/><polygon points="4,12 16,12 16,30" fill="${d}"/>
+<polygon points="16,12 28,12 16,30" fill="${e}"/>
 <polygon points="4,12 10,4 22,4 28,12 16,30" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
 </svg>`;
 
 const CSS = `
-.fi360-gem{width:30px;height:30px;cursor:pointer;}
+.fi360-gem{width:20px;height:20px;cursor:pointer;}
 .fi360-gem .fi360-in{width:100%;height:100%;filter:drop-shadow(0 0 3px rgba(255,255,255,.9)) drop-shadow(0 2px 3px rgba(46,16,101,.55));transition:transform .3s ease,opacity .3s ease;}
 .fi360-anim .fi360-gem .fi360-in{animation:fi360-pulse 1.6s ease-in-out infinite;}
 .fi360-gem:hover .fi360-in{transform:scale(1.15);}
@@ -206,7 +216,7 @@ export default function FindIt360({
       initialHfov: 95,
     };
   });
-  const [targets] = useState<Target[]>(() => makeTargets(0, GEMS));
+  const [targets] = useState<Target[]>(() => makeTargets(GEMS));
 
   const root = useRef<HTMLDivElement>(null);
   const viewer = useRef<PannellumViewer | null>(null);
@@ -338,13 +348,13 @@ export default function FindIt360({
   // Hot spots: a custom gem element per target (created once; Pannellum reads them at init).
   const hotSpots = useMemo<PannellumHotSpot[]>(
     () =>
-      targets.map((x) => ({
+      targets.map((x, i) => ({
         id: x.id,
         pitch: x.pitch,
         yaw: x.yaw,
         cssClass: "fi360-gem",
         createTooltipFunc: (div: HTMLDivElement) => {
-          div.innerHTML = `<div class="fi360-in">${GEM_SVG}</div>`;
+          div.innerHTML = `<div class="fi360-in">${gemSvg(GEM_COLORS[i % GEM_COLORS.length])}</div>`;
           div.setAttribute("aria-hidden", "true");
           divs.current.set(x.id, div);
         },
@@ -521,7 +531,7 @@ export default function FindIt360({
     }
   };
 
-  // Taps / clicks: generous radius around each visible gem; drags don't count.
+  // Taps / clicks: a finger-sized radius around each visible gem; drags don't count.
   const onPointerDown = (e: React.PointerEvent) => {
     down.current = { x: e.clientX, y: e.clientY };
   };
@@ -631,17 +641,15 @@ export default function FindIt360({
             role="img"
             aria-label={t.counter(found)}
           >
-            {Array.from({ length: GEMS }, (_, i) => (
-              <svg key={i} viewBox="0 0 32 32" className="h-4 w-4" aria-hidden>
-                <polygon
-                  points="4,12 10,4 22,4 28,12 16,30"
-                  fill={i < found ? COLOR : "none"}
-                  stroke={i < found ? COLOR : "#9ca3af"}
-                  strokeWidth="3"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            ))}
+            <svg viewBox="0 0 32 32" className="h-4 w-4" aria-hidden>
+              <polygon
+                points="4,12 10,4 22,4 28,12 16,30"
+                fill={COLOR}
+                stroke={COLOR}
+                strokeWidth="3"
+                strokeLinejoin="round"
+              />
+            </svg>
             <span className="ml-0.5 font-mono text-sm font-bold text-gray-900">
               {found}/{GEMS}
             </span>

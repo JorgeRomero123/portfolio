@@ -23,25 +23,32 @@ export function angDist(p1: number, y1: number, p2: number, y2: number) {
   return (Math.acos(Math.max(-1, Math.min(1, c))) * 180) / Math.PI;
 }
 
+const MAX_PITCH = 42; // keeps gems clear of the zenith and the tripod at the nadir
+const MIN_GAP = 20; // degrees between any two gems
+
 /**
- * `count` targets spread round the full circle (360/count apart with jitter) at varied pitch,
- * none within 45° of where the visitor starts looking, so you always have to turn.
+ * `count` targets scattered evenly by area over the band of the sphere within ±MAX_PITCH, in
+ * every direction (so you have to turn all the way round and look up and down), no two closer
+ * than MIN_GAP. If a spot can't be found the gap is relaxed rather than looping forever.
  */
 export function makeTargets(
-  startYaw: number,
-  count = 3,
+  count: number,
   rnd: () => number = Math.random,
 ): Target[] {
-  const base = rnd() * 360;
-  const gap = 360 / count;
-  return Array.from({ length: count }, (_, i) => {
-    let yaw = norm(base + i * gap + (rnd() - 0.5) * gap * 0.4);
-    const off = norm(yaw - startYaw);
-    if (Math.abs(off) < 45)
-      yaw = norm(startYaw + (off < 0 ? -1 : 1) * (45 + rnd() * 15));
-    const pitch = -16 + rnd() * 36;
-    return { id: `fi360-${i}`, yaw, pitch };
-  });
+  const out: Target[] = [];
+  const top = Math.sin(rad(MAX_PITCH));
+  for (let i = 0; i < count; i++) {
+    let yaw = 0;
+    let pitch = 0;
+    for (let tries = 0; tries < 200; tries++) {
+      yaw = norm(rnd() * 360);
+      pitch = (Math.asin((rnd() * 2 - 1) * top) * 180) / Math.PI;
+      const gap = MIN_GAP * (tries < 100 ? 1 : 0.6);
+      if (out.every((t) => angDist(pitch, yaw, t.pitch, t.yaw) >= gap)) break;
+    }
+    out.push({ id: `fi360-${i}`, yaw, pitch });
+  }
+  return out;
 }
 
 export interface Nearest {
