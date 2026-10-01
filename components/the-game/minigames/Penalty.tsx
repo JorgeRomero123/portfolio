@@ -43,6 +43,8 @@ const T = {
     wait: 'Watch…',
     keysAim: 'Drag or tap the goal · ← → to nudge · Space to lock',
     keysPower: 'Stop in the green · Space, click or tap',
+    touchAim: 'Drag or tap the goal to aim',
+    touchPower: 'Tap to stop in the green',
     soft: 'soft',
     sweet: 'sweet spot',
     over: 'too hard',
@@ -68,6 +70,8 @@ const T = {
     wait: 'Mira…',
     keysAim: 'Arrastra o toca la portería · ← → para ajustar · Espacio para fijar',
     keysPower: 'Detente en lo verde · Espacio, clic o toca',
+    touchAim: 'Arrastra o toca la portería para apuntar',
+    touchPower: 'Toca para detenerte en lo verde',
     soft: 'suave',
     sweet: 'punto ideal',
     over: 'muy fuerte',
@@ -810,7 +814,8 @@ export default function Penalty({ lang, reducedMotion, soundOn, onFinish }: Mini
 
       <div className="flex flex-col items-center gap-2 sm:flex-row sm:justify-between">
         <p className="order-2 text-center text-xs text-gray-500 sm:order-1 sm:text-left">
-          {stage === 'power' ? t.keysPower : t.keysAim}
+          <span className="pointer-coarse:hidden">{stage === 'power' ? t.keysPower : t.keysAim}</span>
+          <span className="hidden pointer-coarse:inline">{stage === 'power' ? t.touchPower : t.touchAim}</span>
         </p>
         <button
           ref={button}

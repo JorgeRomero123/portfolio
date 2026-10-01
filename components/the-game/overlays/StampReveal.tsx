@@ -43,7 +43,7 @@ export function StampReveal({
       onClose={onNext}
       reducedMotion={reducedMotion}
       placement="sheet"
-      backdropClassName="bg-gray-900/40 backdrop-blur-sm"
+      backdropClassName="bg-gray-900/40"
       panelClassName={`${sheetPanel} sm:max-w-sm`}
     >
       <motion.div

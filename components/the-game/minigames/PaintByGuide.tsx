@@ -694,8 +694,8 @@ export default function PaintByGuide({ lang, reducedMotion, soundOn, onFinish }:
             {!started ? (
               <span className="font-medium text-pink-700">{t.clock} </span>
             ) : null}
-            <span className="hidden sm:inline">{t.keys}</span>
-            <span className="sm:hidden">{started ? t.touch : ''}</span>
+            <span className="pointer-coarse:hidden">{t.keys}</span>
+            <span className="hidden pointer-coarse:inline">{started ? t.touch : ''}</span>
           </p>
         </div>
       ) : (

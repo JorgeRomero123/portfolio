@@ -514,10 +514,11 @@ export default function GetTheShot({ lang, reducedMotion, soundOn, onFinish }: M
               <p className="text-sm text-gray-600">{t.sub}</p>
               <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-700">
                 <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1">{t.pointer}</span>
-                <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 font-mono">{t.keys}</span>
+                <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 font-mono pointer-coarse:hidden">{t.keys}</span>
               </div>
               <button
                 ref={startBtn}
+                data-autofocus
                 type="button"
                 onClick={start}
                 className="mt-1 min-h-12 min-w-44 rounded-xl bg-[#0070f3] px-6 text-base font-semibold text-white transition-transform duration-150 hover:bg-[#0060d0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0070f3] focus-visible:ring-offset-2 active:scale-95"

@@ -1,6 +1,8 @@
 'use client';
 
 // Minimal accessible modal for the game stage: traps focus, restores it on close, Escape closes.
+// Initial focus: the first `[data-autofocus]` element (also one that appears later, e.g. inside a
+// lazy-loaded mini-game, until the visitor moves focus), else the first focusable element.
 // Covers the stage only (absolute), not the whole page.
 import { useEffect, useRef, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
@@ -41,7 +43,30 @@ export function Dialog({
     const prev = document.activeElement as HTMLElement | null;
     const el = panel.current;
     const first = el?.querySelector<HTMLElement>('[data-autofocus]') ?? el?.querySelector<HTMLElement>(FOCUSABLE);
-    (first ?? el)?.focus({ preventScroll: true });
+    const initial = first ?? el;
+    initial?.focus({ preventScroll: true });
+    // Content that mounts later (a lazy-loaded mini-game) may bring its own `data-autofocus` control:
+    // hand focus to it, as long as the visitor hasn't moved focus themselves in the meantime.
+    let observer: MutationObserver | null = null;
+    const stopWatching = () => {
+      observer?.disconnect();
+      observer = null;
+      el?.removeEventListener('pointerdown', stopWatching, true);
+    };
+    if (el && !initial?.hasAttribute('data-autofocus')) {
+      const claim = () => {
+        const a = document.activeElement;
+        if (a && a !== document.body && a !== el && a !== initial && el.contains(a)) return stopWatching();
+        if (a && a !== document.body && !el.contains(a)) return stopWatching();
+        const target = el.querySelector<HTMLElement>('[data-autofocus]');
+        if (!target) return;
+        target.focus({ preventScroll: true });
+        if (document.activeElement === target) stopWatching();
+      };
+      observer = new MutationObserver(claim);
+      observer.observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-autofocus'] });
+      el.addEventListener('pointerdown', stopWatching, true);
+    }
     const onKey = (e: KeyboardEvent) => {
       if (!el) return;
       if (e.key === 'Escape') {
@@ -51,6 +76,7 @@ export function Dialog({
         return;
       }
       if (e.key !== 'Tab') return;
+      stopWatching();
       const items = Array.from(el.querySelectorAll<HTMLElement>(FOCUSABLE)).filter((n) => n.offsetParent !== null);
       if (items.length === 0) {
         e.preventDefault();
@@ -68,6 +94,7 @@ export function Dialog({
     };
     document.addEventListener('keydown', onKey, true);
     return () => {
+      stopWatching();
       document.removeEventListener('keydown', onKey, true);
       if (prev && document.contains(prev)) prev.focus({ preventScroll: true });
     };

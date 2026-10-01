@@ -138,7 +138,7 @@ export default function LandmarkFlow({ section, landed, lang, reducedMotion, onD
           onClose={() => setStep('card')}
           reducedMotion={reducedMotion}
           placement="sheet"
-          backdropClassName="bg-gray-900/40 backdrop-blur-sm"
+          backdropClassName="bg-gray-900/40"
           panelClassName={`${sheetPanel} p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] text-center sm:max-w-sm`}
         >
           <div className="mx-auto mb-3 h-1.5 w-12 rounded-full" style={{ background: sec.color }} aria-hidden />

@@ -118,7 +118,8 @@ export default function GameShell({
     [setLandmarkReq],
   );
   // Pause the 3D render while something covers the stage.
-  const boardActive = active && !passportOpen && !(flowStep && PAUSING_STEPS.includes(flowStep));
+  const covered = passportOpen || (!!flowStep && PAUSING_STEPS.includes(flowStep));
+  const boardActive = active && !covered;
 
   const pawnTile = wrapTile(progress.pawnTile);
   // Latest strings/handler for use inside long-running async turns.
@@ -276,6 +277,15 @@ export default function GameShell({
     [moveSteps, setView, updateProgress],
   );
 
+  const closePassport = useCallback(() => {
+    setPassportOpen(false);
+    // The dialog restores focus to its opener; fall back to the roll button if there was none.
+    window.setTimeout(() => {
+      if (document.activeElement === document.body || !document.activeElement)
+        document.querySelector<HTMLElement>('[data-testid="roll-dice"]')?.focus({ preventScroll: true });
+    }, 400);
+  }, []);
+
   const toggleView = useCallback(() => setView(view === 'follow' ? 'board' : 'follow'), [setView, view]);
 
   // Keyboard shortcuts: R roll, D dart, V view (only while the stage is on screen and no dialog is open).
@@ -305,65 +315,73 @@ export default function GameShell({
 
   return (
     <div className="absolute inset-0">
-      <div className="absolute inset-0 z-0" role="img" aria-label={s.boardAria}>
-        <Board
-          apiRef={apiRef}
-          pawnTile={pawnTile}
-          hat={progress.wornHat}
+      {/* While a full-cover overlay is open the board is paused, so the stage under it is static: blur
+          it with a plain CSS filter (rasterised once) instead of a backdrop-filter on the dialog's
+          scrim, which re-blurs on every frame the dialog animates and tanks the frame rate. */}
+      <div
+        className={`absolute inset-0 ${reducedMotion ? '' : 'transition-[filter] duration-300'}`}
+        style={covered ? { filter: 'blur(3px)' } : undefined}
+      >
+        <div className="absolute inset-0 z-0" role="img" aria-label={s.boardAria}>
+          <Board
+            apiRef={apiRef}
+            pawnTile={pawnTile}
+            hat={progress.wornHat}
+            lang={lang}
+            reducedMotion={reducedMotion}
+            active={boardActive}
+            onReady={() => setReady(true)}
+          />
+        </div>
+
+        <AnimatePresence>
+          {!ready && (
+            <motion.div
+              key="loading"
+              className="absolute inset-0 z-10 flex items-center justify-center bg-gray-50"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: reducedMotion ? 0 : 0.5 }}
+            >
+              <div className="flex flex-col items-center gap-3 text-gray-500">
+                <div className="flex gap-1.5" aria-hidden>
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className="h-2.5 w-2.5 rounded-full bg-[#0070f3] motion-safe:animate-pulse"
+                      style={{ animationDelay: `${i * 180}ms`, opacity: 0.35 + i * 0.25 }}
+                    />
+                  ))}
+                </div>
+                <p className="text-sm font-medium" role="status">
+                  {s.loading}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <TopBar
           lang={lang}
-          reducedMotion={reducedMotion}
-          active={boardActive}
-          onReady={() => setReady(true)}
+          view={view}
+          onToggleView={toggleView}
+          soundOn={progress.soundOn}
+          onToggleSound={() => updateProgress((p) => ({ soundOn: !p.soundOn }))}
+          stampCount={progress.stamps.length}
+          onOpenPassport={() => setPassportOpen(true)}
+        />
+        <TurnControls
+          lang={lang}
+          disabled={disabled}
+          status={status}
+          freeMoves={progress.freeMoves}
+          bonusDarts={progress.bonusDarts}
+          onRoll={() => void roll()}
+          onDart={() => openDart(false)}
+          onFreeMove={openFreeMove}
+          onSteadyDart={() => openDart(true)}
         />
       </div>
-
-      <AnimatePresence>
-        {!ready && (
-          <motion.div
-            key="loading"
-            className="absolute inset-0 z-10 flex items-center justify-center bg-gray-50"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: reducedMotion ? 0 : 0.5 }}
-          >
-            <div className="flex flex-col items-center gap-3 text-gray-500">
-              <div className="flex gap-1.5" aria-hidden>
-                {[0, 1, 2].map((i) => (
-                  <span
-                    key={i}
-                    className="h-2.5 w-2.5 rounded-full bg-[#0070f3] motion-safe:animate-pulse"
-                    style={{ animationDelay: `${i * 180}ms`, opacity: 0.35 + i * 0.25 }}
-                  />
-                ))}
-              </div>
-              <p className="text-sm font-medium" role="status">
-                {s.loading}
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <TopBar
-        lang={lang}
-        view={view}
-        onToggleView={toggleView}
-        soundOn={progress.soundOn}
-        onToggleSound={() => updateProgress((p) => ({ soundOn: !p.soundOn }))}
-        stampCount={progress.stamps.length}
-        onOpenPassport={() => setPassportOpen(true)}
-      />
-      <TurnControls
-        lang={lang}
-        disabled={disabled}
-        status={status}
-        freeMoves={progress.freeMoves}
-        bonusDarts={progress.bonusDarts}
-        onRoll={() => void roll()}
-        onDart={() => openDart(false)}
-        onFreeMove={openFreeMove}
-        onSteadyDart={() => openDart(true)}
-      />
 
       <AnimatePresence>
         {phase === 'aiming' && (
@@ -403,7 +421,7 @@ export default function GameShell({
         />
       )}
       <AnimatePresence>
-        {passportOpen && <Passport key="passport" lang={lang} reducedMotion={reducedMotion} onClose={() => setPassportOpen(false)} />}
+        {passportOpen && <Passport key="passport" lang={lang} reducedMotion={reducedMotion} onClose={closePassport} />}
       </AnimatePresence>
     </div>
   );

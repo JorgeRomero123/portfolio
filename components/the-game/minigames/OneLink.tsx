@@ -20,6 +20,7 @@ const T = {
     avoid: 'Dodge the spam and the 20-attachment chats.',
     keys: '← → move · hold to speed up',
     pointer: 'or drag / point',
+    touch: 'Drag to slide the album',
     start: 'Open the album',
     counter: (n: number) => `${n}/${TOTAL} in one link`,
     goal: `Goal ${WIN}`,
@@ -37,6 +38,7 @@ const T = {
     avoid: 'Esquiva el spam y los chats con 20 adjuntos.',
     keys: '← → mover · mantén para acelerar',
     pointer: 'o arrastra / apunta',
+    touch: 'Arrastra para mover el álbum',
     start: 'Abrir el álbum',
     counter: (n: number) => `${n}/${TOTAL} en un link`,
     goal: `Meta: ${WIN}`,
@@ -604,8 +606,9 @@ export default function OneLink({ lang, reducedMotion, soundOn, onFinish }: Mini
 
           {showKeys && (
             <div className="pointer-events-none absolute left-1/2 top-3 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full border border-teal-200 bg-white/90 px-3 py-1 text-xs text-gray-700 shadow-sm">
-              <span className="font-mono font-semibold text-teal-800">{t.keys}</span>
-              <span className="hidden text-gray-500 sm:inline">{t.pointer}</span>
+              <span className="font-mono font-semibold text-teal-800 pointer-coarse:hidden">{t.keys}</span>
+              <span className="text-gray-500 max-sm:hidden pointer-coarse:hidden">{t.pointer}</span>
+              <span className="hidden text-gray-700 pointer-coarse:inline">{t.touch}</span>
             </div>
           )}
         </div>
@@ -629,8 +632,9 @@ export default function OneLink({ lang, reducedMotion, soundOn, onFinish }: Mini
                 {t.avoid}
               </p>
               <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-700">
-                <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 font-mono">{t.keys}</span>
-                <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1">{t.pointer}</span>
+                <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 font-mono pointer-coarse:hidden">{t.keys}</span>
+                <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 pointer-coarse:hidden">{t.pointer}</span>
+                <span className="hidden rounded-md border border-gray-200 bg-gray-50 px-2 py-1 pointer-coarse:inline">{t.touch}</span>
               </div>
               <button
                 ref={startBtn}

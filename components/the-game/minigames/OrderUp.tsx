@@ -14,7 +14,7 @@ const PENALTY = 2; // seconds lost on a wrong catch
 const WIN = 2;
 const H = 440; // world height; world width adapts to the container (W_MIN–W_MAX)
 const W_MIN = 300;
-const W_MAX = 720;
+const W_MAX = 600; // on wide screens the field is capped (centred) so the pan doesn't look tiny
 const PAN_Y = 364;
 const CATCH_Y = PAN_Y - 8;
 const CATCH_HW = 48; // half-width of the catch zone
@@ -51,6 +51,7 @@ const T = {
     served: 'Orders served',
     keys: 'move the pan',
     drag: 'or drag',
+    touch: 'Drag to move the pan',
     ready: 'Catch them in order!',
     oops: 'Oops!',
     orderUp: 'Order up!',
@@ -82,6 +83,7 @@ const T = {
     served: 'Órdenes listas',
     keys: 'mueve el sartén',
     drag: 'o arrastra',
+    touch: 'Arrastra para mover el sartén',
     ready: '¡Atrápalos en orden!',
     oops: '¡Ups!',
     orderUp: '¡Orden lista!',
@@ -159,6 +161,7 @@ export default function OrderUp({ lang, reducedMotion, soundOn, onFinish }: Mini
   const t = T[lang];
   const [snap, setSnap] = useState<Snap>(initialSnap);
   const [say, setSay] = useState('');
+  const [maxW, setMaxW] = useState<number | undefined>(undefined);
   const [result, setResult] = useState<{ won: boolean; text: string } | null>(null);
 
   const sim = useRef({
@@ -218,6 +221,8 @@ export default function OrderUp({ lang, reducedMotion, soundOn, onFinish }: Mini
       const r = el.getBoundingClientRect();
       if (r.height < 10) return;
       const W = Math.round(clamp((H * r.width) / r.height, W_MIN, W_MAX));
+      // Cap the field's width to the widest world (its height doesn't depend on its width).
+      setMaxW(Math.round((r.height * W_MAX) / H));
       const s = sim.current;
       if (s.W !== W) {
         s.panX = (s.panX / s.W) * W;
@@ -656,7 +661,8 @@ export default function OrderUp({ lang, reducedMotion, soundOn, onFinish }: Mini
         onKeyDown={onKeyDown}
         onKeyUp={onKeyUp}
         onBlur={onBlur}
-        className="relative min-h-0 flex-1 cursor-grab touch-none overflow-hidden rounded-2xl bg-[#fbf7f5] outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-[#0070f3] active:cursor-grabbing"
+        style={{ maxWidth: maxW }}
+        className="relative mx-auto min-h-0 w-full flex-1 cursor-grab touch-none overflow-hidden rounded-2xl bg-[#fbf7f5] outline-none ring-offset-2 focus-visible:ring-2 focus-visible:ring-[#0070f3] active:cursor-grabbing"
       >
         <svg
           ref={svg}
@@ -814,14 +820,17 @@ export default function OrderUp({ lang, reducedMotion, soundOn, onFinish }: Mini
         {/* Key hint */}
         {showKeys && (
           <div
-            className="pointer-events-none absolute inset-x-0 top-2 flex justify-center transition-opacity duration-300"
+            className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center transition-opacity duration-300"
             aria-hidden
           >
             <span className="flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs text-gray-700 shadow-sm ring-1 ring-gray-200">
-              <kbd className="rounded border border-gray-300 bg-gray-50 px-1.5 font-mono text-[11px]">←</kbd>
-              <kbd className="rounded border border-gray-300 bg-gray-50 px-1.5 font-mono text-[11px]">→</kbd>
-              {t.keys}
-              <span className="text-gray-400">· {t.drag}</span>
+              <span className="space-x-1.5 pointer-coarse:hidden">
+                <kbd className="rounded border border-gray-300 bg-gray-50 px-1.5 font-mono text-[11px]">←</kbd>
+                <kbd className="rounded border border-gray-300 bg-gray-50 px-1.5 font-mono text-[11px]">→</kbd>
+                <span>{t.keys}</span>
+                <span className="text-gray-400">· {t.drag}</span>
+              </span>
+              <span className="hidden pointer-coarse:inline">{t.touch}</span>
             </span>
           </div>
         )}

@@ -422,7 +422,7 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
             );
           })}
         </div>
-        <p className="min-w-0 flex-1 truncate text-center text-sm font-semibold text-gray-900" aria-hidden>
+        <p className="min-w-0 flex-1 text-center text-sm font-semibold leading-tight text-balance text-gray-900" aria-hidden>
           {phase === 'done' ? `${good}/${GLASSES}` : t.glass(Math.min(GLASSES, phase === 'result' ? pours.length : glass + 1))}
         </p>
         <p aria-live="polite" className="sr-only">
@@ -436,6 +436,7 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
       {/* Play area */}
       <div
         ref={area}
+        data-autofocus
         role="application"
         tabIndex={0}
         aria-label={t.area}
@@ -579,13 +580,13 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
           </p>
         )}
         {showCoach && (
-          <p className="pointer-events-none absolute inset-x-0 bottom-3 mx-auto w-fit rounded-full bg-[#d97706] px-3 py-1.5 text-sm font-bold text-white shadow-md">
+          <p className="pointer-events-none absolute inset-x-0 bottom-3 mx-auto w-fit max-w-[calc(100%-1.5rem)] rounded-full bg-[#d97706] text-center px-3 py-1.5 text-sm font-bold text-white shadow-md">
             {t.coach}
           </p>
         )}
         {phase === 'result' && last && (
           <p
-            className={`pointer-events-none absolute inset-x-0 bottom-3 mx-auto w-fit rounded-xl px-4 py-2 text-lg font-bold shadow-lg ring-1 ${
+            className={`pointer-events-none absolute inset-x-0 bottom-3 mx-auto w-fit max-w-[calc(100%-1.5rem)] rounded-xl px-4 py-2 text-center text-lg font-bold shadow-lg ring-1 ${
               last.v === 'perfect'
                 ? 'bg-amber-50 text-amber-800 ring-amber-300'
                 : isGood(last.v)
@@ -607,7 +608,7 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
 
       {/* controls hint */}
       <p className="text-center text-xs text-gray-600">
-        <span className="hidden sm:inline">
+        <span className="max-sm:hidden pointer-coarse:hidden">
           <kbd className="rounded border border-gray-300 bg-gray-50 px-1 font-mono">Space</kbd> {t.keyPour} ·{' '}
           <kbd className="rounded border border-gray-300 bg-gray-50 px-1 font-mono">←</kbd>{' '}
           <kbd className="rounded border border-gray-300 bg-gray-50 px-1 font-mono">→</kbd> {t.keyTilt}

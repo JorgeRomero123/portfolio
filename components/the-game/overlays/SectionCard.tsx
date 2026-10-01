@@ -63,7 +63,7 @@ export function SectionCard({
       onClose={onClose}
       reducedMotion={reducedMotion}
       placement="sheet"
-      backdropClassName="bg-gray-900/25 backdrop-blur-[2px]"
+      backdropClassName="bg-gray-900/25"
       panelClassName={`${sheetPanel} max-h-[calc(100%-0.75rem)] sm:max-h-[calc(100%-2rem)] sm:max-w-lg`}
     >
       <header className="relative shrink-0 overflow-hidden px-5 pb-4 pt-5" style={{ background: shade(sec.color, 0.88) }}>

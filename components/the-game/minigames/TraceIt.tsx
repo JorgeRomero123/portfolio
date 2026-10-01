@@ -520,8 +520,8 @@ export default function TraceIt({ lang, reducedMotion, soundOn, onFinish }: Mini
 
       <div className="flex items-center gap-3">
         <p className="min-w-0 flex-1 text-xs text-gray-600">
-          <span className="hidden sm:inline">{t.keys}</span>
-          <span className="sm:hidden">{t.touch}</span>
+          <span className="pointer-coarse:hidden">{t.keys}</span>
+          <span className="hidden pointer-coarse:inline">{t.touch}</span>
           <span className="block text-gray-500">{t.need}</span>
         </p>
         <button

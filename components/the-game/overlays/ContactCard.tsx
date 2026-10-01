@@ -65,7 +65,7 @@ export function FinalReward({
       onClose={onNext}
       reducedMotion={reducedMotion}
       placement="sheet"
-      backdropClassName="bg-gray-900/40 backdrop-blur-sm"
+      backdropClassName="bg-gray-900/40"
       panelClassName={`${sheetPanel} relative max-h-[calc(100%-0.75rem)] overflow-y-auto p-4 sm:max-w-lg`}
     >
       <Confetti colors={['#0070f3', '#facc15', '#ec4899', '#16a34a', '#f97316', '#7c3aed']} reducedMotion={reducedMotion} />

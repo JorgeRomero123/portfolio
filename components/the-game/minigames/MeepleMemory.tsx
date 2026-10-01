@@ -384,6 +384,7 @@ export default function MeepleMemory({ lang, reducedMotion, soundOn, onFinish }:
                       }}
                       type="button"
                       tabIndex={i === active ? 0 : -1}
+                      data-autofocus={i === 0 ? '' : undefined}
                       aria-label={label}
                       aria-disabled={card.matched || phase !== 'play' || undefined}
                       onFocus={() => setActive(i)}
@@ -443,7 +444,8 @@ export default function MeepleMemory({ lang, reducedMotion, soundOn, onFinish }:
       </div>
 
       <p className="min-h-4 text-center text-xs leading-tight text-gray-500" aria-hidden>
-        {started ? (moves < 2 ? t.keys : '') : `${t.start} ${t.keys}`}
+        {started ? null : `${t.start} `}
+        {!started || moves < 2 ? <span className="pointer-coarse:hidden">{t.keys}</span> : null}
       </p>
       <p aria-live="polite" role="status" className="sr-only">
         {msg}

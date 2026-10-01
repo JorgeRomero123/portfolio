@@ -44,7 +44,7 @@ export default function Passport({
       onClose={onClose}
       reducedMotion={reducedMotion}
       placement="sheet"
-      backdropClassName="bg-gray-900/40 backdrop-blur-sm"
+      backdropClassName="bg-gray-900/40"
       panelClassName={`${sheetPanel} max-h-[calc(100%-0.75rem)] sm:max-h-[calc(100%-2rem)] sm:max-w-2xl`}
     >
       <header className="flex shrink-0 items-start gap-3 border-b border-[#ece5d0] bg-[#fbf8ef] px-5 py-4">

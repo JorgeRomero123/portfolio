@@ -62,6 +62,7 @@ const T = {
     noAudio: "Sound isn't available here, the beat is visual.",
     start: 'Start the beat',
     keys: 'or tap anywhere here',
+    touch: 'Tap anywhere here on every beat',
     hits: 'On beat',
     streak: 'Streak',
     need: (n: number) => `Hit ${n} to win`,
@@ -83,6 +84,7 @@ const T = {
     noAudio: 'Aquí no hay sonido disponible; el ritmo es visual.',
     start: 'Empezar el ritmo',
     keys: 'o toca aquí',
+    touch: 'Toca aquí en cada golpe',
     hits: 'A tiempo',
     streak: 'Racha',
     need: (n: number) => `Atina ${n} para ganar`,
@@ -128,7 +130,7 @@ const oct = (r: number) =>
 
 function Speaker({ pump, label }: { pump: number; label: string }) {
   return (
-    <svg viewBox="0 0 100 160" className="h-auto max-h-52 w-[22%] max-w-[120px] shrink-0 drop-shadow-md" role="img" aria-label={label}>
+    <svg viewBox="0 0 100 160" className="h-auto max-h-52 w-[26%] max-w-[120px] sm:w-[22%] shrink-0 drop-shadow-md" role="img" aria-label={label}>
       <polygon points="8,4 92,4 96,12 96,152 90,156 10,156 4,150 4,10" fill="#ffffff" stroke="#e5e7eb" strokeWidth="2" />
       <polygon points="8,4 92,4 96,12 4,10" fill="#f5f3f7" />
       <g transform="translate(50 38)">
@@ -340,7 +342,7 @@ export default function TapTheBeat({ lang, reducedMotion, soundOn, onFinish }: M
     ) : null;
 
   return (
-    <div className="flex h-full min-h-[400px] flex-col gap-3 p-4 select-none sm:gap-4 sm:p-6">
+    <div className="flex h-full min-h-[400px] flex-col justify-center gap-3 p-4 select-none sm:gap-4 sm:p-6">
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="text-gray-600">
           {t.hits}{' '}
@@ -364,7 +366,7 @@ export default function TapTheBeat({ lang, reducedMotion, soundOn, onFinish }: M
       </div>
 
       <div
-        className="relative flex min-h-0 flex-1 touch-none items-center justify-between gap-2 rounded-2xl bg-gradient-to-b from-fuchsia-50 to-white px-2 py-3 sm:px-6"
+        className="relative flex min-h-0 flex-1 touch-none items-center justify-between gap-2 rounded-2xl max-sm:max-h-72 bg-gradient-to-b from-fuchsia-50 to-white px-2 py-3 sm:px-6"
         onPointerDown={onPointerDown}
       >
         <Speaker pump={pump} label={t.left} />
@@ -401,6 +403,7 @@ export default function TapTheBeat({ lang, reducedMotion, soundOn, onFinish }: M
             {!soundOn && <p className="text-xs text-gray-500">{audioFailed ? t.noAudio : t.soundHint}</p>}
             <button
               ref={startBtn}
+              data-autofocus
               type="button"
               onClick={() => void start()}
               className="min-h-12 min-w-44 rounded-xl px-6 text-base font-semibold text-white shadow-md transition-transform duration-150 hover:brightness-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 focus-visible:ring-offset-2"
@@ -419,7 +422,7 @@ export default function TapTheBeat({ lang, reducedMotion, soundOn, onFinish }: M
         onKeyDown={onKeyDown}
         onPointerDown={onPointerDown}
         disabled={phase === 'intro'}
-        className="relative h-20 w-full shrink-0 touch-none overflow-hidden rounded-2xl bg-gray-50 ring-1 ring-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 disabled:opacity-60"
+        className="relative h-20 w-full shrink-0 touch-none max-sm:h-auto max-sm:max-h-44 max-sm:min-h-20 max-sm:flex-1 overflow-hidden rounded-2xl bg-gray-50 ring-1 ring-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 disabled:opacity-60"
       >
         {reducedMotion ? (
           <>
@@ -482,9 +485,13 @@ export default function TapTheBeat({ lang, reducedMotion, soundOn, onFinish }: M
         )}
       </button>
       <p className="flex items-center justify-center gap-1.5 text-xs text-gray-500" aria-hidden>
-        <kbd className="rounded border border-gray-200 bg-white px-1.5 py-0.5 font-mono text-[11px] text-gray-600">Space</kbd>/
-        <kbd className="rounded border border-gray-200 bg-white px-1.5 py-0.5 font-mono text-[11px] text-gray-600">Enter</kbd>
-        {t.keys}
+        <span className="space-x-1.5 pointer-coarse:hidden">
+          <kbd className="rounded border border-gray-200 bg-white px-1.5 py-0.5 font-mono text-[11px] text-gray-600">Space</kbd>
+          <span>/</span>
+          <kbd className="rounded border border-gray-200 bg-white px-1.5 py-0.5 font-mono text-[11px] text-gray-600">Enter</kbd>
+          <span>{t.keys}</span>
+        </span>
+        <span className="hidden pointer-coarse:inline">{t.touch}</span>
       </p>
       <p aria-live="polite" className="sr-only">
         {phase === 'done' ? (hits >= NEED ? t.win(hits) : t.lose(hits)) : announce}

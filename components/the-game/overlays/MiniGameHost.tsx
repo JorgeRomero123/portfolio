@@ -65,7 +65,7 @@ export function MiniGameHost({
       onClose={onSkip}
       reducedMotion={reducedMotion}
       placement="sheet"
-      backdropClassName="bg-gray-900/40 backdrop-blur-sm"
+      backdropClassName="bg-gray-900/40"
       panelClassName={`${sheetPanel} h-[calc(100%-0.75rem)] sm:h-[min(640px,calc(100%-2rem))] sm:max-w-2xl`}
     >
       <div className="h-1.5 shrink-0" style={{ background: sec.color }} aria-hidden />
@@ -83,7 +83,7 @@ export function MiniGameHost({
         </div>
         <button type="button" data-testid="skip-minigame" onClick={onSkip} className={`${btnSecondary} shrink-0`}>
           {f.skipGame}
-          <kbd className="hidden rounded border border-gray-200 px-1 font-mono text-[10px] text-gray-400 sm:inline">Esc</kbd>
+          <kbd className="rounded border border-gray-200 px-1 font-mono text-[10px] text-gray-400 max-sm:hidden pointer-coarse:hidden">Esc</kbd>
         </button>
       </header>
       <div className="relative min-h-0 flex-1 overflow-auto bg-white">

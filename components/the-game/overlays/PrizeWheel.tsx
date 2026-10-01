@@ -177,7 +177,7 @@ export function PrizeWheel({
       onClose={close}
       reducedMotion={reducedMotion}
       placement="sheet"
-      backdropClassName="bg-gray-900/40 backdrop-blur-sm"
+      backdropClassName="bg-gray-900/40"
       panelClassName={`${sheetPanel} relative max-h-[calc(100%-0.75rem)] sm:max-h-[calc(100%-2rem)] sm:max-w-md`}
     >
       {phase === 'done' && !reducedMotion && <Confetti colors={confettiColors} reducedMotion={reducedMotion} origin={{ x: 0.5, y: 0.3 }} />}

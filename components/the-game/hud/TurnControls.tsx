@@ -52,7 +52,7 @@ export function TurnControls({
     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-2 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:pb-5">
       <p
         aria-live="polite"
-        className={`rounded-full bg-white/90 px-3 py-1 text-sm font-semibold text-gray-900 shadow-sm backdrop-blur transition-opacity ${
+        className={`rounded-full bg-white/90 px-3 py-1 text-sm font-semibold text-gray-900 shadow-sm transition-opacity ${
           status ? 'opacity-100' : 'opacity-0'
         }`}
       >
@@ -72,7 +72,7 @@ export function TurnControls({
           )}
         </div>
       )}
-      <div className="pointer-events-auto flex w-full max-w-md gap-2 rounded-2xl border border-gray-200 bg-white/95 p-2 shadow-[0_10px_40px_rgba(15,23,42,0.12)] backdrop-blur">
+      <div className="pointer-events-auto flex w-full max-w-md gap-2 rounded-2xl border border-gray-200 bg-white/95 p-2 shadow-[0_10px_40px_rgba(15,23,42,0.12)]">
         <button
           type="button"
           data-testid="roll-dice"

@@ -8,7 +8,7 @@ import { focusRing } from './Dialog';
 import { LangToggle } from './LangToggle';
 
 export const iconButton =
-  'inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white/90 px-3 text-gray-800 shadow-sm backdrop-blur transition-colors hover:border-gray-400 hover:text-gray-950';
+  'inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white/90 px-3 text-gray-800 shadow-sm transition-colors hover:border-gray-400 hover:text-gray-950';
 
 function BoardIcon() {
   return (
@@ -70,7 +70,7 @@ export function TopBar({
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 p-3 sm:p-4">
       <div className="pointer-events-auto flex min-w-0 flex-col items-start gap-2">
-        <div className="rounded-2xl border border-gray-200 bg-white/90 px-4 py-3 shadow-sm backdrop-blur max-sm:sr-only">
+        <div className="rounded-2xl border border-gray-200 bg-white/90 px-4 py-3 shadow-sm max-sm:sr-only">
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[#0070f3]">Jorge Romero Romanis</p>
           <h1 id="the-game-title" className="text-xl font-bold tracking-tight text-gray-900">
             {s.title}
@@ -84,7 +84,7 @@ export function TopBar({
             // Move keyboard focus with the jump (the target has tabIndex -1).
             window.setTimeout(() => document.getElementById('overview')?.focus({ preventScroll: true }), 0);
           }}
-          className={`inline-flex h-11 items-center gap-1.5 rounded-xl border border-gray-200 bg-white/90 px-3 text-sm font-semibold text-gray-800 shadow-sm backdrop-blur hover:border-gray-400 ${focusRing}`}
+          className={`inline-flex h-11 items-center gap-1.5 rounded-xl border border-gray-200 bg-white/90 px-3 text-sm font-semibold text-gray-800 shadow-sm hover:border-gray-400 ${focusRing}`}
         >
           {s.skip}
           <span aria-hidden>↓</span>
