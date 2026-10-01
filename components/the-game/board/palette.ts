@@ -22,12 +22,12 @@ export function tone(c: Color, s: number, l: number): Color {
  * Ground per section patch: a calm land palette of six muted hues (sage, teal-sage, meadow,
  * dusty lavender, wheat, clay). Section accents live on the landmark rings and tile sides instead.
  */
-const SAGE = '#aec3a2';
-const TEAL_SAGE = '#9dbfae';
-const MEADOW = '#afc68f';
-const LAVENDER = '#b9b3c6';
-const WHEAT = '#d3c898';
-const CLAY = '#d5b995';
+const SAGE = '#b3c9a4';
+const TEAL_SAGE = '#a3c5ae';
+const MEADOW = '#b3cc91';
+const LAVENDER = '#bebdc9';
+const WHEAT = '#d5d09e';
+const CLAY = '#d8c59f';
 const GROUND: Record<SectionId, string> = {
   software: SAGE,
   drone: TEAL_SAGE,

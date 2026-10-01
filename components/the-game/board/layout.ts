@@ -20,8 +20,17 @@ export const BOARD = {
 } as const;
 
 export const TILES_PER_SECTION = 4;
-/** Which of a section's 4 tiles is its landmark tile (0-based). */
+/** Which of a section's 4 tiles is its landmark tile (0-based), unless LANDMARK_SLOT_OVERRIDE says otherwise. */
 export const LANDMARK_SLOT = 2;
+/**
+ * Sections whose landmark sits on a different tile, so neighbouring landmarks on the tight left
+ * corner (e.marts / Kitchen) and the right bend (360° / Board games) don't crowd each other.
+ */
+const LANDMARK_SLOT_OVERRIDE: Partial<Record<SectionId, number>> = { emarts: 1, kitchen: 3, boardgames: 3 };
+/** Which of section `id`'s 4 tiles is its landmark tile (0-based). */
+export const landmarkSlotOf = (id: SectionId) => LANDMARK_SLOT_OVERRIDE[id] ?? LANDMARK_SLOT;
+/** Nudge of a landmark pad along the direction of travel (world units), for the same breathing room. */
+const LANDMARK_PAD_SHIFT: Partial<Record<SectionId, number>> = { emarts: 0.1, kitchen: -0.22 };
 export const SECTION_COUNT = SECTION_IDS.length;
 export const TILE_COUNT = SECTION_COUNT * TILES_PER_SECTION;
 export const START_TILE = 0;
@@ -127,7 +136,15 @@ const inwardOf = (i: number): [number, number] => {
   return [nx, nz];
 };
 
-const landmarkTileIndex = (s: number) => s * TILES_PER_SECTION + LANDMARK_SLOT;
+const landmarkTileIndex = (s: number) => s * TILES_PER_SECTION + landmarkSlotOf(SECTION_IDS[s]);
+
+/** Unit vector (x, z) along the direction of travel at tile i. */
+const tangentOf = (i: number): [number, number] => {
+  const [ax, az] = pathXZ[(i - 1 + TILE_COUNT) % TILE_COUNT];
+  const [bx, bz] = pathXZ[(i + 1) % TILE_COUNT];
+  const l = Math.hypot(bx - ax, bz - az) || 1;
+  return [(bx - ax) / l, (bz - az) / l];
+};
 
 const patchXZ: [number, number][] = SECTION_IDS.map((_, s) => {
   const i = landmarkTileIndex(s);
@@ -171,7 +188,7 @@ const PEAKS: readonly { x: number; z: number; s: number; h: number }[] = [
 /** Gentle mid-board hills inside the loop, between the front landmarks (behind the path, off it). */
 const HILLS: readonly { x: number; z: number; r: number; h: number }[] = [
   { x: -0.05, z: 1.55, r: 0.55, h: 0.45 }, // between Software and Drone
-  { x: -2.15, z: 1.62, r: 0.5, h: 0.36 }, // between Kitchen and Software
+  { x: -2.0, z: 1.5, r: 0.45, h: 0.32 }, // between Kitchen and Software
   { x: 1.95, z: 1.55, r: 0.45, h: 0.3 }, // between Drone and Spurs
 ];
 
@@ -221,8 +238,10 @@ const tileBase: number[] = (() => {
 const padXYZ: [number, number, number][] = SECTION_IDS.map((_, s) => {
   const i = landmarkTileIndex(s);
   const [nx, nz] = inwardOf(i);
-  const x = pathXZ[i][0] + nx * LANDMARK_PAD_OFFSET;
-  const z = pathXZ[i][1] + nz * LANDMARK_PAD_OFFSET;
+  const [tx, tz] = tangentOf(i);
+  const shift = LANDMARK_PAD_SHIFT[SECTION_IDS[s]] ?? 0;
+  const x = pathXZ[i][0] + nx * LANDMARK_PAD_OFFSET + tx * shift;
+  const z = pathXZ[i][1] + nz * LANDMARK_PAD_OFFSET + tz * shift;
   return [x, clamp(rawHeight(x, z), 0.08, 0.5), z];
 });
 
@@ -294,7 +313,7 @@ export const TILES: readonly TileInfo[] = pathXZ.map(([x, z], i) => {
     inward: inwardOf(i),
     section: SECTION_IDS[sectionIndex],
     sectionIndex,
-    isLandmark: i % TILES_PER_SECTION === LANDMARK_SLOT,
+    isLandmark: i % TILES_PER_SECTION === landmarkSlotOf(SECTION_IDS[sectionIndex]),
   };
 });
 

@@ -96,7 +96,10 @@ export default function BoardScene({ apiRef, pawnTile, hat, lang, reducedMotion,
     <Canvas
       shadows="soft"
       dpr={dpr}
-      frameloop={active ? 'always' : 'never'}
+      // Paused ('demand', not 'never'): no continuous rendering, but the scene still draws when the
+      // canvas mounts or resizes, so the last frame stays visible behind dialogs instead of a blank
+      // canvas (e.g. a mini-game opened before the first frame, or a resize while it is open).
+      frameloop={active ? 'always' : 'demand'}
       camera={{ fov: 36, near: 0.1, far: 200, position: [0, 12, 12] }}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       onCreated={({ gl }) => {

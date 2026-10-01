@@ -10,7 +10,7 @@ import { hash, smooth } from './noise';
 import { SECTION_GROUND } from './palette';
 
 const CS = 0.19;
-const MEADOW = new Color('#a9c38c');
+const MEADOW = new Color('#adc98e');
 const FOREST = new Color('#7fa06a');
 const SAND = new Color('#f1dfae');
 const WET_SAND = new Color('#e2cf98');
@@ -68,7 +68,7 @@ function buildTerrain(): BufferGeometry {
         tint.b += SECTION_GROUND[i].b * w[i];
       }
       c.copy(MEADOW).lerp(FOREST, smooth(0.3, 0.75, h) * (1 - strength));
-      c.lerp(tint, 0.15 + 0.8 * strength);
+      c.lerp(tint, 0.12 + 0.7 * strength);
       if (h > 0.62) c.lerp(ROCK, smooth(0.62, 0.95, h));
       if (h > 1.0) c.lerp(SNOW, smooth(1.0, 1.15, h));
     }

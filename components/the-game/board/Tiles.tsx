@@ -20,7 +20,7 @@ import {
   TorusGeometry,
   Vector3,
 } from 'three';
-import { START_TILE, TILES, TILE_THICKNESS, groundHeight } from './layout';
+import { START_TILE, TILES, TILES_PER_SECTION, TILE_THICKNESS, groundHeight, landmarkSlotOf } from './layout';
 import { hash } from './noise';
 import { ACCENT, SECTION_COLORS, tone } from './palette';
 
@@ -145,7 +145,7 @@ export function Tiles() {
       } else {
         sides.push({ x: t.x, y: sideY, z: t.z, rotY, color: dark });
         tops.push({ x: t.x, y: capY, z: t.z, rotY, color: tone(base, 0.6, 0.9).offsetHSL(0, 0, (hash(t.index, 9) - 0.5) * 0.03) });
-        if (t.index % 4 === 1) chevrons.push({ x: t.x, y: t.y + 0.003, z: t.z, rotY: t.heading, color: tone(base, 0.55, 0.5) });
+        if (t.index % TILES_PER_SECTION === (landmarkSlotOf(t.section) === 1 ? 3 : 1)) chevrons.push({ x: t.x, y: t.y + 0.003, z: t.z, rotY: t.heading, color: tone(base, 0.55, 0.5) });
       }
     }
     const mat = () => new MeshStandardMaterial({ color: '#ffffff', flatShading: true, roughness: 0.7 });
