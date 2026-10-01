@@ -11,7 +11,7 @@ create table if not exists the_game_runs (
   id           uuid        primary key default gen_random_uuid(),
   outcome      text        not null check (outcome in ('won', 'lost')),
   time_ms      integer     not null check (time_ms between 1000 and 604800000),  -- 1 s .. 7 days
-  losses       smallint    not null check (losses between 0 and 9),
+  losses       smallint    not null,
   stamps       smallint    not null check (stamps between 0 and 11),
   nickname     text        check (nickname is null or char_length(nickname) between 2 and 20),
   country      text        check (country is null or country ~ '^[A-Z]{2}$'),
@@ -19,13 +19,20 @@ create table if not exists the_game_runs (
   -- Hash of a random key the browser sends with the run, so a retried request can't record it twice.
   nonce_hash   text        not null unique,
   created_at   timestamptz not null default now(),
-  nickname_at  timestamptz,
-  -- The race rules (components/the-game/race.ts): a win is 11 stamps with at most two losses;
-  -- a loss is at most 10 stamps with at least three losses.
-  constraint the_game_runs_rules_check check (
-    (outcome = 'won' and stamps = 11 and losses <= 2) or
-    (outcome = 'lost' and stamps <= 10 and losses >= 3)
-  )
+  nickname_at  timestamptz
+);
+
+-- The race rules (components/the-game/race.ts): a win is all 11 stamps, a lost race at most 10.
+-- Losses are capped at 9 either way, the most the rules allow even with no turn moves:
+-- MAX_WIN_LOSSES and MAX_LOST_LOSSES in components/the-game/leaderboard/rules.ts, derived from
+-- RIVAL_LAP 44, RIVAL_LOSS 6 and RIVAL_WIN_BACK 1. A lost race can have zero losses: Jorge also
+-- advances every turn. Dropped and re-added so re-running this file applies the current rules
+-- (the_game_runs_losses_check is the name an earlier draft of this file gave the column check).
+alter table the_game_runs drop constraint if exists the_game_runs_losses_check;
+alter table the_game_runs drop constraint if exists the_game_runs_rules_check;
+alter table the_game_runs add constraint the_game_runs_rules_check check (
+  (outcome = 'won' and stamps = 11 and losses between 0 and 9) or
+  (outcome = 'lost' and stamps between 0 and 10 and losses between 0 and 9)
 );
 
 create index if not exists the_game_runs_wins_idx

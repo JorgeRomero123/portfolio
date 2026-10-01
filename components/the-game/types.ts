@@ -65,7 +65,7 @@ export interface Progress {
   factsSeen: Partial<Record<SectionId, number>>;
   pawnTile: number;
   soundOn: boolean;
-  /** Tiles Jorge's pawn has covered on his lap (44 = finished). Briefly negative after an opening win. */
+  /** Tiles Jorge's pawn has covered on his lap (44 = finished). Negative when early wins push him behind the start. */
   rivalSteps: number;
   race: RaceStatus;
   /** Speedrun clock: epoch ms of the race's first turn. Null until then (or for a race that was
@@ -113,7 +113,7 @@ export const isTodo = (s: string | undefined | null) => !s || s.startsWith(TODO_
 
 /**
  * What the visitor chose at a landmark prompt.
- * - 'play'     → a mini-game ran; the pawn stops on that landmark (turn ends).
+ * - 'play'     → a mini-game ran; when passing, the pawn then finishes the rest of its move.
  * - 'look'     → the section card was shown; when passing, the pawn keeps moving afterwards.
  * - 'continue' → nothing shown; when passing, the pawn keeps moving.
  * On a landed prompt the turn ends whatever the choice.

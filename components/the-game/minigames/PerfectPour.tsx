@@ -1,15 +1,19 @@
 'use client';
 
-// "Perfect pour" (beer): hold to pour from the tap into a tilted pint glass and straighten it as it
+// "Perfect pour" (beer): hold to pour a black stout from the tap into a tilted pint glass (the one
+// with the G on it, so the pour and the split are the same pint) and straighten it as it
 // fills. A tilted glass makes little foam, an upright one makes lots; tilt too far with a full
-// glass and it spills over the low rim. Each of 3 glasses is judged on beer level (the fill line)
-// and head thickness (the band above it). Win = at least 2 good pours.
+// glass and it spills over the low rim. Each pint is judged on beer level (the fill line) and head
+// thickness (the band above it). A good pour unlocks "Split the G" for that pint (a blind
+// stopwatch, see perfectpour/SplitTheG). Up to 3 pints; win = split the G on any of them.
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import type { MiniGameProps } from '../types';
+import SplitTheG, { SPLIT_TOL } from './perfectpour/SplitTheG';
 
 const ACCENT = '#d97706';
+const STOUT = '#2a1810';
+const CREAM = '#f3e6c8';
 const GLASSES = 3;
-const WIN = 2;
 // Glass geometry, in glass-local SVG units (origin at the inside of the base, y up is negative).
 const H = 180;
 const BW = 29; // half-width at the base
@@ -27,10 +31,12 @@ const PIVOT = 0.9;
 const SPOUT_Y = 102;
 
 type Verdict = 'perfect' | 'nice' | 'foamy' | 'flat' | 'short' | 'spill';
-type Phase = 'play' | 'result' | 'done';
+type Phase = 'play' | 'result' | 'split' | 'done';
 interface Pour {
   v: Verdict;
   score: number;
+  /** Set once this pint's "Split the G" has been played (only good pours get one). */
+  split?: boolean;
 }
 interface View {
   t: number; // tilt: 1 = 45°, 0 = upright
@@ -62,8 +68,9 @@ const T = {
       short: 'Short pour',
       spill: 'Spilled!',
     } as Record<Verdict, string>,
-    win: (n: number) => `${n}/${GLASSES} — pour master!`,
-    lose: (n: number) => `${n}/${GLASSES} — the foam won this round`,
+    goSplit: 'Good pour. Now split the G.',
+    win: (n: number) => `You split the G on pint ${n}!`,
+    lose: 'No split this time. The G stays whole.',
   },
   es: {
     area: 'Grifo de cerveza y un tarro inclinado. Mantén Espacio para servir; flechas izquierda y derecha para inclinar el tarro.',
@@ -84,8 +91,9 @@ const T = {
       short: 'Te quedaste corto',
       spill: '¡Se derramó!',
     } as Record<Verdict, string>,
-    win: (n: number) => `${n}/${GLASSES} — ¡maestro del grifo!`,
-    lose: (n: number) => `${n}/${GLASSES} — esta vez ganó la espuma`,
+    goSplit: 'Buen servido. Ahora parte la G.',
+    win: (n: number) => `¡Partiste la G en el tarro ${n}!`,
+    lose: 'Esta vez no se partió. La G quedó entera.',
   },
 };
 
@@ -214,6 +222,57 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
     setPhase(p);
   };
 
+  const end = useCallback((won: boolean, score: number) => {
+    setPhaseBoth('done');
+    later(() => {
+      if (finished.current) return;
+      finished.current = true;
+      onFinishRef.current({ won, score: Math.round(clamp(score, 0, 100)) });
+    }, 1500);
+  }, []);
+
+  /** This pint is over without a split: set up the next one, or end the round. */
+  const nextPint = useCallback(() => {
+    const s = sim.current;
+    const list = pourList.current;
+    if (list.length >= GLASSES) {
+      end(false, Math.min(45, (list.reduce((a, p) => a + p.score, 0) / list.length) * 0.45));
+      return;
+    }
+    s.L = 0;
+    s.F = 0;
+    s.t = 1;
+    s.wob = 0;
+    s.glass = list.length;
+    s.blocked = s.pouring; // a fresh press is needed for the next glass
+    setGlass(list.length);
+    setPoured(false);
+    setPhaseBoth('play');
+    requestAnimationFrame(() => area.current?.focus({ preventScroll: true }));
+  }, [end]);
+
+  const onSplit = useCallback(
+    (ok: boolean, err: number) => {
+      const list = pourList.current.map((p, i, all) => (i === all.length - 1 ? { ...p, split: ok } : p));
+      pourList.current = list;
+      setPours(list);
+      // Fewer pints and a cleaner split score higher.
+      if (ok) end(true, 100 - (list.length - 1) * 12 - (Math.abs(err) / SPLIT_TOL) * 12);
+      else nextPint();
+    },
+    [end, nextPint],
+  );
+
+  const splitSound = useCallback(
+    (kind: 'start' | 'split' | 'miss') => {
+      ensureAudio();
+      if (kind === 'start') blip([392], 'sine', 0.04);
+      else if (kind === 'split') blip([660, 880, 1175]);
+      else blip([247, 196], 'sine', 0.09);
+    },
+    [blip, ensureAudio],
+  );
+
   const finishGlass = useCallback(
     (spilled: boolean) => {
       const s = sim.current;
@@ -227,29 +286,11 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
       else if (pour.v === 'nice') blip([660, 880]);
       else blip(pour.v === 'spill' ? [220, 165] : [247], 'sine', 0.09);
       later(() => {
-        if (list.length < GLASSES) {
-          s.L = 0;
-          s.F = 0;
-          s.t = 1;
-          s.wob = 0;
-          s.glass = list.length;
-          s.blocked = s.pouring; // a fresh press is needed for the next glass
-          setGlass(list.length);
-          setPoured(false);
-          setPhaseBoth('play');
-          return;
-        }
-        setPhaseBoth('done');
-        const good = list.filter((p) => isGood(p.v)).length;
-        const score = Math.round(list.reduce((a, p) => a + p.score, 0) / list.length);
-        later(() => {
-          if (finished.current) return;
-          finished.current = true;
-          onFinishRef.current({ won: good >= WIN, score });
-        }, 1400);
+        if (isGood(pour.v)) setPhaseBoth('split');
+        else nextPint();
       }, 1500);
     },
-    [blip],
+    [blip, nextPint],
   );
 
   const finishRef = useRef(finishGlass);
@@ -382,8 +423,9 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
   const angle = -MAX_TILT * tilt;
   const slosh = reducedMotion ? 0 : wob * Math.sin(time * 9);
   const counter = MAX_TILT * tilt + slosh;
-  const good = pours.filter((p) => isGood(p.v)).length;
   const last = pours[pours.length - 1];
+  const won = pours.some((p) => p.split);
+  const wonOn = pours.findIndex((p) => p.split) + 1;
   const showCoach = phase === 'play' && glass === 0 && flowing && S >= 0.5 && tilt > 0.45;
   const showStart = phase === 'play' && glass === 0 && !poured;
   const spilled = phase !== 'play' && last?.v === 'spill';
@@ -394,12 +436,14 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
 
   const live =
     phase === 'done'
-      ? good >= WIN
-        ? t.win(good)
-        : t.lose(good)
+      ? won
+        ? t.win(wonOn)
+        : t.lose
       : phase === 'result' && last
-        ? `${t.verdict[last.v]} ${t.glass(pours.length)}`
-        : t.glass(glass + 1);
+        ? `${t.verdict[last.v]} ${isGood(last.v) ? t.goSplit : t.glass(pours.length)}`
+        : phase === 'split'
+          ? ''
+          : t.glass(glass + 1);
 
   return (
     <div className="flex h-full flex-col items-center gap-2 px-4 pb-4 pt-3 sm:px-6">
@@ -408,22 +452,24 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
         <div className="flex items-center gap-2" aria-hidden>
           {Array.from({ length: GLASSES }, (_, i) => {
             const p = pours[i];
-            const cls = !p
-              ? i === glass && phase !== 'done'
+            // A pint is settled once its pour failed or its split was played.
+            const settled = !!p && (!isGood(p.v) || p.split !== undefined);
+            const cls = !settled
+              ? i === (p ? i : glass) && phase !== 'done'
                 ? 'border-[#d97706] bg-amber-50'
                 : 'border-gray-200 bg-white'
-              : isGood(p.v)
+              : p.split
                 ? 'border-emerald-500 bg-emerald-500'
                 : 'border-gray-300 bg-gray-300';
             return (
               <span key={i} className={`flex h-7 w-6 items-end justify-center rounded-b-md rounded-t-sm border-2 ${cls}`}>
-                {p && <span className="mb-0.5 text-[10px] font-bold leading-none text-white">{isGood(p.v) ? '✓' : '×'}</span>}
+                {settled && <span className="mb-0.5 text-[10px] font-bold leading-none text-white">{p.split ? '✓' : '×'}</span>}
               </span>
             );
           })}
         </div>
         <p className="min-w-0 flex-1 text-center text-sm font-semibold leading-tight text-balance text-gray-900" aria-hidden>
-          {phase === 'done' ? `${good}/${GLASSES}` : t.glass(Math.min(GLASSES, phase === 'result' ? pours.length : glass + 1))}
+          {t.glass(Math.min(GLASSES, phase === 'play' ? glass + 1 : Math.max(1, pours.length)))}
         </p>
         <p aria-live="polite" className="sr-only">
           {live}
@@ -459,9 +505,9 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
         <svg viewBox="0 0 360 400" preserveAspectRatio="xMidYMid meet" className="absolute inset-0 h-full w-full overflow-visible" aria-hidden>
           <defs>
             <linearGradient id="pp-beer" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#fbbf24" />
-              <stop offset="0.35" stopColor="#f59e0b" />
-              <stop offset="1" stopColor="#c2410c" />
+              <stop offset="0" stopColor="#3b2418" />
+              <stop offset="0.3" stopColor="#1c120d" />
+              <stop offset="1" stopColor="#0f0906" />
             </linearGradient>
             <clipPath id="pp-inside">
               <polygon points={`${-BW},0 ${BW},0 ${TW},${-H} ${-TW},${-H}`} />
@@ -478,7 +524,7 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
           <polygon points="300,342 760,342 760,640 400,640" fill="#e4cba5" />
           <polygon points="120,318 240,318 246,330 114,330" fill="#9ca3af" />
           <polygon points="120,318 240,318 238,322 122,322" fill="#d1d5db" />
-          {spilled && <ellipse cx="160" cy="327" rx="34" ry="4" fill="#fbbf24" opacity="0.8" />}
+          {spilled && <ellipse cx="160" cy="327" rx="34" ry="4" fill={STOUT} opacity="0.8" />}
 
           {/* tap tower */}
           <polygon points="290,70 316,70 318,330 288,330" fill="#e5e7eb" />
@@ -493,8 +539,8 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
           {/* stream (behind the glass contents) */}
           {flowing && (
             <g>
-              <rect x={PX - 3.5} y={SPOUT_Y} width="7" height={Math.max(0, streamEnd(tilt, S) - SPOUT_Y)} rx="3" fill="#f59e0b" opacity="0.92" />
-              <rect x={PX - 1.5} y={SPOUT_Y} width="1.6" height={Math.max(0, streamEnd(tilt, S) - SPOUT_Y)} fill="#fde68a" opacity="0.8" />
+              <rect x={PX - 3.5} y={SPOUT_Y} width="7" height={Math.max(0, streamEnd(tilt, S) - SPOUT_Y)} rx="3" fill={STOUT} opacity="0.95" />
+              <rect x={PX - 1.5} y={SPOUT_Y} width="1.6" height={Math.max(0, streamEnd(tilt, S) - SPOUT_Y)} fill="#6b4a35" opacity="0.8" />
             </g>
           )}
 
@@ -526,34 +572,49 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
             <g clipPath="url(#pp-inside)">
               {F > 0.003 && (
                 <g transform={`rotate(${counter.toFixed(2)} 0 ${(-S * H).toFixed(2)})`}>
-                  <polygon points={`${foamTop(-S * H)} 130,${400 - S * H} -130,${400 - S * H}`} fill="#fff8e6" stroke="#d9a441" strokeWidth="1.5" strokeLinejoin="round" />
+                  <polygon points={`${foamTop(-S * H)} 130,${400 - S * H} -130,${400 - S * H}`} fill={CREAM} stroke="#c9b089" strokeWidth="1.5" strokeLinejoin="round" />
                   <polygon
                     points={`-130,${(-L * H - 4).toFixed(1)} 130,${(-L * H - 4).toFixed(1)} 130,${400 - L * H} -130,${400 - L * H}`}
-                    fill="#fbe3a6"
+                    fill="#d8c29a"
                   />
                 </g>
               )}
               {L > 0.003 && (
                 <g transform={`rotate(${counter.toFixed(2)} 0 ${(-L * H).toFixed(2)})`}>
                   <rect x="-130" y={-L * H} width="260" height="420" fill="url(#pp-beer)" />
-                  <polygon points={`-130,${-L * H} 130,${-L * H} 130,${-L * H + 5} -130,${-L * H + 3}`} fill="#fcd34d" opacity="0.7" />
+                  <polygon points={`-130,${-L * H} 130,${-L * H} 130,${-L * H + 5} -130,${-L * H + 3}`} fill="#5a3a26" opacity="0.8" />
                   {!reducedMotion &&
                     L > 0.08 &&
                     BUBBLES.map((b, i) => {
                       const depth = L * H * 0.95;
                       const y = -L * H + depth * (1 - ((b.phase + time * b.speed) % 1));
-                      return <circle key={i} cx={b.x * BW * 0.8} cy={y} r={b.r} fill="#fef3c7" opacity="0.7" />;
+                      return <circle key={i} cx={b.x * BW * 0.8} cy={y} r={b.r} fill={CREAM} opacity="0.45" />;
                     })}
                 </g>
               )}
             </g>
             <line x1={-hw(BAND_TOP) - 3} x2={hw(BAND_TOP) + 3} y1={-BAND_TOP * H} y2={-BAND_TOP * H} stroke={ACCENT} strokeWidth="1.2" strokeDasharray="4 3" />
-            <line x1={-hw(FILL) - 5} x2={hw(FILL) + 5} y1={-FILL * H} y2={-FILL * H} stroke="#b45309" strokeWidth="2.5" />
+            <line x1={-hw(FILL) - 5} x2={hw(FILL) + 5} y1={-FILL * H} y2={-FILL * H} stroke={ACCENT} strokeWidth="2.5" />
+            {/* the G printed on the glass: the same pint is split in the next stage */}
+            <text
+              x="0"
+              y={-0.36 * H}
+              textAnchor="middle"
+              fontSize="50"
+              fontWeight="800"
+              fill="#d9a441"
+              stroke="#5b3a12"
+              strokeWidth="1.2"
+              paintOrder="stroke"
+              style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
+            >
+              G
+            </text>
             {/* glass shine + thick base */}
             <polygon points={`${-BW + 5},-6 ${-BW + 11},-6 ${-TW + 13},${-H + 8} ${-TW + 6},${-H + 8}`} fill="#ffffff" opacity="0.55" />
             <polygon points={`${-BW - 3},0 ${BW + 3},0 ${BW + 3},9 ${-BW - 3},9`} fill="#cbd5e1" opacity="0.7" />
             {spilled && (
-              <g fill="#fbbf24" opacity="0.85">
+              <g fill={STOUT} opacity="0.85">
                 <polygon points={`${-TW - 3},${-H + 2} ${-TW + 3},${-H + 2} ${-TW - 1},${-H + 30}`} />
                 <polygon points={`${-TW + 1},${-H + 10} ${-TW + 6},${-H + 10} ${-TW + 2},${-H + 52}`} />
               </g>
@@ -564,7 +625,7 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
         {/* legend: what the two marks mean */}
         <div className="pointer-events-none absolute left-2 top-2 flex flex-col gap-1 text-[11px] font-medium text-gray-700" aria-hidden>
           <span className="flex items-center gap-1.5">
-            <span className="h-[3px] w-4 rounded bg-[#b45309]" />
+            <span className="h-[3px] w-4 rounded bg-[#d97706]" />
             {t.line}
           </span>
           <span className="flex items-center gap-1.5">
@@ -595,12 +656,14 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
             }`}
           >
             {t.verdict[last.v]}
+            {isGood(last.v) && <span className="block text-sm font-semibold">{t.goSplit}</span>}
           </p>
         )}
+        {phase === 'split' && <SplitTheG key={pours.length} lang={lang} reducedMotion={reducedMotion} onSound={splitSound} onDone={onSplit} />}
         {phase === 'done' && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl bg-white/70">
-            <p className={`rounded-2xl bg-white px-5 py-3 text-xl font-bold shadow-lg ring-1 ${good >= WIN ? 'text-emerald-700 ring-emerald-300' : 'text-gray-800 ring-gray-200'}`}>
-              {good >= WIN ? t.win(good) : t.lose(good)}
+            <p className={`mx-4 rounded-2xl bg-white px-5 py-3 text-center text-xl font-bold shadow-lg ring-1 ${won ? 'text-emerald-700 ring-emerald-300' : 'text-gray-800 ring-gray-200'}`}>
+              {won ? t.win(wonOn) : t.lose}
             </p>
           </div>
         )}

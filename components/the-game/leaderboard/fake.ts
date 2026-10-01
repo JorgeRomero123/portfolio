@@ -40,14 +40,14 @@ function seed(n: number): Row[] {
       id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`,
       outcome: 'won',
       timeMs,
-      losses: Math.floor(r() * 3),
+      losses: Math.floor(r() * r() * 6), // mostly 0–2, a few dart runs with 4 or 5
       token: 'x',
       nickname: named ? randomNickname(r() < 0.5 ? 'en' : 'es', r) : null,
       country: named && r() < 0.7 ? COUNTRY_CODES[Math.floor(r() * COUNTRY_CODES.length)] : null,
     });
   }
   for (let i = 0; i < Math.round(n * 1.4) + 3; i++)
-    rows.push({ id: `l-${i}`, outcome: 'lost', timeMs: 400_000, losses: 3, token: 'x', nickname: null, country: null });
+    rows.push({ id: `l-${i}`, outcome: 'lost', timeMs: 400_000, losses: i % 7, token: 'x', nickname: null, country: null });
   return rows;
 }
 

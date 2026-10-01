@@ -1,9 +1,11 @@
 // Speedrun leaderboard rules for /the-game, shared by the API routes and the browser.
 // Pure (no React, no network): limits, validation, the profanity check, countries and time format.
+import { RIVAL_LAP, RIVAL_LOSS, RIVAL_WIN_BACK } from '../race';
+import { SECTION_IDS } from '../types';
 
 /** A won race can't plausibly be faster than this (11 mini-games plus a lap of the board). */
 export const MIN_WIN_MS = 3 * 60_000;
-/** Losing takes at least three games; skipping them is quick, so the floor is low. */
+/** Jorge can finish his lap in a handful of quick turns (skipped games make it quicker still). */
 export const MIN_LOSS_MS = 20_000;
 /** Matches the table's check constraint. */
 export const MAX_RUN_MS = 7 * 24 * 3_600_000;
@@ -26,12 +28,24 @@ export interface RunInput {
   stamps: number;
 }
 
+const STAMPS = SECTION_IDS.length;
+
+// Loss caps from the race rules (race.ts), as generous upper bounds: they ignore the RIVAL_TURN
+// tiles Jorge also takes every turn, which only lower the real maximum.
+/** A win: after every lost game (+RIVAL_LOSS) and all 11 won ones (−RIVAL_WIN_BACK) he is still short of the line. */
+export const MAX_WIN_LOSSES = Math.floor((RIVAL_LAP - 1 + STAMPS * RIVAL_WIN_BACK) / RIVAL_LOSS);
+/** A lost race: he was short of the line before the last lost game, with at most 10 won ones. */
+export const MAX_LOST_LOSSES = Math.floor((RIVAL_LAP - 1 + (STAMPS - 1) * RIVAL_WIN_BACK) / RIVAL_LOSS) + 1;
+
 const int = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v);
 
 /**
- * Checks a finished race against the race rules (race.ts): a win is 11 stamps with at most two
- * losses; a loss is at most 10 stamps with at least three losses, and Jorge's net moves
- * (3 per win, 5 per loss) must have carried him round the 44-tile lap.
+ * Checks a finished race against the race rules (race.ts). A win is all 11 stamps with any loss
+ * count up to MAX_WIN_LOSSES. A lost race is at most 10 stamps with any loss count up to
+ * MAX_LOST_LOSSES, including zero: Jorge advances every turn, so turns alone can beat you.
+ * There is deliberately no check that the losses, stamps and turns add up to a finished lap:
+ * the browser reports all of them, so it would only reject honest runs after a bookkeeping slip
+ * while a forger simply sends consistent numbers.
  */
 export function validateRun(raw: unknown): { ok: true; run: RunInput } | { ok: false; error: string } {
   if (!raw || typeof raw !== 'object') return { ok: false, error: 'bad_body' };
@@ -40,11 +54,10 @@ export function validateRun(raw: unknown): { ok: true; run: RunInput } | { ok: f
   if (outcome !== 'won' && outcome !== 'lost') return { ok: false, error: 'bad_outcome' };
   if (!int(timeMs) || !int(losses) || !int(stamps)) return { ok: false, error: 'bad_numbers' };
   if (outcome === 'won') {
-    if (stamps !== 11 || losses < 0 || losses > 2) return { ok: false, error: 'bad_score' };
+    if (stamps !== STAMPS || losses < 0 || losses > MAX_WIN_LOSSES) return { ok: false, error: 'bad_score' };
     if (timeMs < MIN_WIN_MS || timeMs > MAX_RUN_MS) return { ok: false, error: 'implausible_time' };
   } else {
-    if (stamps < 0 || stamps > 10 || losses < 3 || losses > 9 || 3 * stamps + 5 * losses < 44)
-      return { ok: false, error: 'bad_score' };
+    if (stamps < 0 || stamps >= STAMPS || losses < 0 || losses > MAX_LOST_LOSSES) return { ok: false, error: 'bad_score' };
     if (timeMs < MIN_LOSS_MS || timeMs > MAX_RUN_MS) return { ok: false, error: 'implausible_time' };
   }
   return { ok: true, run: { outcome, timeMs, losses, stamps } };

@@ -12,7 +12,9 @@ const TOTAL = 20;
 const WIN = 14;
 const FILE_KINDS: FileKind[] = ['photo', 'video', 'pano', 'pdf'];
 const PAIRS = new Set([5, 8, 11, 13, 16, 18]); // files that land hot on the heels of the previous one
-const JUNK_AFTER = [2, 5, 8, 10, 13, 15, 18]; // a distraction lands between file i and i+1
+// A distraction lands between file i and i+1: in 13 of the 19 gaps, two of them the short gap of a pair.
+const JUNK_AFTER = [0, 1, 2, 3, 5, 6, 8, 9, 10, 13, 14, 15, 18];
+const SPEED = 1.3; // everything falls, and follows on, this much faster than the original pacing
 
 const T = {
   en: {
@@ -103,7 +105,7 @@ function newGame(rm: boolean): Game {
   const lands: number[] = [];
   const xs: number[] = [];
   for (let i = 0; i < TOTAL; i++) {
-    if (i > 0) land += (PAIRS.has(i) ? 0.55 : 1.45) * k;
+    if (i > 0) land += ((PAIRS.has(i) ? 0.55 : 1.45) * k) / SPEED;
     const maxJump = PAIRS.has(i) ? 0.4 : 0.7;
     let x = prevX;
     for (let tries = 0; tries < 20; tries++) {
@@ -120,7 +122,7 @@ function newGame(rm: boolean): Game {
       kind: FILE_KINDS[(i + Math.floor(rand(0, 4))) % 4],
       junk: false,
       land,
-      tf: lerp(3.2, 2.4, p) * (rm ? 1.35 : 1),
+      tf: (lerp(3.2, 2.4, p) * (rm ? 1.35 : 1)) / SPEED,
       lx: x,
       amp: lerp(0.015, 0.06, p),
       phase: rand(0, Math.PI * 2),
@@ -146,7 +148,7 @@ function newGame(rm: boolean): Game {
       kind: (n % 2 ? 'chat' : 'spam') as JunkKind,
       junk: true,
       land: l,
-      tf: lerp(3.1, 2.4, i / TOTAL) * (rm ? 1.35 : 1),
+      tf: (lerp(3.1, 2.4, i / TOTAL) * (rm ? 1.35 : 1)) / SPEED,
       lx: x,
       amp: 0.012,
       phase: rand(0, Math.PI * 2),

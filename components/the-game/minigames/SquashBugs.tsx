@@ -3,8 +3,10 @@
 // "Squash the bugs": low-poly bugs crawl along the lines of a code editor towards PROD.
 // Click/tap a bug (or pick a line with ↑/↓ and press Space) to squash it. Clicking code that is
 // glowing green (passing) breaks the build. A bug reaching PROD or a broken build costs a life.
-// Win: survive 30 s with a life left and at least `target` squashes.
-// Touch screens get a swarm (see MODES): tapping is far faster than picking a line with the keyboard.
+// Some of the crawlers are green "features", not bugs: squashing one costs a life, and letting it
+// reach PROD is exactly right. Win: survive 30 s with a life left and at least `target` squashes.
+// Anyone playing with a pointer (mouse or touch) gets a swarm (see MODES): clicking or tapping is
+// far faster than picking a line with the keyboard.
 import {
   useCallback,
   useEffect,
@@ -30,13 +32,16 @@ interface Mode {
   /** Past this fraction of the round a wave may bring two bugs. */
   burstAfter: number;
   burstChance: number;
-  haptics: boolean;
+  /** Share of crawlers that are features (must NOT be squashed). */
+  features: number;
+  swarm: boolean;
 }
-const MODES: { fine: Mode; coarse: Mode } = {
-  // Mouse / keyboard: ~30 bugs.
-  fine: { target: 15, lives: 3, gap: [1.4, 0.85], cross: [6.2, 3.9], burstAfter: 0.35, burstChance: 0.33, haptics: false },
-  // Touch: ~75 bugs, from ~1.7/s up to ~4/s. The last third outruns two thumbs, so the lead built early matters.
-  coarse: { target: 50, lives: 5, gap: [0.6, 0.3], cross: [5.6, 3.6], burstAfter: 0.3, burstChance: 0.3, haptics: true },
+const MODES: { keys: Mode; pointer: Mode } = {
+  // Keyboard: ~30 crawlers, one line at a time.
+  keys: { target: 13, lives: 3, gap: [1.4, 0.85], cross: [6.2, 3.9], burstAfter: 0.35, burstChance: 0.33, features: 0.15, swarm: false },
+  // Mouse or touch: ~95 crawlers, from ~2.2/s up to ~5/s, about three times as many on screen at
+  // once. Keeping up takes roughly three accurate squashes a second while steering round the features.
+  pointer: { target: 55, lives: 5, gap: [0.45, 0.26], cross: [5.6, 3.6], burstAfter: 0.3, burstChance: 0.3, features: 0.15, swarm: true },
 };
 
 const COARSE = '(pointer: coarse)';
@@ -117,14 +122,19 @@ const T = {
     warn: 'Don’t hit the green code: it passes its tests.',
     pointer: 'Click or tap a bug',
     swarm: 'It’s a swarm: use both thumbs',
+    swarmMouse: 'It’s a swarm: click fast',
+    feature: 'Green ones are features, not bugs: let them ship.',
+    wasFeature: 'That was a feature, not a bug!',
     keys: '↑ ↓ pick a line · Space squash',
     start: 'Start debugging',
     lives: 'Lives',
     squashed: 'Squashed',
     time: 'Time left',
     area: 'Code editor with bugs crawling towards production. Up and down arrows pick a line, Space or Enter squashes the bug on it.',
-    lane: (n: number, bugs: number, good: boolean) =>
-      `Line ${n}: ${bugs === 0 ? 'no bugs' : bugs === 1 ? '1 bug' : `${bugs} bugs`}${good ? ', passing code' : ''}`,
+    lane: (n: number, bugs: number, feats: number, lead: boolean, good: boolean) =>
+      `Line ${n}: ${bugs === 0 ? 'no bugs' : bugs === 1 ? '1 bug' : `${bugs} bugs`}${
+        feats ? `, ${feats === 1 ? '1 feature' : `${feats} features`}${lead ? ' in front' : ''}` : ''
+      }${good ? ', passing code' : ''}`,
     livesLeft: (l: number) => `${l} ${l === 1 ? 'life' : 'lives'} left`,
     escaped: 'A bug reached production!',
     broke: 'You broke passing code!',
@@ -142,14 +152,19 @@ const T = {
     warn: 'No toques el código verde: ese sí pasa sus pruebas.',
     pointer: 'Haz clic o toca un bug',
     swarm: 'Es un enjambre: usa los dos pulgares',
+    swarmMouse: 'Es un enjambre: haz clic rápido',
+    feature: 'Los verdes son features, no bugs: déjalos llegar.',
+    wasFeature: '¡Eso era un feature, no un bug!',
     keys: '↑ ↓ elige línea · Espacio aplasta',
     start: 'Empezar a depurar',
     lives: 'Vidas',
     squashed: 'Aplastados',
     time: 'Tiempo restante',
     area: 'Editor de código con bugs que avanzan hacia producción. Las flechas arriba y abajo eligen una línea; Espacio o Enter aplasta el bug de esa línea.',
-    lane: (n: number, bugs: number, good: boolean) =>
-      `Línea ${n}: ${bugs === 0 ? 'sin bugs' : bugs === 1 ? '1 bug' : `${bugs} bugs`}${good ? ', código que pasa' : ''}`,
+    lane: (n: number, bugs: number, feats: number, lead: boolean, good: boolean) =>
+      `Línea ${n}: ${bugs === 0 ? 'sin bugs' : bugs === 1 ? '1 bug' : `${bugs} bugs`}${
+        feats ? `, ${feats === 1 ? '1 feature' : `${feats} features`}${lead ? ' al frente' : ''}` : ''
+      }${good ? ', código que pasa' : ''}`,
     livesLeft: (l: number) => `${l === 1 ? 'Te queda 1 vida' : `Te quedan ${l} vidas`}`,
     escaped: '¡Un bug llegó a producción!',
     broke: '¡Rompiste código que funcionaba!',
@@ -166,12 +181,14 @@ const T = {
 
 interface Bug {
   id: number;
+  /** A feature looks friendly and green; squashing it costs a life, shipping it costs nothing. */
+  feature: boolean;
   lane: number;
   x: number; // 0 = start of the line, 1 = production gate
   speed: number; // track widths per second
   phase: number;
 }
-type FxKind = 'splat' | 'break' | 'escape' | 'miss';
+type FxKind = 'splat' | 'break' | 'escape' | 'miss' | 'ship';
 interface Fx {
   id: number;
   kind: FxKind;
@@ -273,21 +290,30 @@ function useSfx(soundOn: boolean) {
   );
 }
 
-/** Flat low-poly beetle facing right (towards production). */
-function BugIcon({ size = 30, walking }: { size?: number; walking: boolean }) {
+const SHELL = {
+  bug: { a: '#d93f4c', b: '#b3303c', c: '#ef6b75', d: '#c9374a', line: '#7f1d2a', ink: '#3b1d24' },
+  feature: { a: '#10b981', b: '#059669', c: '#6ee7b7', d: '#34d399', line: '#065f46', ink: '#064e3b' },
+};
+/**
+ * Flat low-poly beetle facing right (towards production). A feature is green and wears a white
+ * tick on its back, so it reads as "this one passes" without relying on colour alone.
+ */
+function BugIcon({ size = 30, walking, feature = false }: { size?: number; walking: boolean; feature?: boolean }) {
+  const c = feature ? SHELL.feature : SHELL.bug;
   return (
     <svg width={size} height={size * 0.8} viewBox="-15 -12 30 24" aria-hidden>
-      <g stroke="#3b1d24" strokeWidth={1.4} strokeLinecap="round" className={walking ? 'sqb-legs' : undefined}>
+      <g stroke={c.ink} strokeWidth={1.4} strokeLinecap="round" className={walking ? 'sqb-legs' : undefined}>
         <path d="M-5 -5 L-8 -11 M1 -6 L1 -12 M5 -5 L8 -11" fill="none" />
         <path d="M-5 5 L-8 11 M1 6 L1 12 M5 5 L8 11" fill="none" />
       </g>
-      <polygon points="-11,0 -6,-7.5 5,-7.5 9,0 5,7.5 -6,7.5" fill="#d93f4c" />
-      <polygon points="-11,0 -6,-7.5 -1,0 -6,7.5" fill="#b3303c" />
-      <polygon points="-1,0 5,-7.5 9,0" fill="#ef6b75" />
-      <polygon points="-1,0 9,0 5,7.5" fill="#c9374a" />
-      <path d="M-11 0 L9 0" stroke="#7f1d2a" strokeWidth={0.8} />
-      <polygon points="8.5,-4.5 13.5,-2 13.5,2 8.5,4.5" fill="#3b1d24" />
-      <path d="M12.5 -2.5 L15 -6 M12.5 2.5 L15 6" stroke="#3b1d24" strokeWidth={1.1} strokeLinecap="round" />
+      <polygon points="-11,0 -6,-7.5 5,-7.5 9,0 5,7.5 -6,7.5" fill={c.a} />
+      <polygon points="-11,0 -6,-7.5 -1,0 -6,7.5" fill={c.b} />
+      <polygon points="-1,0 5,-7.5 9,0" fill={c.c} />
+      <polygon points="-1,0 9,0 5,7.5" fill={c.d} />
+      {!feature && <path d="M-11 0 L9 0" stroke={c.line} strokeWidth={0.8} />}
+      <polygon points="8.5,-4.5 13.5,-2 13.5,2 8.5,4.5" fill={c.ink} />
+      <path d="M12.5 -2.5 L15 -6 M12.5 2.5 L15 6" stroke={c.ink} strokeWidth={1.1} strokeLinecap="round" />
+      {feature && <path d="M-6 0 L-2.5 3.5 L4.5 -3.5" fill="none" stroke="#fff" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" />}
     </svg>
   );
 }
@@ -315,24 +341,28 @@ const BITS = [
 export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: MiniGameProps) {
   const t = T[lang];
   const [phase, setPhase] = useState<'intro' | 'play' | 'end'>('intro');
-  // The difficulty follows the device until Start, then stays put for the round.
+  // The difficulty follows how the visitor is playing (pointer or keyboard) until Start, then
+  // stays put for the round.
   const coarse = useCoarsePointer();
+  const [input, setInput] = useState<'pointer' | 'keys'>('pointer');
   const [locked, setLocked] = useState<Mode | null>(null);
-  const mode = locked ?? (coarse ? MODES.coarse : MODES.fine);
-  const [snap, setSnap] = useState<Snap>(() => snapOf(newGame(MODES.fine.lives)));
+  const mode = locked ?? MODES[input];
+  const [snap, setSnap] = useState<Snap>(() => snapOf(newGame(MODES.keys.lives)));
   const [result, setResult] = useState<{ won: boolean; score: number; squashed: number; lives: number } | null>(null);
   const [announce, setAnnounce] = useState('');
-  const game = useRef<Game>(newGame(MODES.fine.lives));
+  const game = useRef<Game>(newGame(MODES.keys.lives));
   const startBtn = useRef<HTMLButtonElement>(null);
   const area = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const sfx = useSfx(soundOn);
   const sfxRef = useRef(sfx);
   const finishRef = useRef(onFinish);
+  const coarseRef = useRef(coarse);
   useEffect(() => {
     sfxRef.current = sfx;
     finishRef.current = onFinish;
-  }, [sfx, onFinish]);
+    coarseRef.current = coarse;
+  }, [sfx, onFinish, coarse]);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => startBtn.current?.focus({ preventScroll: true }));
@@ -366,7 +396,9 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
           if (!free.length) break;
           const lane = free[Math.floor(Math.random() * free.length)];
           const cross = lerp(mode.cross[0], mode.cross[1], p) * (reducedMotion ? 1.45 : 1) * (0.9 + Math.random() * 0.25);
-          g.bugs.push({ id: g.ids++, lane, x: -0.04, speed: 1.04 / cross, phase: Math.random() * 6 });
+          // No features in the opening seconds: the first thing a visitor learns is "squash".
+          const feature = g.time > 2.5 && Math.random() < mode.features;
+          g.bugs.push({ id: g.ids++, feature, lane, x: -0.04, speed: 1.04 / cross, phase: Math.random() * 6 });
         }
         g.nextSpawn = lerp(mode.gap[0], mode.gap[1], p) * (reducedMotion ? 1.2 : 1) * (0.85 + Math.random() * 0.3);
       }
@@ -376,13 +408,20 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
       if (out.length) {
         g.bugs = g.bugs.filter((b) => b.x < 1);
         for (const b of out) {
+          // A feature that reaches production has shipped: that's the job.
+          if (b.feature) {
+            addFx(g, 'ship', b.lane, 1);
+            continue;
+          }
           g.escaped++;
           g.lives = Math.max(0, g.lives - 1);
           addFx(g, 'escape', b.lane, 1);
         }
-        sfxRef.current('escape');
-        if (mode.haptics) buzz(60);
-        setAnnounce(`${T[lang].escaped} ${T[lang].livesLeft(g.lives)}`);
+        if (out.some((b) => !b.feature)) {
+          sfxRef.current('escape');
+          if (coarseRef.current) buzz(60);
+          setAnnounce(`${T[lang].escaped} ${T[lang].livesLeft(g.lives)}`);
+        }
       }
 
       // "Passing code" glow: one token at a time lights up, then rests.
@@ -452,10 +491,19 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
 
   const squash = (g: Game, b: Bug) => {
     g.bugs = g.bugs.filter((x) => x.id !== b.id);
+    if (b.feature) {
+      g.broken++;
+      g.lives = Math.max(0, g.lives - 1);
+      addFx(g, 'break', b.lane, b.x);
+      sfx('break');
+      if (coarse) buzz(60);
+      setAnnounce(`${t.wasFeature} ${t.livesLeft(g.lives)}`);
+      return;
+    }
     g.squashed++;
     addFx(g, 'splat', b.lane, b.x);
     sfx('squash');
-    if (mode.haptics) buzz(10);
+    if (coarse) buzz(10);
     if (g.squashed % 5 === 0 || g.squashed === mode.target) setAnnounce(`${t.squashed}: ${g.squashed}`);
   };
   const breakBuild = (g: Game, lane: number, x: number) => {
@@ -465,7 +513,7 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
     g.glowTimer = 0.8;
     addFx(g, 'break', lane, x);
     sfx('break');
-    if (mode.haptics) buzz(60);
+    if (coarse) buzz(60);
     setAnnounce(`${t.broke} ${t.livesLeft(g.lives)}`);
   };
   const miss = (g: Game, lane: number, x: number) => {
@@ -512,8 +560,9 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
     if (k === 'ArrowUp' || k === 'ArrowDown' || k === 'w' || k === 's') {
       e.preventDefault();
       g.cursor = Math.max(0, Math.min(N - 1, g.cursor + (k === 'ArrowUp' || k === 'w' ? -1 : 1)));
-      const bugs = g.bugs.filter((b) => b.lane === g.cursor).length;
-      setAnnounce(t.lane(g.cursor + 1, bugs, g.glow?.lane === g.cursor));
+      const here = g.bugs.filter((b) => b.lane === g.cursor).sort((a, b) => b.x - a.x);
+      const feats = here.filter((b) => b.feature).length;
+      setAnnounce(t.lane(g.cursor + 1, here.length - feats, feats, !!here[0]?.feature, g.glow?.lane === g.cursor));
       setSnap(snapOf(g));
     } else if (k === ' ' || k === 'Enter') {
       e.preventDefault();
@@ -532,7 +581,12 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
   const walking = !reducedMotion && phase === 'play';
 
   return (
-    <div className="flex h-full min-h-[420px] select-none flex-col gap-2 p-3 sm:gap-3 sm:p-4">
+    <div
+      className="flex h-full min-h-[420px] select-none flex-col gap-2 p-3 sm:gap-3 sm:p-4"
+      onKeyDownCapture={phase === 'intro' ? () => setInput('keys') : undefined}
+      onPointerMoveCapture={phase === 'intro' ? () => setInput('pointer') : undefined}
+      onPointerDownCapture={phase === 'intro' ? () => setInput('pointer') : undefined}
+    >
       <style>{CSS}</style>
 
       {/* HUD */}
@@ -654,14 +708,16 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
               PROD
             </span>
             {snap.fx
-              .filter((f) => f.kind === 'escape')
+              .filter((f) => f.kind === 'escape' || f.kind === 'ship')
               .map((f) => (
                 <span
                   key={f.id}
-                  className="absolute left-1/2 flex h-5 w-5 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-rose-500 text-[11px] font-bold text-white"
+                  className={`absolute left-1/2 flex h-5 w-5 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-[11px] font-bold text-white ${
+                    f.kind === 'ship' ? 'bg-emerald-500' : 'bg-rose-500'
+                  }`}
                   style={{ top: `calc(4px + (100% - 8px) * ${(f.lane + 0.5) / N})` }}
                 >
-                  !
+                  {f.kind === 'ship' ? '✓' : '!'}
                 </span>
               ))}
           </div>
@@ -681,7 +737,7 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
                     transform: `translate(-50%, calc(-50% + ${wob}px))`,
                   }}
                 >
-                  <BugIcon walking={walking} />
+                  <BugIcon walking={walking} feature={b.feature} />
                 </div>
               );
             })}
@@ -766,9 +822,15 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
                 </span>
                 {t.warn}
               </p>
+              <p className="flex items-center justify-center gap-1.5 text-sm text-gray-600">
+                <BugIcon size={22} walking={false} feature />
+                {t.feature}
+              </p>
               <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-700">
                 <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1">{t.pointer}</span>
-                {mode.haptics && <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1">{t.swarm}</span>}
+                {mode.swarm && (
+                  <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1">{coarse ? t.swarm : t.swarmMouse}</span>
+                )}
                 <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 font-mono max-sm:hidden pointer-coarse:hidden">{t.keys}</span>
               </div>
               <button

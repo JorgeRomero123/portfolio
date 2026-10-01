@@ -6,16 +6,17 @@
  * Turn flow:  idle → rolling | aiming | picking-steps → moving → (landmark) → idle
  *
  * ── The race ─────────────────────────────────────────────────────────────────────────────────
- * Jorge's pawn laps the board against the visitor (rules and maths in race.ts). The landmark
- * flow reports each mini-game played for a missing stamp through `onGame`; the shell books his
- * moves in progress straight away and animates them on the board once the flow has closed.
+ * Jorge's pawn laps the board against the visitor (rules and maths in race.ts). He moves at the
+ * end of every turn, and again for each mini-game played for a missing stamp (reported by the
+ * landmark flow through `onGame`). The shell books his moves in progress straight away and walks
+ * them on the board once the visitor's pawn has finished its own move.
  *
  * ── Landmark hook point ──────────────────────────────────────────────────────────────────────
  * `onLandmark(sectionId, { landed })` is called (and awaited) whenever the pawn
  *   • LANDS on a section's landmark tile (last step of a move), or
  *   • PASSES a landmark tile of a section that isn't in `progress.stamps` yet.
  * Movement is paused until its Promise resolves with a LandmarkChoice:
- *   'play'     → the pawn stops there (turn ends),
+ *   'play'     → when passing, movement resumes once the mini-game flow closes,
  *   'look'     → when passing, movement resumes afterwards,
  *   'continue' → when passing, movement resumes.
  * A landed prompt always ends the turn. Rewards/stamps are granted inside the handler
@@ -26,16 +27,18 @@
  * so the 3D render pauses.
  *
  * ── Speedrun clock and run recording ─────────────────────────────────────────────────────────
- * The clock starts on the first turn (roll, dart or free move) of a fresh race and stops when
- * recordGame settles it; the time lives in progress, so a reload neither resets nor re-runs it.
+ * The clock starts on the first turn (roll, dart or free move) of a fresh race and stops in
+ * bookRival, wherever the race is settled: after a mini-game or at the end of a turn with none.
+ * The time lives in progress, so a reload neither resets nor re-runs it.
  * A finished race gets a random nonce at that moment and is POSTed once (leaderboard/api.ts); the
  * nonce makes a retried POST return the same run, and the returned id/token are kept in progress.
  * A race that was already under way when the clock shipped stays untimed and is never recorded.
  *
  * Dev-only (NODE_ENV !== 'production'): `?debug=passport | prompt:<id> | card:<id> | game:<id> |
- * win:<id> | wheel:<id> | stamp:<id> | final:<id> | lost:<id>` opens that overlay directly.
- * With debug, a race without a clock is given one that started `&ms=<n>` (default 12 min) ago, and a
- * loss count consistent with the seeded stamps and Jorge's position.
+ * win:<id> | wheel:<id> | stamp:<id> | final:<id> | lost:<id>` opens that overlay directly, and
+ * `?debug=clock` opens nothing. Any of them gives a running race without a clock one that started
+ * `&ms=<n>` (default 12 min) ago, so hand-seeded progress still ends in a timed run; `&losses=<n>`
+ * sets the race's loss count (every count is valid under the race rules, so none is invented).
  * ─────────────────────────────────────────────────────────────────────────────────────────────
  */
 import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react';
@@ -47,7 +50,7 @@ import { useLang } from './lang';
 import { getProgress, useProgress } from './progress';
 import { STRINGS } from './strings';
 import { SECTION_IDS, type LandmarkChoice, type LandmarkHandler, type SectionId } from './types';
-import { raceAfter, rivalMoves } from './race';
+import { gameMove, raceAfter, turnMove } from './race';
 import { newNonce, recordRun } from './leaderboard/api';
 import type { RunState } from './leaderboard/panels';
 import { LANDMARK_AT_TILE, START_TILE, TILES, wrapTile } from './board/layout';
@@ -174,25 +177,25 @@ export default function GameShell({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once, when the board becomes ready
   }, [ready]);
   function openDebug() {
-    const q = new URLSearchParams(window.location.search).get('debug');
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('debug');
     if (!q) return;
+    const ago = Number(params.get('ms')) || 12 * 60_000;
+    const losses = params.get('losses');
+    updateProgress((p) =>
+      p.race !== 'running'
+        ? {}
+        : {
+            raceStartedAt: p.raceStartedAt ?? Date.now() - ago,
+            ...(losses !== null ? { raceLosses: Number(losses) } : {}),
+          },
+    );
     if (q === 'passport') {
       setPassportOpen(true);
       return;
     }
     const [stepName, id] = q.split(':') as [FlowStep | 'win', SectionId];
     if (!(SECTION_IDS as readonly string[]).includes(id)) return;
-    const ago = Number(new URLSearchParams(window.location.search).get('ms')) || 12 * 60_000;
-    // Hand-seeded progress rarely has a clock or a loss count that matches Jorge's position: derive
-    // both so the simulated race ends in a run the API accepts (3 tiles per win, 5 per loss).
-    updateProgress((p) =>
-      p.race !== 'running'
-        ? {}
-        : {
-            raceStartedAt: p.raceStartedAt ?? Date.now() - ago,
-            raceLosses: Math.max(p.raceLosses, Math.ceil((p.rivalSteps - 3 * p.stamps.length) / 5)),
-          },
-    );
     busy.current = true;
     setPhase('landmark');
     setLandmarkReq({
@@ -214,20 +217,27 @@ export default function GameShell({
     apiRef.current?.setView(m);
   }, []);
 
-  /** A mini-game for a missing stamp just ended: book Jorge's moves and settle the race. */
-  const recordGame = useCallback(
-    (won: boolean) => {
+  /**
+   * Book one of Jorge's moves (signed tiles) and settle the race. Does nothing once the race is over.
+   * `lostGame` counts a lost or skipped mini-game. This is the one place a race ends (after a
+   * mini-game or at the end of a turn), so it also stops the speedrun clock and creates the run's nonce.
+   */
+  const bookRival = useCallback(
+    (move: (steps: number) => number, lostGame = false) => {
       const p = getProgress();
       if (p.race !== 'running') return;
-      const moves = rivalMoves(p.rivalSteps, won);
-      const steps = moves.reduce((a, b) => a + b, p.rivalSteps);
+      const m = move(p.rivalSteps);
+      const steps = p.rivalSteps + m;
       const race = raceAfter(p, steps);
-      const raceLosses = p.raceLosses + (won ? 0 : 1);
+      const raceLosses = p.raceLosses + (lostGame ? 1 : 0);
       if (rivalFrom.current === null) {
         rivalFrom.current = p.rivalSteps;
         setRivalHold(p.rivalSteps);
       }
-      rivalQueue.current.push(...moves);
+      // Consecutive moves in the same direction are walked as one.
+      const q = rivalQueue.current;
+      if (q.length && Math.sign(q[q.length - 1]) === Math.sign(m)) q[q.length - 1] += m;
+      else if (m) q.push(m);
       if (race === 'running') {
         updateProgress({ rivalSteps: steps, race, raceLosses });
         return;
@@ -247,6 +257,8 @@ export default function GameShell({
     },
     [updateProgress],
   );
+  /** A mini-game for a missing stamp just ended (the stamp, if won, is already in progress). */
+  const recordGame = useCallback((won: boolean) => bookRival((steps) => gameMove(steps, won), !won), [bookRival]);
 
   /** Walk Jorge's pending moves on the board (whole-board view so he's on screen), then show the result. */
   const playRival = useCallback(async () => {
@@ -359,15 +371,17 @@ export default function GameShell({
         const landed = i === n;
         if (!landed && getProgress().stamps.includes(sec)) continue;
         setPhase('landmark');
-        const choice = await live.current.onLandmark(sec, { landed });
-        await playRival();
-        if (landed || choice === 'play') break;
+        await live.current.onLandmark(sec, { landed });
+        if (landed) break;
         setPhase('moving');
       }
       api.hideDie();
+      // The turn is over: Jorge takes his steps, then everything he is owed is walked at once.
+      bookRival(turnMove);
+      await playRival();
       finishTurn();
     },
-    [finishTurn, playRival, updateProgress],
+    [bookRival, finishTurn, playRival, updateProgress],
   );
 
   const roll = useCallback(async () => {

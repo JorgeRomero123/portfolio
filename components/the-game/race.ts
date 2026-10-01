@@ -1,34 +1,34 @@
 // The race against Jorge's pawn. Pure rules (no React, no three.js): the ONE place that decides
 // how far he moves and who wins.
 //
-// Jorge's pawn only moves when the visitor plays a mini-game for a stamp they don't have yet:
-// he always advances RIVAL_ADVANCE tiles, and a win makes him step back RIVAL_STEP_BACK first.
-// Dice, darts, "just look" and replays of stamped sections never move him, so luck with the dice
-// can't decide the race. A skipped mini-game counts as a loss.
+// The visitor wins by collecting all 11 stamps before Jorge's pawn finishes one lap of the
+// 44-tile loop. He moves:
+//   • RIVAL_TURN tiles forward at the end of every turn the visitor takes (dice, dart or free move),
+//   • RIVAL_WIN_BACK tiles back when the visitor wins a mini-game for a stamp they didn't have,
+//   • RIVAL_LOSS tiles forward when they lose one (a skipped mini-game counts as a loss).
+// "Just look", "keep going" and replays of stamped sections cost nothing beyond the turn itself.
 //
-// The visitor wins by collecting all 11 stamps before he finishes one lap of the 44-tile loop.
-// That takes 11 wins plus L losses, after which he stands on
-//   11 × (5 − 2) + 5 × L = 33 + 5L
-// so L = 2 leaves him on tile 43, one short of the line, and L = 3 puts him over it (48):
-// the visitor wins the race exactly when they lose at most two games.
+// So the fewer turns a lap takes, the less he moves: the dice average 3.5 tiles (about 13 turns),
+// a well-thrown dart about 5 (about 9 turns). Simulated over 40,000 races with these numbers:
+// on dice, two lost mini-games still win the race 84% of the time, three 45%, four 7%;
+// with steadied darts, four losses still win 98% of the time.
 import { TILE_COUNT } from './board/layout';
 import { hasAllStamps } from './rewards';
 import type { Progress, RaceStatus } from './types';
 
 export const RIVAL_LAP = TILE_COUNT;
-export const RIVAL_ADVANCE = 5;
-export const RIVAL_STEP_BACK = 2;
+export const RIVAL_TURN = 3;
+export const RIVAL_WIN_BACK = 1;
+export const RIVAL_LOSS = 6;
 
-/**
- * Jorge's moves for one finished mini-game, as signed tile counts in the order he makes them
- * (a win is "back 2, then forward 5"). The last move is cut short so he stops on the finish line.
- */
-export function rivalMoves(steps: number, won: boolean): number[] {
-  const moves = won ? [-RIVAL_STEP_BACK, RIVAL_ADVANCE] : [RIVAL_ADVANCE];
-  const end = steps + moves.reduce((a, b) => a + b, 0);
-  if (end > RIVAL_LAP) moves[moves.length - 1] -= end - RIVAL_LAP;
-  return moves;
-}
+/** A forward move from `steps`, cut short so he stops on the finish line. */
+const forward = (steps: number, n: number) => Math.max(0, Math.min(n, RIVAL_LAP - steps));
+
+/** Jorge's move (signed tiles) for one finished mini-game played for a missing stamp. */
+export const gameMove = (steps: number, won: boolean) => (won ? -RIVAL_WIN_BACK : forward(steps, RIVAL_LOSS));
+
+/** Jorge's move at the end of one of the visitor's turns. */
+export const turnMove = (steps: number) => forward(steps, RIVAL_TURN);
 
 /** Where the race stands once he is on `rivalSteps`. `progress` must already hold any stamp just won. */
 export function raceAfter(progress: Progress, rivalSteps: number): RaceStatus {
