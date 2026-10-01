@@ -1,7 +1,7 @@
 'use client';
 
-// "Throw a dart": a wandering reticle over a dartboard. Hold (pointer or Space) to steady it —
-// the drift shrinks gradually while held — and let go to throw. Rings: outer 1–2, middle 3–4,
+// "Throw a dart": a fast, wobbly reticle over a dartboard. Hold (pointer or Space) to steady it —
+// the drift shrinks gradually while held, but never settles — and let go to throw. Rings: outer 1–2, middle 3–4,
 // inner 5–6 (darker wedge = the higher number), bullseye = a sure 6. Missing = 1 step.
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useMotionValue } from 'framer-motion';
@@ -67,21 +67,22 @@ export function DartOverlay({
   const [phase, setPhase] = useState<Phase>('aim');
   const [hit, setHit] = useState<{ x: number; y: number; result: DartResult } | null>(null);
   const [holding, setHolding] = useState(false);
-  const st = useRef({ held: false, holdT: 0, t: 0, ph: [0, 0, 0, 0] });
+  const st = useRef({ held: false, holdT: 0, t: 0, ph: [0, 0, 0, 0, 0, 0] });
   const cancelBtn = useRef<HTMLButtonElement>(null);
   const onResultRef = useRef(onResult);
   useEffect(() => {
     onResultRef.current = onResult;
   }, [onResult]);
 
-  const base = steady ? 0.42 : 1.06;
-  const min = steady ? 0.05 : 0.2;
+  const base = steady ? 0.42 : 1.5;
+  const min = steady ? 0.05 : 0.55;
+  const speed = steady ? 1.2 : 1.7;
 
-  // Wandering reticle (Lissajous-ish sum of sines).
+  // Wandering reticle (Lissajous-ish sum of sines; the third, fastest term is the wobble).
   useEffect(() => {
     if (phase !== 'aim') return;
     const S = st.current;
-    S.ph = [Math.random() * 6.28, Math.random() * 6.28, Math.random() * 6.28, Math.random() * 6.28];
+    S.ph = Array.from({ length: 6 }, () => Math.random() * 6.28);
     S.t = Math.random() * 10;
     let raf = 0;
     let last = performance.now();
@@ -91,15 +92,15 @@ export function DartOverlay({
       if (S.held) S.holdT += dt;
       const k = S.held ? smoothstep(S.holdT / 1.3) : 0;
       const amp = (base + (min - base) * k) * 100;
-      S.t += dt * (reducedMotion ? 0.55 : 1) * (1 - 0.4 * k);
+      S.t += dt * speed * (reducedMotion ? 0.55 : 1) * (1 - 0.25 * k);
       const t = S.t;
-      rx.set(amp * (0.62 * Math.sin(1.13 * t + S.ph[0]) + 0.38 * Math.sin(2.71 * t + S.ph[1])));
-      ry.set(amp * (0.62 * Math.sin(1.37 * t + S.ph[2]) + 0.38 * Math.sin(2.23 * t + S.ph[3])));
+      rx.set(amp * (0.5 * Math.sin(1.13 * t + S.ph[0]) + 0.3 * Math.sin(2.71 * t + S.ph[1]) + 0.2 * Math.sin(5.3 * t + S.ph[4])));
+      ry.set(amp * (0.5 * Math.sin(1.37 * t + S.ph[2]) + 0.3 * Math.sin(2.23 * t + S.ph[3]) + 0.2 * Math.sin(4.7 * t + S.ph[5])));
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [phase, base, min, reducedMotion, rx, ry]);
+  }, [phase, base, min, speed, reducedMotion, rx, ry]);
 
   const hold = () => {
     if (phase !== 'aim' || st.current.held) return;
