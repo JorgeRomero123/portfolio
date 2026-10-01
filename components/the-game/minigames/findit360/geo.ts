@@ -24,20 +24,22 @@ export function angDist(p1: number, y1: number, p2: number, y2: number) {
 }
 
 /**
- * Three targets spread round the full circle (≈120° apart with jitter) at moderate pitch,
+ * `count` targets spread round the full circle (360/count apart with jitter) at varied pitch,
  * none within 45° of where the visitor starts looking, so you always have to turn.
  */
 export function makeTargets(
   startYaw: number,
+  count = 3,
   rnd: () => number = Math.random,
 ): Target[] {
   const base = rnd() * 360;
-  return [0, 1, 2].map((i) => {
-    let yaw = norm(base + i * 120 + (rnd() - 0.5) * 50);
+  const gap = 360 / count;
+  return Array.from({ length: count }, (_, i) => {
+    let yaw = norm(base + i * gap + (rnd() - 0.5) * gap * 0.4);
     const off = norm(yaw - startYaw);
     if (Math.abs(off) < 45)
       yaw = norm(startYaw + (off < 0 ? -1 : 1) * (45 + rnd() * 15));
-    const pitch = -12 + rnd() * 28;
+    const pitch = -16 + rnd() * 36;
     return { id: `fi360-${i}`, yaw, pitch };
   });
 }

@@ -1,9 +1,9 @@
 "use client";
 
-// "Find it in 360" (360° content): three little gems are hidden as Pannellum hot spots in one of
+// "Find it in 360" (360° content): six little gems are hidden as Pannellum hot spots in one of
 // the 360° photos. Look around (drag, or arrow keys with the viewer focused) and tap a gem, or
-// centre it in the reticle and press Enter/Space. 40 s from the moment the photo is ready; win = 3/3.
-// A radar ring points roughly at the nearest remaining gem; after 15 s without a find it gets precise.
+// centre it in the reticle and press Enter/Space. 55 s from the moment the photo is ready; win = all 6.
+// A radar ring points roughly at the nearest remaining gem; after 10 s without a find it gets precise.
 import {
   useCallback,
   useEffect,
@@ -30,9 +30,9 @@ import {
 } from "./findit360/geo";
 
 const COLOR = "#7c3aed";
-const GEMS = 3;
-const SECONDS = 40;
-const PRECISE_AFTER = 15_000;
+const GEMS = 6;
+const SECONDS = 55;
+const PRECISE_AFTER = 10_000;
 const GRAB_DEG = 12; // Enter/Space grabs a gem this close to the centre of view
 const TAP_PX = 30; // pointer taps within this radius of a gem's centre count
 const LOAD_TIMEOUT = 30_000;
@@ -206,7 +206,7 @@ export default function FindIt360({
       initialHfov: 95,
     };
   });
-  const [targets] = useState<Target[]>(() => makeTargets(0));
+  const [targets] = useState<Target[]>(() => makeTargets(0, GEMS));
 
   const root = useRef<HTMLDivElement>(null);
   const viewer = useRef<PannellumViewer | null>(null);
@@ -291,7 +291,7 @@ export default function FindIt360({
         0,
         SECONDS - (performance.now() - startAt.current) / 1000,
       );
-      const score = won ? Math.round(60 + (40 * left) / SECONDS) : n * 20;
+      const score = won ? Math.round(60 + (40 * left) / SECONDS) : Math.round((n / GEMS) * 50);
       setLive(won ? t.win : t.lose(n));
       sound(won ? "win" : "lose");
       later(() => {
