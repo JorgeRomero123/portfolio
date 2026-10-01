@@ -25,8 +25,17 @@
  * While a full-cover overlay (mini-game, wheel, passport…) is open the board's `active` is false,
  * so the 3D render pauses.
  *
+ * ── Speedrun clock and run recording ─────────────────────────────────────────────────────────
+ * The clock starts on the first turn (roll, dart or free move) of a fresh race and stops when
+ * recordGame settles it; the time lives in progress, so a reload neither resets nor re-runs it.
+ * A finished race gets a random nonce at that moment and is POSTed once (leaderboard/api.ts); the
+ * nonce makes a retried POST return the same run, and the returned id/token are kept in progress.
+ * A race that was already under way when the clock shipped stays untimed and is never recorded.
+ *
  * Dev-only (NODE_ENV !== 'production'): `?debug=passport | prompt:<id> | card:<id> | game:<id> |
  * win:<id> | wheel:<id> | stamp:<id> | final:<id> | lost:<id>` opens that overlay directly.
+ * With debug, a race without a clock is given one that started `&ms=<n>` (default 12 min) ago, and a
+ * loss count consistent with the seeded stamps and Jorge's position.
  * ─────────────────────────────────────────────────────────────────────────────────────────────
  */
 import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react';
@@ -39,6 +48,8 @@ import { getProgress, useProgress } from './progress';
 import { STRINGS } from './strings';
 import { SECTION_IDS, type LandmarkChoice, type LandmarkHandler, type SectionId } from './types';
 import { raceAfter, rivalMoves } from './race';
+import { newNonce, recordRun } from './leaderboard/api';
+import type { RunState } from './leaderboard/panels';
 import { LANDMARK_AT_TILE, START_TILE, TILES, wrapTile } from './board/layout';
 import type { BoardApi, BoardProps, DieValue, ViewMode } from './board/types';
 import { DartOverlay, type DartResult } from './hud/DartOverlay';
@@ -93,6 +104,8 @@ export default function GameShell({
   const [flowStep, setFlowStep] = useState<FlowStep | null>(null);
   const [passportOpen, setPassportOpen] = useState(false);
   const [raceOpen, setRaceOpen] = useState(false);
+  const [runFailed, setRunFailed] = useState<string | null>(null);
+  const submitting = useRef(false);
   // Jorge's pawn: moves booked in progress but not yet walked on the board. While any are pending
   // the board keeps showing him where he was (`rivalHold`).
   const rivalQueue = useRef<number[]>([]);
@@ -165,6 +178,17 @@ export default function GameShell({
     }
     const [stepName, id] = q.split(':') as [FlowStep | 'win', SectionId];
     if (!(SECTION_IDS as readonly string[]).includes(id)) return;
+    const ago = Number(new URLSearchParams(window.location.search).get('ms')) || 12 * 60_000;
+    // Hand-seeded progress rarely has a clock or a loss count that matches Jorge's position: derive
+    // both so the simulated race ends in a run the API accepts (3 tiles per win, 5 per loss).
+    updateProgress((p) =>
+      p.race !== 'running'
+        ? {}
+        : {
+            raceStartedAt: p.raceStartedAt ?? Date.now() - ago,
+            raceLosses: Math.max(p.raceLosses, Math.ceil((p.rivalSteps - 3 * p.stamps.length) / 5)),
+          },
+    );
     busy.current = true;
     setPhase('landmark');
     setLandmarkReq({
@@ -194,13 +218,28 @@ export default function GameShell({
       const moves = rivalMoves(p.rivalSteps, won);
       const steps = moves.reduce((a, b) => a + b, p.rivalSteps);
       const race = raceAfter(p, steps);
+      const raceLosses = p.raceLosses + (won ? 0 : 1);
       if (rivalFrom.current === null) {
         rivalFrom.current = p.rivalSteps;
         setRivalHold(p.rivalSteps);
       }
       rivalQueue.current.push(...moves);
-      if (race !== 'running') raceJustEnded.current = true;
-      updateProgress({ rivalSteps: steps, race });
+      if (race === 'running') {
+        updateProgress({ rivalSteps: steps, race, raceLosses });
+        return;
+      }
+      raceJustEnded.current = true;
+      const timed = p.raceStartedAt !== null;
+      updateProgress({
+        rivalSteps: steps,
+        race,
+        raceLosses,
+        raceTimeMs: timed ? Math.max(1, Date.now() - p.raceStartedAt!) : null,
+        runNonce: timed ? newNonce() : null,
+        runId: null,
+        runToken: null,
+        boardChoice: 'ask',
+      });
     },
     [updateProgress],
   );
@@ -240,10 +279,56 @@ export default function GameShell({
     rivalQueue.current = [];
     rivalFrom.current = null;
     setRivalHold(null);
-    updateProgress({ stamps: [], rivalSteps: 0, race: 'running', pawnTile: START_TILE });
+    updateProgress({
+      stamps: [],
+      rivalSteps: 0,
+      race: 'running',
+      pawnTile: START_TILE,
+      raceStartedAt: null,
+      raceLosses: 0,
+      raceTimeMs: null,
+      runNonce: null,
+      runId: null,
+      runToken: null,
+      boardChoice: 'ask',
+    });
     setRaceOpen(false);
     setStatus('');
   }, [updateProgress]);
+
+  /** Starts the speedrun clock on the first turn of a fresh race. */
+  const startClock = useCallback(() => {
+    updateProgress((p) =>
+      p.race === 'running' && p.raceStartedAt === null && p.stamps.length === 0 && p.rivalSteps === 0 && p.raceLosses === 0
+        ? { raceStartedAt: Date.now() }
+        : {},
+    );
+  }, [updateProgress]);
+
+  // Record a finished race once. Retried on reload or when the race dialog opens if it failed;
+  // the nonce keeps a retry from creating a second run. Failure never blocks the game.
+  useEffect(() => {
+    const p = getProgress();
+    if (p.race === 'running' || !p.runNonce || p.runId || p.raceTimeMs === null || submitting.current) return;
+    submitting.current = true;
+    const nonce = p.runNonce;
+    void recordRun({ nonce, outcome: p.race, timeMs: p.raceTimeMs, losses: p.raceLosses, stamps: p.race === 'lost' ? Math.min(10, p.stamps.length) : p.stamps.length }).then((r) => {
+      submitting.current = false;
+      if (getProgress().runNonce !== nonce) return;
+      if (r.ok) {
+        setRunFailed(null);
+        updateProgress({ runId: r.data.id, runToken: r.data.token });
+      } else setRunFailed(nonce);
+    });
+  }, [progress.race, progress.runNonce, progress.runId, raceOpen, updateProgress]);
+
+  const runState: RunState = !progress.runNonce
+    ? 'none'
+    : progress.runId && progress.runToken
+      ? 'saved'
+      : runFailed === progress.runNonce
+        ? 'failed'
+        : 'sending';
 
   const finishTurn = useCallback(() => {
     const t = wrapTile(getProgress().pawnTile);
@@ -284,6 +369,7 @@ export default function GameShell({
     const api = apiRef.current;
     if (busy.current || !api) return;
     busy.current = true;
+    startClock();
     setPhase('rolling');
     setView('follow');
     setStatus(live.current.s.rolling);
@@ -291,17 +377,18 @@ export default function GameShell({
     await api.rollDie(value);
     setStatus(live.current.s.rolled(value));
     await moveSteps(value);
-  }, [moveSteps, setView]);
+  }, [moveSteps, setView, startClock]);
 
   const openDart = useCallback(
     (steady: boolean) => {
       if (busy.current || !apiRef.current) return;
       busy.current = true;
+      startClock();
       apiRef.current.hideDie();
       setSteadyDart(steady);
       setPhase('aiming');
     },
-    [],
+    [startClock],
   );
 
   const onDartResult = useCallback(
@@ -323,8 +410,9 @@ export default function GameShell({
   const openFreeMove = useCallback(() => {
     if (busy.current || !apiRef.current) return;
     busy.current = true;
+    startClock();
     setPhase('picking-steps');
-  }, []);
+  }, [startClock]);
 
   const pickFreeMove = useCallback(
     (n: number) => {
@@ -484,6 +572,13 @@ export default function GameShell({
             race={progress.race}
             rivalSteps={progress.rivalSteps}
             stamps={progress.stamps.length}
+            losses={progress.raceLosses}
+            timeMs={progress.raceTimeMs}
+            runId={progress.runId}
+            runToken={progress.runToken}
+            runState={runState}
+            boardChoice={progress.boardChoice}
+            onBoardChoice={(boardChoice) => updateProgress({ boardChoice })}
             onRaceAgain={raceAgain}
             onClose={() => setRaceOpen(false)}
           />

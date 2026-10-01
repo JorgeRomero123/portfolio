@@ -68,7 +68,23 @@ export interface Progress {
   /** Tiles Jorge's pawn has covered on his lap (44 = finished). Briefly negative after an opening win. */
   rivalSteps: number;
   race: RaceStatus;
+  /** Speedrun clock: epoch ms of the race's first turn. Null until then (or for a race that was
+   *  already under way when the clock was introduced, which stays untimed). */
+  raceStartedAt: number | null;
+  /** Mini-games lost (or skipped) for a stamp in this race. */
+  raceLosses: number;
+  /** Final time, frozen when the race ends. */
+  raceTimeMs: number | null;
+  /** The finished race as recorded by /api/the-game/runs. The nonce is created when the race ends
+   *  and makes the POST idempotent; id and token arrive with the response. */
+  runNonce: string | null;
+  runId: string | null;
+  runToken: string | null;
+  /** Leaderboard opt-in for the current run (winners only). */
+  boardChoice: BoardChoice;
 }
+
+export type BoardChoice = 'ask' | 'declined' | 'joined';
 
 export const DEFAULT_PROGRESS: Progress = {
   stamps: [],
@@ -82,6 +98,13 @@ export const DEFAULT_PROGRESS: Progress = {
   soundOn: false,
   rivalSteps: 0,
   race: 'running',
+  raceStartedAt: null,
+  raceLosses: 0,
+  raceTimeMs: null,
+  runNonce: null,
+  runId: null,
+  runToken: null,
+  boardChoice: 'ask',
 };
 
 /** Placeholder strings in content start with this and must never be rendered to visitors. */

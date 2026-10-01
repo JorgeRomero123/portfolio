@@ -428,3 +428,203 @@ export const FLOW_STRINGS: Record<Lang, FlowStrings> = {
     },
   },
 };
+
+/** Strings for the race results screen and the speedrun leaderboard. */
+export interface BoardStrings {
+  leaderboard: string;
+  yourTime: string;
+  losses: (n: number) => string;
+  stampsOf: (n: number, total: number) => string;
+  stampsLabel: string;
+  yourRace: (time: string, losses: number) => string;
+  untimed: string;
+  loadingStats: string;
+  statsError: string;
+  runNotSaved: string;
+  fasterThan: (pct: number) => string;
+  fastestEver: (n: number) => string;
+  slowestEver: string;
+  nthWinner: (n: number) => string;
+  winShare: (pct: number, wins: number, runs: number) => string;
+  noWinsYet: string;
+  chartTitle: string;
+  chartTitleLost: string;
+  axis: string;
+  faster: string;
+  slower: string;
+  you: string;
+  chartDesc: (n: number, lo: string, hi: string, peak: string) => string;
+  chartYou: (time: string) => string;
+  offChart: (n: number, limit: string) => string;
+  hoverBin: (from: string, to: string, n: number) => string;
+  continue: string;
+  askKicker: string;
+  askTitle: string;
+  askBody: string;
+  askYes: string;
+  askNo: string;
+  formTitle: string;
+  nickname: string;
+  nickHint: string;
+  rollAnother: string;
+  country: string;
+  preferNot: string;
+  save: string;
+  saving: string;
+  back: string;
+  errors: Record<'length' | 'chars' | 'rude' | 'rate_limited' | 'not_your_run' | 'generic', string>;
+  saved: (rank: number) => string;
+  savedPlain: string;
+  boardTitle: string;
+  boardCaption: string;
+  colRank: string;
+  colPlayer: string;
+  colTime: string;
+  colLosses: string;
+  youTag: string;
+  boardEmpty: string;
+  boardTotal: (n: number) => string;
+  boardLoading: string;
+  boardError: string;
+  noCountry: string;
+}
+
+const ordinal = (n: number) => {
+  const t = n % 100;
+  const suffix = t >= 11 && t <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] ?? 'th';
+  return `${n}${suffix}`;
+};
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+export const BOARD_STRINGS: Record<Lang, BoardStrings> = {
+  en: {
+    leaderboard: 'Leaderboard',
+    yourTime: 'Your time',
+    losses: (n) => (n === 0 ? 'No losses' : plural(n, 'loss', 'losses')),
+    stampsOf: (n, t) => `${n} / ${t}`,
+    stampsLabel: 'stamps collected',
+    yourRace: (time, n) => `Your race: ${time} · ${plural(n, 'loss', 'losses')}`,
+    untimed: 'This race started before the race clock existed, so it has no time. Race again to get on the clock.',
+    loadingStats: 'Comparing with everyone else…',
+    statsError: 'Couldn’t load how everyone else did right now. Your result still stands.',
+    runNotSaved: 'Your race couldn’t be recorded right now, so it can’t go on the leaderboard this time.',
+    fasterThan: (p) => `Faster than ${p}% of players who beat Jorge`,
+    fastestEver: (n) => `The fastest of all ${n} players who beat Jorge`,
+    slowestEver: 'Every other winner was faster. You still beat Jorge.',
+    nthWinner: (n) => (n === 1 ? 'You are the first player to beat Jorge!' : `You are the ${ordinal(n)} player to beat Jorge`),
+    winShare: (p, w, r) => `${p}% of players have beaten Jorge (${w} of ${r} races)`,
+    noWinsYet: 'Nobody has beaten Jorge yet. Be the first.',
+    chartTitle: 'Where you stand among every winning time',
+    chartTitleLost: 'Winning times so far',
+    axis: 'Race time',
+    faster: '← faster',
+    slower: 'slower →',
+    you: 'YOU',
+    chartDesc: (n, lo, hi, peak) => `Distribution of ${n} winning times from ${lo} to ${hi}. Most players finish around ${peak}.`,
+    chartYou: (t) => ` Your time, ${t}, is marked.`,
+    offChart: (n, limit) => `Not shown: ${plural(n, 'run', 'runs')} slower than ${limit}.`,
+    hoverBin: (a, b, n) => `${a}–${b}: ${plural(n, 'player', 'players')}`,
+    continue: 'Continue',
+    askKicker: 'Speedrun',
+    askTitle: 'Want to be on the leaderboard?',
+    askBody: 'Put a nickname, and a country if you like, next to your time. Nothing else about you is shared.',
+    askYes: 'Yes, add me',
+    askNo: 'No thanks',
+    formTitle: 'Join the leaderboard',
+    nickname: 'Nickname',
+    nickHint: '2–20 characters: letters, numbers, spaces and . _ -',
+    rollAnother: 'Roll another',
+    country: 'Country',
+    preferNot: 'Prefer not to say',
+    save: 'Save',
+    saving: 'Saving…',
+    back: 'Back',
+    errors: {
+      length: 'Use 2 to 20 characters.',
+      chars: 'Use letters, numbers, spaces and . _ - only.',
+      rude: 'Let’s keep it friendly. Try another nickname.',
+      rate_limited: 'Too many tries. Wait a few minutes and try again.',
+      not_your_run: 'This run can’t be named from this browser.',
+      generic: 'Couldn’t save right now. Try again in a moment.',
+    },
+    saved: (r) => `Saved! You’re #${r} on the leaderboard.`,
+    savedPlain: 'Saved! You’re on the leaderboard.',
+    boardTitle: 'Fastest runs',
+    boardCaption: 'Top 10 players who beat Jorge, fastest first',
+    colRank: 'Rank',
+    colPlayer: 'Player',
+    colTime: 'Time',
+    colLosses: 'Losses',
+    youTag: 'You',
+    boardEmpty: 'Nobody on the board yet. Beat Jorge and add your name.',
+    boardTotal: (n) => plural(n, 'player', 'players') + ' on the board',
+    boardLoading: 'Loading the leaderboard…',
+    boardError: 'The leaderboard isn’t available right now.',
+    noCountry: 'No country given',
+  },
+  es: {
+    leaderboard: 'Tabla de récords',
+    yourTime: 'Tu tiempo',
+    losses: (n) => (n === 0 ? 'Sin derrotas' : plural(n, 'derrota', 'derrotas')),
+    stampsOf: (n, t) => `${n} / ${t}`,
+    stampsLabel: 'sellos conseguidos',
+    yourRace: (time, n) => `Tu carrera: ${time} · ${plural(n, 'derrota', 'derrotas')}`,
+    untimed: 'Esta carrera empezó antes de que existiera el cronómetro, así que no tiene tiempo. Échate otra para que cuente.',
+    loadingStats: 'Comparando con los demás…',
+    statsError: 'Ahorita no pudimos cargar cómo les fue a los demás. Tu resultado sigue en pie.',
+    runNotSaved: 'Ahorita no pudimos registrar tu carrera, así que esta vez no puede entrar a la tabla de récords.',
+    fasterThan: (p) => `Tu tiempo supera al ${p}% de quienes le ganaron a Jorge`,
+    fastestEver: (n) => `El mejor tiempo de las ${n} personas que le han ganado a Jorge`,
+    slowestEver: 'Todas las demás personas que ganaron fueron más rápidas. Igual le ganaste a Jorge.',
+    nthWinner: (n) => (n === 1 ? '¡Eres la primera persona en ganarle a Jorge!' : `Eres la persona número ${n} en ganarle a Jorge`),
+    winShare: (p, w, r) => `El ${p}% de las personas le han ganado a Jorge (${w} de ${r} carreras)`,
+    noWinsYet: 'Nadie le ha ganado a Jorge todavía. Sé la primera persona.',
+    chartTitle: 'Dónde quedas entre todos los tiempos ganadores',
+    chartTitleLost: 'Tiempos ganadores hasta ahora',
+    axis: 'Tiempo de carrera',
+    faster: '← más rápido',
+    slower: 'más lento →',
+    you: 'TÚ',
+    chartDesc: (n, lo, hi, peak) => `Distribución de ${n} tiempos ganadores, de ${lo} a ${hi}. La mayoría termina alrededor de ${peak}.`,
+    chartYou: (t) => ` Tu tiempo, ${t}, está marcado.`,
+    offChart: (n, limit) => `No se muestran: ${plural(n, 'carrera', 'carreras')} de más de ${limit}.`,
+    hoverBin: (a, b, n) => `${a}–${b}: ${plural(n, 'persona', 'personas')}`,
+    continue: 'Continuar',
+    askKicker: 'Speedrun',
+    askTitle: '¿Quieres aparecer en la tabla de récords?',
+    askBody: 'Ponle un apodo a tu tiempo y, si quieres, tu país. No se comparte nada más de ti.',
+    askYes: 'Sí, agrégame',
+    askNo: 'No, gracias',
+    formTitle: 'Entra a la tabla de récords',
+    nickname: 'Apodo',
+    nickHint: 'De 2 a 20 caracteres: letras, números, espacios y . _ -',
+    rollAnother: 'Otro al azar',
+    country: 'País',
+    preferNot: 'Prefiero no decirlo',
+    save: 'Guardar',
+    saving: 'Guardando…',
+    back: 'Volver',
+    errors: {
+      length: 'Usa de 2 a 20 caracteres.',
+      chars: 'Usa solo letras, números, espacios y . _ -',
+      rude: 'Mejor algo buena onda. Prueba con otro apodo.',
+      rate_limited: 'Demasiados intentos. Espera unos minutos y vuelve a intentar.',
+      not_your_run: 'Esta carrera no se puede nombrar desde este navegador.',
+      generic: 'Ahorita no se pudo guardar. Inténtalo en un momento.',
+    },
+    saved: (r) => `¡Listo! Estás en el lugar #${r} de la tabla.`,
+    savedPlain: '¡Listo! Ya estás en la tabla.',
+    boardTitle: 'Carreras más rápidas',
+    boardCaption: 'Las 10 personas que le ganaron a Jorge más rápido',
+    colRank: 'Lugar',
+    colPlayer: 'Jugador',
+    colTime: 'Tiempo',
+    colLosses: 'Derrotas',
+    youTag: 'Tú',
+    boardEmpty: 'Todavía no hay nadie en la tabla. Gánale a Jorge y pon tu nombre.',
+    boardTotal: (n) => `${plural(n, 'persona', 'personas')} en la tabla`,
+    boardLoading: 'Cargando la tabla de récords…',
+    boardError: 'La tabla de récords no está disponible ahorita.',
+    noCountry: 'Sin país',
+  },
+};

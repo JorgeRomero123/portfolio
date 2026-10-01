@@ -13,6 +13,10 @@ const isSection = (v: unknown): v is SectionId => typeof v === 'string' && (SECT
 const isHat = (v: unknown): v is HatId => typeof v === 'string' && (HAT_IDS as readonly string[]).includes(v);
 const count = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? Math.floor(v) : 0);
 const uniq = <T,>(a: T[]) => Array.from(new Set(a));
+const keyStr = (v: unknown) => (typeof v === 'string' && /^[A-Za-z0-9_-]{16,128}$/.test(v) ? v : null);
+const uuid = (v: unknown) =>
+  typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v) ? v : null;
+const stampMs = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? Math.floor(v) : null);
 const lapSteps = (v: unknown) =>
   typeof v === 'number' && Number.isFinite(v) ? Math.max(-TILE_COUNT, Math.min(TILE_COUNT, Math.round(v))) : 0;
 
@@ -40,6 +44,13 @@ export function sanitizeProgress(raw: unknown): Progress {
     soundOn: r.soundOn === true,
     rivalSteps: lapSteps(r.rivalSteps),
     race: r.race === 'won' || r.race === 'lost' ? r.race : 'running',
+    raceStartedAt: stampMs(r.raceStartedAt),
+    raceLosses: Math.min(9, count(r.raceLosses)),
+    raceTimeMs: stampMs(r.raceTimeMs),
+    runNonce: keyStr(r.runNonce),
+    runId: uuid(r.runId),
+    runToken: keyStr(r.runToken),
+    boardChoice: r.boardChoice === 'declined' || r.boardChoice === 'joined' ? r.boardChoice : 'ask',
   };
 }
 
