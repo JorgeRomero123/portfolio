@@ -622,8 +622,8 @@
           "es": "Un solo link"
         },
         "howTo": {
-          "en": "Catch the photos, videos and PDFs in the album before they scatter. Drag, or use the arrow keys.",
-          "es": "Atrapa las fotos, videos y PDFs en el álbum antes de que se dispersen. Arrastra o usa las flechas."
+          "en": "Slide the album to catch the photos, videos, 360s and PDFs; dodge the spam. Drag, or use ← →.",
+          "es": "Desliza el álbum para atrapar fotos, videos, 360 y PDFs; esquiva el spam. Arrastra o usa ← →."
         }
       },
       "card": {
