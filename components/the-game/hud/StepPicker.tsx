@@ -1,11 +1,30 @@
 'use client';
 
 // Free move: choose exactly 1–6 spaces.
-import { useRef } from 'react';
+import { useRef, type KeyboardEvent } from 'react';
 import { STRINGS } from '../strings';
 import type { Lang } from '../types';
 import { Dialog, cardClass, focusRing } from './Dialog';
-import { arrowNav } from './SectionPicker';
+
+function arrowNav(e: KeyboardEvent<HTMLElement>, container: HTMLElement | null) {
+  if (!container) return;
+  const items = Array.from(container.querySelectorAll<HTMLButtonElement>('button[data-pick]'));
+  const i = items.indexOf(document.activeElement as HTMLButtonElement);
+  if (i < 0) return;
+  const next =
+    e.key === 'ArrowRight' || e.key === 'ArrowDown'
+      ? (i + 1) % items.length
+      : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+        ? (i - 1 + items.length) % items.length
+        : e.key === 'Home'
+          ? 0
+          : e.key === 'End'
+            ? items.length - 1
+            : -1;
+  if (next < 0) return;
+  e.preventDefault();
+  items[next].focus();
+}
 
 export function StepPicker({
   lang,

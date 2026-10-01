@@ -1,8 +1,10 @@
 'use client';
 
-// Top HUD: title + skip link on the left; passport, view, language and sound toggles on the right.
+// Top HUD: title, skip link and the race against Jorge on the left; passport, view, language and
+// sound toggles on the right.
+import { RIVAL_LAP } from '../race';
 import { STRINGS } from '../strings';
-import type { Lang } from '../types';
+import type { Lang, RaceStatus } from '../types';
 import type { ViewMode } from '../board/types';
 import { focusRing } from './Dialog';
 import { LangToggle } from './LangToggle';
@@ -35,6 +37,14 @@ function PassportIcon() {
     </svg>
   );
 }
+function FlagIcon() {
+  return (
+    <svg viewBox="0 0 20 20" className="h-[18px] w-[18px] shrink-0" aria-hidden>
+      <path d="M5 2.5v15" stroke="#1f2937" strokeWidth={1.8} strokeLinecap="round" />
+      <path d="M6 3.5h9.5l-2.6 3.2 2.6 3.3H6z" fill="#dc2626" />
+    </svg>
+  );
+}
 function SoundIcon({ on }: { on: boolean }) {
   return (
     <svg viewBox="0 0 20 20" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth={1.7} aria-hidden>
@@ -56,6 +66,9 @@ export function TopBar({
   onToggleSound,
   stampCount,
   onOpenPassport,
+  race,
+  rivalSteps,
+  onOpenRace,
 }: {
   lang: Lang;
   view: ViewMode;
@@ -64,9 +77,15 @@ export function TopBar({
   onToggleSound: () => void;
   stampCount: number;
   onOpenPassport: () => void;
+  race: RaceStatus;
+  /** Tiles Jorge's pawn has covered, as currently shown on the board. */
+  rivalSteps: number;
+  onOpenRace: () => void;
 }) {
   const s = STRINGS[lang];
   const viewLabel = view === 'follow' ? s.viewBoard : s.followPawn;
+  const lapDone = Math.max(0, Math.min(RIVAL_LAP, rivalSteps));
+  const raceText = race === 'won' ? s.raceChipWon : race === 'lost' ? s.raceChipLost : s.raceChip(lapDone, RIVAL_LAP);
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-2 p-3 sm:p-4">
       <div className="pointer-events-auto flex min-w-0 flex-col items-start gap-2">
@@ -89,6 +108,21 @@ export function TopBar({
           {s.skip}
           <span aria-hidden>↓</span>
         </a>
+        <button
+          type="button"
+          data-testid="race-chip"
+          aria-label={`${raceText}. ${s.raceAria}`}
+          onClick={onOpenRace}
+          className={`inline-flex h-11 items-center gap-2 rounded-xl border border-gray-200 bg-white/90 px-3 text-sm font-semibold text-gray-800 shadow-sm hover:border-gray-400 ${focusRing}`}
+        >
+          <FlagIcon />
+          <span className="tabular-nums">{raceText}</span>
+          {race === 'running' && (
+            <span className="h-1.5 w-12 overflow-hidden rounded-full bg-gray-200" aria-hidden>
+              <span className="block h-full rounded-full bg-gray-800" style={{ width: `${(lapDone / RIVAL_LAP) * 100}%` }} />
+            </span>
+          )}
+        </button>
       </div>
       <div className="pointer-events-auto flex shrink-0 gap-2">
         <button

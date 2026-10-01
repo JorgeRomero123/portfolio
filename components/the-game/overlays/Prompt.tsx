@@ -12,6 +12,7 @@ export function Prompt({
   section,
   landed,
   stamped,
+  raceOn,
   lang,
   reducedMotion,
   onPlay,
@@ -21,6 +22,8 @@ export function Prompt({
   section: SectionId;
   landed: boolean;
   stamped: boolean;
+  /** The race against Jorge is still on: playing here for the stamp will move his pawn. */
+  raceOn: boolean;
   lang: Lang;
   reducedMotion: boolean;
   onPlay: () => void;
@@ -55,6 +58,7 @@ export function Prompt({
           <p className="mt-2 text-xs font-medium text-gray-500">
             {sec.game.name[lang]} · {stamped ? `✓ ${f.stampEarned}` : f.playHint}
           </p>
+          {raceOn && !stamped && <p className="mt-1 text-xs font-medium text-gray-500">{f.raceHint}</p>}
         </div>
         <StampSeal section={section} lang={lang} earned={stamped} size={56} className="shrink-0" />
       </div>

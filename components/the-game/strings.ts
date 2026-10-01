@@ -25,7 +25,6 @@ export interface UiStrings {
   rolled: (n: number) => string;
   moving: (n: number) => string;
   pawnOn: (section: string) => string;
-  jumpingTo: (section: string) => string;
   close: string;
   cancel: string;
   // dart overlay
@@ -39,8 +38,6 @@ export interface UiStrings {
   dartBull: string;
   dartTarget: string;
   // pickers
-  pickSectionTitle: string;
-  pickSectionHint: string;
   pickStepsTitle: string;
   pickStepsHint: string;
   steps: (n: number) => string;
@@ -52,6 +49,24 @@ export interface UiStrings {
   keepGoing: string;
   passport: string;
   passportAria: (n: number, total: number) => string;
+  // race against Jorge's pawn
+  raceChip: (steps: number, lap: number) => string;
+  raceChipWon: string;
+  raceChipLost: string;
+  raceAria: string;
+  rivalBack: (n: number) => string;
+  rivalAhead: (n: number) => string;
+  raceTitle: string;
+  raceRules: string[];
+  raceStanding: (steps: number, lap: number, stamps: number, total: number) => string;
+  raceWonTitle: string;
+  raceWonBody: (left: number) => string;
+  raceLostTitle: string;
+  raceLostBody: string;
+  raceAgain: string;
+  raceAgainNote: string;
+  raceGotIt: string;
+  raceKeepExploring: string;
 }
 
 export const STRINGS: Record<Lang, UiStrings> = {
@@ -78,20 +93,17 @@ export const STRINGS: Record<Lang, UiStrings> = {
     rolled: (n) => `You rolled a ${n}!`,
     moving: (n) => `Moving ${n} ${n === 1 ? 'space' : 'spaces'}`,
     pawnOn: (s) => `You're on ${s}.`,
-    jumpingTo: (s) => `Jumping to ${s}!`,
     close: 'Close',
     cancel: 'Cancel',
     dartTitle: 'Throw a dart',
     dartInstructions: 'Hold to steady your aim, let go to throw.',
     dartKeyboard: 'Keyboard: hold Space, release to throw.',
     dartSteady: 'Steady dart: your hand barely shakes.',
-    dartRings: { outer: '1–2', middle: '3–4', inner: '5–6', bull: 'Any section' },
+    dartRings: { outer: '1–2', middle: '3–4', inner: '5–6', bull: 'A sure 6' },
     dartMiss: 'Missed the board! You still move 1 space.',
     dartSteps: (n) => `${n} ${n === 1 ? 'space' : 'spaces'}!`,
-    dartBull: 'Bullseye! Pick any section.',
+    dartBull: 'Bullseye! 6 spaces.',
     dartTarget: 'Dartboard. Hold the pointer or Space to steady the aim.',
-    pickSectionTitle: 'Bullseye! Where to?',
-    pickSectionHint: 'Your pawn jumps straight to that landmark.',
     pickStepsTitle: 'Free move',
     pickStepsHint: 'Choose exactly how many spaces to move.',
     steps: (n) => `${n} ${n === 1 ? 'space' : 'spaces'}`,
@@ -102,6 +114,27 @@ export const STRINGS: Record<Lang, UiStrings> = {
     keepGoing: 'Keep going',
     passport: 'Passport',
     passportAria: (n, t) => `Passport: ${n} of ${t} stamps`,
+    raceChip: (n, lap) => `Jorge ${n}/${lap}`,
+    raceChipWon: 'You beat Jorge',
+    raceChipLost: 'Jorge won the race',
+    raceAria: 'The race against Jorge: standings and rules',
+    rivalBack: (n) => `You won! Jorge steps back ${n}…`,
+    rivalAhead: (n) => `Jorge advances ${n}`,
+    raceTitle: 'Race Jorge around the board',
+    raceRules: [
+      'Jorge’s pawn, the dark one with the flag, is doing one lap of the board.',
+      'Every time you play a mini-game for a stamp, he advances 5 spaces. Win, and he steps back 2 first. Skipping the mini-game counts as a loss.',
+      'Collect all 11 stamps before he finishes his lap. You can afford two losses, not three.',
+    ],
+    raceStanding: (n, lap, st, t) => `Jorge: ${Math.max(0, n)} of ${lap} spaces · You: ${st} of ${t} stamps`,
+    raceWonTitle: 'You beat Jorge!',
+    raceWonBody: (left) => `All 11 stamps, and he was still ${left} ${left === 1 ? 'space' : 'spaces'} from the finish.`,
+    raceLostTitle: 'Jorge finished his lap first',
+    raceLostBody: 'The board is still yours to explore, stamps and all. Or race him again from the start.',
+    raceAgain: 'Race again',
+    raceAgainNote: 'Racing again clears your stamps. Hats and prizes stay.',
+    raceGotIt: 'Got it',
+    raceKeepExploring: 'Keep exploring',
   },
   es: {
     title: 'El Juego',
@@ -126,20 +159,17 @@ export const STRINGS: Record<Lang, UiStrings> = {
     rolled: (n) => `¡Sacaste ${n}!`,
     moving: (n) => `Avanzas ${n} ${n === 1 ? 'casilla' : 'casillas'}`,
     pawnOn: (s) => `Estás en ${s}.`,
-    jumpingTo: (s) => `¡Saltas a ${s}!`,
     close: 'Cerrar',
     cancel: 'Cancelar',
     dartTitle: 'Lanza un dardo',
     dartInstructions: 'Mantén presionado para afinar la puntería y suelta para lanzar.',
     dartKeyboard: 'Con teclado: mantén Espacio y suéltalo para lanzar.',
     dartSteady: 'Dardo firme: casi no te tiembla la mano.',
-    dartRings: { outer: '1–2', middle: '3–4', inner: '5–6', bull: 'Cualquier sección' },
+    dartRings: { outer: '1–2', middle: '3–4', inner: '5–6', bull: 'Un 6 seguro' },
     dartMiss: '¡Fallaste el tablero! Igual avanzas 1 casilla.',
     dartSteps: (n) => `¡${n} ${n === 1 ? 'casilla' : 'casillas'}!`,
-    dartBull: '¡Diana! Elige cualquier sección.',
+    dartBull: '¡Diana! 6 casillas.',
     dartTarget: 'Tablero de dardos. Mantén presionado o usa Espacio para afinar la puntería.',
-    pickSectionTitle: '¡Diana! ¿A dónde vas?',
-    pickSectionHint: 'Tu ficha salta directo a ese lugar.',
     pickStepsTitle: 'Movimiento libre',
     pickStepsHint: 'Elige exactamente cuántas casillas avanzar.',
     steps: (n) => `${n} ${n === 1 ? 'casilla' : 'casillas'}`,
@@ -150,6 +180,27 @@ export const STRINGS: Record<Lang, UiStrings> = {
     keepGoing: 'Seguir',
     passport: 'Pasaporte',
     passportAria: (n, t) => `Pasaporte: ${n} de ${t} sellos`,
+    raceChip: (n, lap) => `Jorge ${n}/${lap}`,
+    raceChipWon: 'Le ganaste a Jorge',
+    raceChipLost: 'Jorge ganó la carrera',
+    raceAria: 'La carrera contra Jorge: cómo va y cómo se juega',
+    rivalBack: (n) => `¡Ganaste! Jorge retrocede ${n}…`,
+    rivalAhead: (n) => `Jorge avanza ${n}`,
+    raceTitle: 'Carrera contra Jorge',
+    raceRules: [
+      'La ficha de Jorge, la oscura con la bandera, le está dando una vuelta al tablero.',
+      'Cada vez que juegas un minijuego por un sello, él avanza 5 casillas. Si ganas, primero retrocede 2. Saltarte el minijuego cuenta como perder.',
+      'Junta los 11 sellos antes de que termine su vuelta. Puedes perder dos veces, pero no tres.',
+    ],
+    raceStanding: (n, lap, st, t) => `Jorge: ${Math.max(0, n)} de ${lap} casillas · Tú: ${st} de ${t} sellos`,
+    raceWonTitle: '¡Le ganaste a Jorge!',
+    raceWonBody: (left) => `Los 11 sellos, y a él todavía le ${left === 1 ? 'faltaba 1 casilla' : `faltaban ${left} casillas`} para llegar.`,
+    raceLostTitle: 'Jorge terminó su vuelta primero',
+    raceLostBody: 'El tablero sigue siendo tuyo para explorar, con todo y sellos. O échate otra carrera desde el principio.',
+    raceAgain: 'Otra carrera',
+    raceAgainNote: 'Una carrera nueva borra tus sellos. Los gorros y premios se quedan.',
+    raceGotIt: 'Entendido',
+    raceKeepExploring: 'Seguir explorando',
   },
 };
 
@@ -172,6 +223,7 @@ export const SHORT_LABELS: Record<SectionId, Record<Lang, string>> = {
 export interface FlowStrings {
   // prompt
   playHint: string;
+  raceHint: string;
   // section card
   stampEarned: string;
   stampMissing: string;
@@ -241,6 +293,7 @@ export interface FlowStrings {
 export const FLOW_STRINGS: Record<Lang, FlowStrings> = {
   en: {
     playHint: 'Win the mini-game to earn this stamp.',
+    raceHint: 'Playing moves Jorge 5 spaces. Win and he steps back 2 first.',
     stampEarned: 'Stamp collected',
     stampMissing: 'Win the mini-game to earn this stamp',
     funFact: 'Fun fact',
@@ -308,6 +361,7 @@ export const FLOW_STRINGS: Record<Lang, FlowStrings> = {
   },
   es: {
     playHint: 'Gana el minijuego para conseguir este sello.',
+    raceHint: 'Si juegas, Jorge avanza 5 casillas. Si ganas, primero retrocede 2.',
     stampEarned: 'Sello conseguido',
     stampMissing: 'Gana el minijuego para conseguir este sello',
     funFact: 'Dato curioso',

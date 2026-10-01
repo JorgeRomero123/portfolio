@@ -1,16 +1,18 @@
 'use client';
 
-// The player's pawn: a low-poly lathe piece in blue with a hat slot. Moves via an imperative
-// controller (hop / jump) whose promises resolve when the animation lands.
+// A pawn: a low-poly lathe piece with a hat slot. The visitor's is blue and walks the middle of the
+// path; Jorge's (the rival in the race) is dark, carries a flag and keeps to one side of it.
+// Moves via an imperative controller (hop / jump) whose promises resolve when the animation lands.
 import { useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { LatheGeometry, Vector2, Vector3, type Group, type Mesh, type MeshBasicMaterial } from 'three';
 import type { HatId } from '../types';
 import { Hat, HEAD_R, HEAD_Y } from './Hats';
 import { TILES, wrapTile } from './layout';
-import { ACCENT } from './palette';
+import { ACCENT, INK } from './palette';
 
 export const PAWN_SCALE = 1.85;
+const FLAG = '#dc2626';
 
 export interface PawnController {
   hopTo(tile: number): Promise<void>;
@@ -28,6 +30,12 @@ const PROFILE = [
   [0.04, 0.2],
   [0, 0.2],
 ].map(([x, y]) => new Vector2(x, y));
+
+/** Where a pawn stands on `tile`, `lane` world units towards the inside of the loop. */
+const spot = (tile: number, lane: number) => {
+  const t = TILES[wrapTile(tile)];
+  return { x: t.x + t.inward[0] * lane, y: t.y, z: t.z + t.inward[1] * lane, heading: t.heading };
+};
 
 const angleLerp = (a: number, b: number, t: number) => {
   let d = (b - a) % (Math.PI * 2);
@@ -57,12 +65,22 @@ export function Pawn({
   reducedMotion,
   ctlRef,
   groupRef,
+  color = ACCENT,
+  lane = 0,
+  scale = PAWN_SCALE,
+  flag = false,
 }: {
   tile: number;
   hat: HatId | null;
   reducedMotion: boolean;
   ctlRef: RefObject<PawnController | null>;
   groupRef: RefObject<Group | null>;
+  color?: string;
+  /** Sideways offset from the middle of the path, towards the inside of the loop (world units). */
+  lane?: number;
+  scale?: number;
+  /** A little pennant on the head: marks Jorge's pawn. */
+  flag?: boolean;
 }) {
   const lathe = useMemo(() => new LatheGeometry(PROFILE, 7), []);
   useEffect(() => () => lathe.dispose(), [lathe]);
@@ -91,16 +109,16 @@ export function Pawn({
   useLayoutEffect(() => {
     const g = groupRef.current;
     if (!g || tw.current.active) return;
-    const t = TILES[wrapTile(tile)];
+    const t = spot(tile, lane);
     g.position.set(t.x, t.y, t.z);
     g.rotation.y = t.heading;
-  }, [tile, groupRef]);
+  }, [tile, lane, groupRef]);
 
   useEffect(() => {
     const start = (target: number, kind: 'hop' | 'jump') =>
       new Promise<void>((resolve) => {
         const g = groupRef.current;
-        const t = TILES[wrapTile(target)];
+        const t = spot(target, lane);
         if (!g) return resolve();
         const s = tw.current;
         s.resolve?.();
@@ -134,7 +152,7 @@ export function Pawn({
     return () => {
       ctlRef.current = null;
     };
-  }, [ctlRef, groupRef]);
+  }, [ctlRef, groupRef, lane]);
 
   useFrame((_, delta) => {
     const g = groupRef.current;
@@ -188,19 +206,31 @@ export function Pawn({
     <>
       <mesh ref={halo} rotation-x={-Math.PI / 2} renderOrder={1}>
         <ringGeometry args={[0.2, 0.26, 28]} />
-        <meshBasicMaterial color={ACCENT} transparent opacity={0.5} depthWrite={false} />
+        <meshBasicMaterial color={color} transparent opacity={0.5} depthWrite={false} />
       </mesh>
       <group ref={groupRef}>
         <group ref={body} scale={1}>
-          <group scale={PAWN_SCALE}>
+          <group scale={scale}>
             <mesh geometry={lathe} castShadow receiveShadow>
-              <meshStandardMaterial color={ACCENT} flatShading roughness={0.45} />
+              <meshStandardMaterial color={color} flatShading roughness={0.45} />
             </mesh>
             <mesh position={[0, HEAD_Y, 0]} castShadow receiveShadow>
               <icosahedronGeometry args={[HEAD_R, 1]} />
-              <meshStandardMaterial color={ACCENT} flatShading roughness={0.45} />
+              <meshStandardMaterial color={color} flatShading roughness={0.45} />
             </mesh>
             {hat && <Hat id={hat} reducedMotion={reducedMotion} />}
+            {flag && (
+              <group position={[0, HEAD_Y + HEAD_R - 0.01, 0]}>
+                <mesh position={[0, 0.075, 0]} castShadow>
+                  <cylinderGeometry args={[0.007, 0.007, 0.15, 5]} />
+                  <meshStandardMaterial color={INK} flatShading />
+                </mesh>
+                <mesh position={[0.045, 0.12, 0]} castShadow>
+                  <boxGeometry args={[0.09, 0.055, 0.006]} />
+                  <meshStandardMaterial color={FLAG} flatShading roughness={0.6} />
+                </mesh>
+              </group>
+            )}
           </group>
         </group>
       </group>

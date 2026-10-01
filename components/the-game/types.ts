@@ -42,6 +42,9 @@ export type MiniGameComponent = ComponentType<MiniGameProps>;
 export const HAT_IDS = ['propeller', 'chef', 'scarf', 'headphones', 'beanie', 'beret'] as const;
 export type HatId = (typeof HAT_IDS)[number];
 
+/** The race against Jorge's pawn (rules in race.ts). */
+export type RaceStatus = 'running' | 'won' | 'lost';
+
 export type Prize =
   | { kind: 'stamp' }
   | { kind: 'story' }
@@ -62,6 +65,9 @@ export interface Progress {
   factsSeen: Partial<Record<SectionId, number>>;
   pawnTile: number;
   soundOn: boolean;
+  /** Tiles Jorge's pawn has covered on his lap (44 = finished). Briefly negative after an opening win. */
+  rivalSteps: number;
+  race: RaceStatus;
 }
 
 export const DEFAULT_PROGRESS: Progress = {
@@ -74,6 +80,8 @@ export const DEFAULT_PROGRESS: Progress = {
   factsSeen: {},
   pawnTile: 0,
   soundOn: false,
+  rivalSteps: 0,
+  race: 'running',
 };
 
 /** Placeholder strings in content start with this and must never be rendered to visitors. */

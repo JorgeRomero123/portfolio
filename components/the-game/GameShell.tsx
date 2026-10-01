@@ -4,11 +4,15 @@
  * GameShell — owns the turn state machine and the HUD, and renders the (dynamically loaded) board.
  *
  * Turn flow:  idle → rolling | aiming | picking-steps → moving → (landmark) → idle
- *             aiming → picking-section (bullseye) → moving (big jump) → landmark → idle
+ *
+ * ── The race ─────────────────────────────────────────────────────────────────────────────────
+ * Jorge's pawn laps the board against the visitor (rules and maths in race.ts). The landmark
+ * flow reports each mini-game played for a missing stamp through `onGame`; the shell books his
+ * moves in progress straight away and animates them on the board once the flow has closed.
  *
  * ── Landmark hook point ──────────────────────────────────────────────────────────────────────
  * `onLandmark(sectionId, { landed })` is called (and awaited) whenever the pawn
- *   • LANDS on a section's landmark tile (last step of a move, or a bullseye jump), or
+ *   • LANDS on a section's landmark tile (last step of a move), or
  *   • PASSES a landmark tile of a section that isn't in `progress.stamps` yet.
  * Movement is paused until its Promise resolves with a LandmarkChoice:
  *   'play'     → the pawn stops there (turn ends),
@@ -34,11 +38,12 @@ import { useLang } from './lang';
 import { getProgress, useProgress } from './progress';
 import { STRINGS } from './strings';
 import { SECTION_IDS, type LandmarkChoice, type LandmarkHandler, type SectionId } from './types';
-import { LANDMARK_AT_TILE, TILES, landmarkTileOf, wrapTile } from './board/layout';
+import { raceAfter, rivalMoves } from './race';
+import { LANDMARK_AT_TILE, START_TILE, TILES, wrapTile } from './board/layout';
 import type { BoardApi, BoardProps, DieValue, ViewMode } from './board/types';
 import { DartOverlay, type DartResult } from './hud/DartOverlay';
 import { PAUSING_STEPS, type FlowStep } from './overlays/flow';
-import { SectionPicker } from './hud/SectionPicker';
+import { RaceDialog } from './hud/RaceDialog';
 import { StepPicker } from './hud/StepPicker';
 import { TopBar } from './hud/TopBar';
 import { TurnControls } from './hud/TurnControls';
@@ -54,7 +59,9 @@ interface LandmarkRequest {
   debugStart?: FlowStep | 'win';
 }
 
-type Phase = 'idle' | 'rolling' | 'aiming' | 'picking-section' | 'picking-steps' | 'moving' | 'landmark';
+type Phase = 'idle' | 'rolling' | 'aiming' | 'picking-steps' | 'moving' | 'landmark';
+
+const sleep = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
 
 export default function GameShell({
   Board,
@@ -85,6 +92,14 @@ export default function GameShell({
   }, []);
   const [flowStep, setFlowStep] = useState<FlowStep | null>(null);
   const [passportOpen, setPassportOpen] = useState(false);
+  const [raceOpen, setRaceOpen] = useState(false);
+  // Jorge's pawn: moves booked in progress but not yet walked on the board. While any are pending
+  // the board keeps showing him where he was (`rivalHold`).
+  const rivalQueue = useRef<number[]>([]);
+  const rivalFrom = useRef<number | null>(null);
+  const raceJustEnded = useRef(false);
+  const [rivalHold, setRivalHold] = useState<number | null>(null);
+  const viewRef = useRef<ViewMode>('board');
   const defaultLandmark = useCallback<LandmarkHandler>((section, { landed }) => {
     const opener = document.activeElement as HTMLElement | null;
     return new Promise<LandmarkChoice>((resolve) => {
@@ -122,6 +137,7 @@ export default function GameShell({
   const boardActive = active && !covered;
 
   const pawnTile = wrapTile(progress.pawnTile);
+  const rivalShown = rivalHold ?? progress.rivalSteps;
   // Latest strings/handler for use inside long-running async turns.
   const live = useRef({ s, lang, onLandmark });
   useEffect(() => {
@@ -156,16 +172,78 @@ export default function GameShell({
       landed: true,
       debugStart: stepName,
       resolve: () => {
-        setPhase('idle');
-        busy.current = false;
+        void playRival().then(() => {
+          setPhase('idle');
+          busy.current = false;
+        });
       },
     });
   }
 
   const setView = useCallback((m: ViewMode) => {
+    viewRef.current = m;
     setViewState(m);
     apiRef.current?.setView(m);
   }, []);
+
+  /** A mini-game for a missing stamp just ended: book Jorge's moves and settle the race. */
+  const recordGame = useCallback(
+    (won: boolean) => {
+      const p = getProgress();
+      if (p.race !== 'running') return;
+      const moves = rivalMoves(p.rivalSteps, won);
+      const steps = moves.reduce((a, b) => a + b, p.rivalSteps);
+      const race = raceAfter(p, steps);
+      if (rivalFrom.current === null) {
+        rivalFrom.current = p.rivalSteps;
+        setRivalHold(p.rivalSteps);
+      }
+      rivalQueue.current.push(...moves);
+      if (race !== 'running') raceJustEnded.current = true;
+      updateProgress({ rivalSteps: steps, race });
+    },
+    [updateProgress],
+  );
+
+  /** Walk Jorge's pending moves on the board (whole-board view so he's on screen), then show the result. */
+  const playRival = useCallback(async () => {
+    const moves = rivalQueue.current;
+    const from = rivalFrom.current;
+    if (from === null) return;
+    rivalQueue.current = [];
+    const api = apiRef.current;
+    if (api && moves.length) {
+      const back = viewRef.current;
+      setView('board');
+      await sleep(500);
+      let at = from;
+      for (const m of moves) {
+        if (!m) continue;
+        setStatus(m < 0 ? live.current.s.rivalBack(-m) : live.current.s.rivalAhead(m));
+        for (let i = 0; i < Math.abs(m); i++) {
+          at += Math.sign(m);
+          await api.rivalHopTo(wrapTile(at));
+        }
+        await sleep(400);
+      }
+      setView(back);
+    }
+    rivalFrom.current = null;
+    setRivalHold(null);
+    if (raceJustEnded.current) {
+      raceJustEnded.current = false;
+      setRaceOpen(true);
+    }
+  }, [setView]);
+
+  const raceAgain = useCallback(() => {
+    rivalQueue.current = [];
+    rivalFrom.current = null;
+    setRivalHold(null);
+    updateProgress({ stamps: [], rivalSteps: 0, race: 'running', pawnTile: START_TILE });
+    setRaceOpen(false);
+    setStatus('');
+  }, [updateProgress]);
 
   const finishTurn = useCallback(() => {
     const t = wrapTile(getProgress().pawnTile);
@@ -192,13 +270,14 @@ export default function GameShell({
         if (!landed && getProgress().stamps.includes(sec)) continue;
         setPhase('landmark');
         const choice = await live.current.onLandmark(sec, { landed });
+        await playRival();
         if (landed || choice === 'play') break;
         setPhase('moving');
       }
       api.hideDie();
       finishTurn();
     },
-    [finishTurn, updateProgress],
+    [finishTurn, playRival, updateProgress],
   );
 
   const roll = useCallback(async () => {
@@ -230,10 +309,6 @@ export default function GameShell({
       if (steadyDart) updateProgress((p) => ({ bonusDarts: Math.max(0, p.bonusDarts - 1) }));
       setSteadyDart(false);
       setView('follow');
-      if (r.kind === 'bull') {
-        setPhase('picking-section');
-        return;
-      }
       void moveSteps(r.steps);
     },
     [moveSteps, setView, steadyDart, updateProgress],
@@ -244,22 +319,6 @@ export default function GameShell({
     setPhase('idle');
     busy.current = false;
   }, []);
-
-  const jumpToSection = useCallback(
-    async (id: SectionId) => {
-      const api = apiRef.current;
-      if (!api) return finishTurn();
-      const tile = landmarkTileOf(id);
-      setPhase('moving');
-      setStatus(live.current.s.jumpingTo(sectionById(id).title[live.current.lang]));
-      await api.jumpTo(tile);
-      updateProgress({ pawnTile: tile });
-      setPhase('landmark');
-      await live.current.onLandmark(id, { landed: true });
-      finishTurn();
-    },
-    [finishTurn, updateProgress],
-  );
 
   const openFreeMove = useCallback(() => {
     if (busy.current || !apiRef.current) return;
@@ -292,7 +351,7 @@ export default function GameShell({
   useEffect(() => {
     if (!active) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey || e.repeat || passportOpen) return;
+      if (e.metaKey || e.ctrlKey || e.altKey || e.repeat || passportOpen || raceOpen) return;
       const t = e.target as HTMLElement | null;
       if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
       const k = e.key.toLowerCase();
@@ -309,7 +368,7 @@ export default function GameShell({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [active, phase, ready, roll, openDart, toggleView, passportOpen]);
+  }, [active, phase, ready, roll, openDart, toggleView, passportOpen, raceOpen]);
 
   const disabled = phase !== 'idle' || !ready;
 
@@ -326,6 +385,7 @@ export default function GameShell({
           <Board
             apiRef={apiRef}
             pawnTile={pawnTile}
+            rivalTile={wrapTile(rivalShown)}
             hat={progress.wornHat}
             lang={lang}
             reducedMotion={reducedMotion}
@@ -369,6 +429,9 @@ export default function GameShell({
           onToggleSound={() => updateProgress((p) => ({ soundOn: !p.soundOn }))}
           stampCount={progress.stamps.length}
           onOpenPassport={() => setPassportOpen(true)}
+          race={progress.race}
+          rivalSteps={rivalShown}
+          onOpenRace={() => setRaceOpen(true)}
         />
         <TurnControls
           lang={lang}
@@ -394,16 +457,6 @@ export default function GameShell({
             onCancel={cancelOverlay}
           />
         )}
-        {phase === 'picking-section' && (
-          <SectionPicker
-            key="section"
-            lang={lang}
-            reducedMotion={reducedMotion}
-            current={TILES[pawnTile].section}
-            onPick={(id) => void jumpToSection(id)}
-            onClose={finishTurn}
-          />
-        )}
         {phase === 'picking-steps' && (
           <StepPicker key="steps" lang={lang} reducedMotion={reducedMotion} onPick={pickFreeMove} onClose={cancelOverlay} />
         )}
@@ -417,11 +470,24 @@ export default function GameShell({
           lang={lang}
           reducedMotion={reducedMotion}
           onStep={setFlowStep}
+          onGame={recordGame}
           onDone={endLandmark}
         />
       )}
       <AnimatePresence>
         {passportOpen && <Passport key="passport" lang={lang} reducedMotion={reducedMotion} onClose={closePassport} />}
+        {raceOpen && (
+          <RaceDialog
+            key="race"
+            lang={lang}
+            reducedMotion={reducedMotion}
+            race={progress.race}
+            rivalSteps={progress.rivalSteps}
+            stamps={progress.stamps.length}
+            onRaceAgain={raceAgain}
+            onClose={() => setRaceOpen(false)}
+          />
+        )}
       </AnimatePresence>
     </div>
   );

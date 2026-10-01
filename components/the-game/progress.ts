@@ -4,6 +4,7 @@
 // Every storage access is guarded: if localStorage throws or holds junk, the game runs on
 // DEFAULT_PROGRESS (kept in memory for the visit).
 import { useCallback, useSyncExternalStore } from 'react';
+import { TILE_COUNT } from './board/layout';
 import { DEFAULT_PROGRESS, HAT_IDS, SECTION_IDS, type HatId, type Progress, type SectionId } from './types';
 
 const KEY = 'the-game:v1';
@@ -12,6 +13,8 @@ const isSection = (v: unknown): v is SectionId => typeof v === 'string' && (SECT
 const isHat = (v: unknown): v is HatId => typeof v === 'string' && (HAT_IDS as readonly string[]).includes(v);
 const count = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? Math.floor(v) : 0);
 const uniq = <T,>(a: T[]) => Array.from(new Set(a));
+const lapSteps = (v: unknown) =>
+  typeof v === 'number' && Number.isFinite(v) ? Math.max(-TILE_COUNT, Math.min(TILE_COUNT, Math.round(v))) : 0;
 
 /** Coerces anything into a valid Progress, keeping whatever fields are valid. */
 export function sanitizeProgress(raw: unknown): Progress {
@@ -35,6 +38,8 @@ export function sanitizeProgress(raw: unknown): Progress {
     factsSeen,
     pawnTile: count(r.pawnTile),
     soundOn: r.soundOn === true,
+    rivalSteps: lapSteps(r.rivalSteps),
+    race: r.race === 'won' || r.race === 'lost' ? r.race : 'running',
   };
 }
 

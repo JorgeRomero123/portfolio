@@ -15,7 +15,7 @@ import { Frame } from './Frame';
 import { Labels } from './Labels';
 import { LANDMARKS, landmarkYaw } from './landmarks';
 import { BOARD, SECTION_LAYOUT, TILES, wrapTile } from './layout';
-import { PAGE_BG } from './palette';
+import { INK, PAGE_BG } from './palette';
 import { Pawn, type PawnController } from './Pawn';
 import { Terrain } from './Terrain';
 import { Tiles } from './Tiles';
@@ -64,10 +64,15 @@ function Landmarks({ reducedMotion }: { reducedMotion: boolean }) {
   );
 }
 
-export default function BoardScene({ apiRef, pawnTile, hat, lang, reducedMotion, active, onReady }: BoardProps) {
+/** Jorge's pawn in the race: dark, a touch smaller, and on the outside of the path so the two never overlap. */
+const RIVAL = { color: INK, lane: -0.24, scale: 1.6 };
+
+export default function BoardScene({ apiRef, pawnTile, rivalTile, hat, lang, reducedMotion, active, onReady }: BoardProps) {
   const narrow = useNarrow();
   const pawnRef = useRef<Group>(null);
   const pawnCtl = useRef<PawnController | null>(null);
+  const rivalRef = useRef<Group>(null);
+  const rivalCtl = useRef<PawnController | null>(null);
   const dieCtl = useRef<DieController | null>(null);
   const rigCtl = useRef<RigController | null>(null);
   const tileRef = useRef(pawnTile);
@@ -79,6 +84,7 @@ export default function BoardScene({ apiRef, pawnTile, hat, lang, reducedMotion,
     apiRef.current = {
       hopTo: (t) => pawnCtl.current?.hopTo(t) ?? Promise.resolve(),
       jumpTo: (t) => pawnCtl.current?.jumpTo(t) ?? Promise.resolve(),
+      rivalHopTo: (t) => rivalCtl.current?.hopTo(t) ?? Promise.resolve(),
       rollDie: (v) => dieCtl.current?.roll(v, tileRef.current) ?? Promise.resolve(),
       hideDie: () => dieCtl.current?.hide(),
       setView: (m) => rigCtl.current?.setView(m),
@@ -134,6 +140,7 @@ export default function BoardScene({ apiRef, pawnTile, hat, lang, reducedMotion,
       <Clouds reducedMotion={reducedMotion} />
       <Vehicles reducedMotion={reducedMotion} />
       <Pawn tile={pawnTile} hat={hat} reducedMotion={reducedMotion} ctlRef={pawnCtl} groupRef={pawnRef} />
+      <Pawn tile={rivalTile} hat={null} reducedMotion={reducedMotion} ctlRef={rivalCtl} groupRef={rivalRef} flag {...RIVAL} />
       <Die ctlRef={dieCtl} reducedMotion={reducedMotion} />
       <Labels lang={lang} narrow={narrow} pawnSection={pawnSection} />
       <FirstFrame onFrame={onReady} />

@@ -10,8 +10,10 @@ export type ViewMode = 'follow' | 'board';
 export interface BoardApi {
   /** Hop the pawn to an adjacent tile (little arc + squash; a short slide with reduced motion). */
   hopTo(tile: number): Promise<void>;
-  /** Big arc jump to any tile (bullseye). */
+  /** Big arc jump to any tile. */
   jumpTo(tile: number): Promise<void>;
+  /** Hop Jorge's pawn (the rival in the race) to an adjacent tile, forwards or backwards. */
+  rivalHopTo(tile: number): Promise<void>;
   /** Tumble the die near the pawn and settle on `value` (face shown briefly with reduced motion). */
   rollDie(value: DieValue): Promise<void>;
   hideDie(): void;
@@ -22,6 +24,8 @@ export interface BoardApi {
 export interface BoardProps {
   apiRef: RefObject<BoardApi | null>;
   pawnTile: number;
+  /** Tile Jorge's pawn stands on (the shell holds it still while it animates his moves). */
+  rivalTile: number;
   hat: HatId | null;
   lang: Lang;
   reducedMotion: boolean;

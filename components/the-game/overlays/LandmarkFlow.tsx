@@ -7,6 +7,9 @@
  *     │                        │  └ lose ─▶ lost ─ Try again ─▶ game
  *     │                        │                 └ Just look ─▶ card
  *     │                        └ Skip / Esc ─▶ card
+ *
+ * Every mini-game played for a stamp the visitor doesn't have yet is reported through `onGame`
+ * (won or not; a skip counts as not won) so the shell can move Jorge's pawn in the race.
  *     ├ Just look ─▶ card ─ Play ─▶ game
  *     └ Keep going / Esc ─▶ done('continue')
  *   card ─ Close ─▶ done('play' if a game was started, else 'look')
@@ -40,11 +43,13 @@ export interface LandmarkFlowProps {
   onDone: (choice: LandmarkChoice) => void;
   /** Reports the current step so the shell can pause the board. */
   onStep?: (step: FlowStep) => void;
+  /** A mini-game for a missing stamp just ended. Called after the stamp (if any) is granted. */
+  onGame?: (won: boolean) => void;
   /** Dev-only: start somewhere other than the prompt ('win' simulates a mini-game win). */
   debugStart?: FlowStep | 'win';
 }
 
-export default function LandmarkFlow({ section, landed, lang, reducedMotion, onDone, onStep, debugStart }: LandmarkFlowProps) {
+export default function LandmarkFlow({ section, landed, lang, reducedMotion, onDone, onStep, onGame, debugStart }: LandmarkFlowProps) {
   const s = STRINGS[lang];
   const f = FLOW_STRINGS[lang];
   const [progress] = useProgress();
@@ -81,15 +86,21 @@ export default function LandmarkFlow({ section, landed, lang, reducedMotion, onD
 
   const onFinish = useCallback(
     (r: MiniGameResult) => {
-      if (!r.won) return setStep('lost');
-      if (winEarnsStamp(getProgress(), section)) {
+      const forStamp = winEarnsStamp(getProgress(), section);
+      if (r.won && forStamp) {
         const next = updateProgress((p) => ({ stamps: [...p.stamps, section] }));
         completedNow.current = hasAllStamps(next);
-        setStep('stamp');
-      } else setStep('wheel');
+      }
+      if (forStamp) onGame?.(r.won);
+      setStep(!r.won ? 'lost' : forStamp ? 'stamp' : 'wheel');
     },
-    [section],
+    [onGame, section],
   );
+
+  const skipGame = useCallback(() => {
+    if (winEarnsStamp(getProgress(), section)) onGame?.(false);
+    setStep('card');
+  }, [onGame, section]);
 
   // Dev hook: a simulated win opens straight on the reward step; grant the stamp right after mount.
   useEffect(() => {
@@ -98,8 +109,10 @@ export default function LandmarkFlow({ section, landed, lang, reducedMotion, onD
       if (!winEarnsStamp(getProgress(), section)) return;
       const next = updateProgress((p) => ({ stamps: [...p.stamps, section] }));
       completedNow.current = hasAllStamps(next);
+      onGame?.(true);
     }, 0);
     return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on mount
   }, [debugStart, section]);
 
   const sec = sectionById(section);
@@ -114,6 +127,7 @@ export default function LandmarkFlow({ section, landed, lang, reducedMotion, onD
           section={section}
           landed={landed}
           stamped={progress.stamps.includes(section)}
+          raceOn={progress.race === 'running'}
           onPlay={startGame}
           onLook={() => setStep('card')}
           onContinue={() => done('continue')}
@@ -127,7 +141,7 @@ export default function LandmarkFlow({ section, landed, lang, reducedMotion, onD
           attempt={attempt}
           soundOn={progress.soundOn}
           onFinish={onFinish}
-          onSkip={() => setStep('card')}
+          onSkip={skipGame}
         />
       )}
       {step === 'lost' && (

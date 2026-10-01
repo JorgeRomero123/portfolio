@@ -2,16 +2,17 @@
 
 // "Throw a dart": a wandering reticle over a dartboard. Hold (pointer or Space) to steady it —
 // the drift shrinks gradually while held — and let go to throw. Rings: outer 1–2, middle 3–4,
-// inner 5–6 (darker wedge = the higher number), bullseye = jump to any section. Missing = 1 step.
+// inner 5–6 (darker wedge = the higher number), bullseye = a sure 6. Missing = 1 step.
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useMotionValue } from 'framer-motion';
 import { STRINGS } from '../strings';
 import type { Lang } from '../types';
 import { Dialog, cardClass, focusRing } from './Dialog';
 
-export type DartResult =
-  | { kind: 'steps'; steps: number; ring: 'outer' | 'middle' | 'inner' | 'miss' }
-  | { kind: 'bull' };
+export interface DartResult {
+  steps: number;
+  ring: 'outer' | 'middle' | 'inner' | 'bull' | 'miss';
+}
 
 const SECTORS = 12;
 const RINGS = [
@@ -23,13 +24,13 @@ const BULL = 0.1;
 
 export function scoreDart(nx: number, ny: number): DartResult {
   const r = Math.hypot(nx, ny);
-  if (r > 1) return { kind: 'steps', steps: 1, ring: 'miss' };
-  if (r <= BULL) return { kind: 'bull' };
+  if (r > 1) return { steps: 1, ring: 'miss' };
+  if (r <= BULL) return { steps: 6, ring: 'bull' };
   const a = (Math.atan2(ny, nx) + Math.PI * 2) % (Math.PI * 2);
   const hi = Math.floor(a / ((Math.PI * 2) / SECTORS)) % 2 === 1 ? 1 : 0;
-  if (r <= 0.4) return { kind: 'steps', steps: 5 + hi, ring: 'inner' };
-  if (r <= 0.7) return { kind: 'steps', steps: 3 + hi, ring: 'middle' };
-  return { kind: 'steps', steps: 1 + hi, ring: 'outer' };
+  if (r <= 0.4) return { steps: 5 + hi, ring: 'inner' };
+  if (r <= 0.7) return { steps: 3 + hi, ring: 'middle' };
+  return { steps: 1 + hi, ring: 'outer' };
 }
 
 function wedge(r0: number, r1: number, a0: number, a1: number) {
@@ -155,7 +156,7 @@ export function DartOverlay({
 
   const resultText = !hit
     ? ''
-    : hit.result.kind === 'bull'
+    : hit.result.ring === 'bull'
       ? s.dartBull
       : hit.result.ring === 'miss'
         ? s.dartMiss
