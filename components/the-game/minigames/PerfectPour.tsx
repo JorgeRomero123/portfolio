@@ -8,7 +8,7 @@
 // stopwatch, see perfectpour/SplitTheG). Up to 3 pints; win = split the G on any of them.
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import type { MiniGameProps } from '../types';
-import SplitTheG, { SPLIT_TOL } from './perfectpour/SplitTheG';
+import SplitTheG from './perfectpour/SplitTheG';
 
 const ACCENT = '#d97706';
 const STOUT = '#2a1810';
@@ -252,12 +252,12 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
   }, [end]);
 
   const onSplit = useCallback(
-    (ok: boolean, err: number) => {
+    (ok: boolean, off: number) => {
       const list = pourList.current.map((p, i, all) => (i === all.length - 1 ? { ...p, split: ok } : p));
       pourList.current = list;
       setPours(list);
       // Fewer pints and a cleaner split score higher.
-      if (ok) end(true, 100 - (list.length - 1) * 12 - (Math.abs(err) / SPLIT_TOL) * 12);
+      if (ok) end(true, 100 - (list.length - 1) * 12 - off * 12);
       else nextPint();
     },
     [end, nextPint],

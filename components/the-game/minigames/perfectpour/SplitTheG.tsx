@@ -2,18 +2,19 @@
 
 // "Split the G": the second half of the beer mini-game, played on a pint that was poured well.
 // A target time is shown ("Split the G: 6.40 s"). The visitor starts the sip, the glass tips up
-// out of view (POV), a timer runs in sight for the first third of the target and then hides, and
-// a Stop button appears. Stopping within SPLIT_TOL of the target leaves the beer line through the
-// middle of the G; too early and it sits above the letter, too late and below.
+// out of view (POV), a timer runs in sight for the first 3 seconds and then hides, and a Stop
+// button appears. Stopping within SPLIT_ROOM of the target (a share of it, so longer targets get
+// more room) leaves the beer line through the middle of the G; too early and it sits above the
+// letter, too late and below.
 // The glass carries a plain letter G only: no brewery logo or wordmark.
 import { useEffect, useRef, useState } from 'react';
 import type { Lang } from '../../types';
 
-/** Seconds either side of the target that still split the G. The one difficulty knob. */
-export const SPLIT_TOL = 0.15;
+/** Room either side of the target that still splits the G, as a share of the target. The one difficulty knob. */
+export const SPLIT_ROOM = 0.045; // ±0.23 s on a 5 s target, ±0.36 s on an 8 s one
 const T_MIN = 5;
 const T_MAX = 8;
-const SHOWN = 1 / 3; // share of the target during which the timer stays visible
+const SHOWN = 3; // seconds the timer stays visible (always less than T_MIN)
 const LATE_LIMIT = 3; // seconds past the target before the sip ends on its own
 const REVEAL_MS = 2400;
 
@@ -31,7 +32,7 @@ const HEAD = 0.1;
 const T = {
   en: {
     title: 'Split the G',
-    how: 'The timer hides after the first third. Stop it right on the target.',
+    how: 'The timer hides after 3 seconds. Stop it right on the target.',
     start: 'Take the sip',
     stop: 'Stop',
     target: 'Target',
@@ -45,7 +46,7 @@ const T = {
   },
   es: {
     title: 'Parte la G',
-    how: 'El cronómetro se esconde después del primer tercio. Deténlo justo en la meta.',
+    how: 'El cronómetro se esconde a los 3 segundos. Deténlo justo en la meta.',
     start: 'Dale el trago',
     stop: '¡Alto!',
     target: 'Meta',
@@ -75,11 +76,12 @@ export default function SplitTheG({
   lang: Lang;
   reducedMotion: boolean;
   onSound: (kind: 'start' | 'split' | 'miss') => void;
-  /** `err` is seconds off the target (negative = stopped early). */
-  onDone: (ok: boolean, err: number) => void;
+  /** `off` is how far from the target the stop was, as a share of the allowed room (0 = dead on, 1 = the edge). */
+  onDone: (ok: boolean, off: number) => void;
 }) {
   const t = T[lang];
   const [target] = useState(() => Math.round((T_MIN + Math.random() * (T_MAX - T_MIN)) * 20) / 20);
+  const tol = target * SPLIT_ROOM;
   const [stage, setStage] = useState<Stage>('ready');
   const [elapsed, setElapsed] = useState(0);
   const [err, setErr] = useState(0);
@@ -127,12 +129,12 @@ export default function SplitTheG({
     if (stageRef.current !== 'blind') return;
     const total = (performance.now() - t0.current) / 1000;
     const e = total - target;
-    const ok = Math.abs(e) <= SPLIT_TOL;
+    const ok = Math.abs(e) <= tol;
     setElapsed(total);
     setErr(e);
     go('reveal');
     onSound(ok ? 'split' : 'miss');
-    timers.current.push(window.setTimeout(() => onDoneRef.current(ok, e), REVEAL_MS));
+    timers.current.push(window.setTimeout(() => onDoneRef.current(ok, Math.abs(e) / tol), REVEAL_MS));
   };
 
   const start = () => {
@@ -144,17 +146,17 @@ export default function SplitTheG({
     timers.current.push(
       window.setTimeout(() => {
         if (stageRef.current === 'shown') go('blind');
-      }, target * SHOWN * 1000),
+      }, SHOWN * 1000),
       window.setTimeout(stop, (target + LATE_LIMIT) * 1000),
     );
   };
 
   const sipping = stage === 'shown' || stage === 'blind';
-  const ok = stage === 'reveal' && Math.abs(err) <= SPLIT_TOL;
+  const ok = stage === 'reveal' && Math.abs(err) <= tol;
   // Beer line: full before the sip; afterwards the error decides where it stopped.
   const level = stage === 'reveal' ? clamp(G_AT - err * DROP, 0.16, FULL) : FULL;
   const head = stage === 'reveal' ? 0.045 : HEAD;
-  const band = SPLIT_TOL * DROP;
+  const band = tol * DROP;
   const move = reducedMotion ? 'opacity 200ms linear' : 'transform 850ms cubic-bezier(.4,0,.2,1), opacity 600ms ease-in';
   const stopEvent = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
