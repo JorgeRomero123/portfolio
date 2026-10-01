@@ -24,6 +24,7 @@ import ProjectCard from './ProjectCard';
 import ToolWall from './ToolWall';
 import ClientSites from './ClientSites';
 import GalleryTile from './GalleryTile';
+import GameCta from './GameCta';
 import {
   ACCENT, MONO, SANS, NAV_LINKS, TECH, STATS, TRUTHS, PROJECTS, TOOL_COUNT,
   CLIENT_SITES,
@@ -240,6 +241,15 @@ export default function HomeExperience({
           .jrr-navlinks{gap:14px!important;font-size:11px!important;letter-spacing:0.04em!important;}
           .jrr-available{display:none!important;}
         }
+        @keyframes jrr-hop{0%,62%,100%{transform:translateY(0)}72%{transform:translateY(-7px)}84%{transform:translateY(0) scaleY(.9)}}
+        .jrr-pawn{animation:jrr-hop 2.4s ease-in-out infinite;}
+        .jrr-game-cta-arrow{transition:transform .3s cubic-bezier(.2,.6,.2,1);}
+        .jrr-game-cta:hover .jrr-game-cta-arrow{transform:translateX(4px);}
+        @media (prefers-reduced-motion: reduce){ .jrr-pawn{animation:none!important;} }
+        @media (max-width:520px){
+          .jrr-game-cta{gap:10px!important;padding:10px 14px 10px 8px!important;}
+          .jrr-game-cta svg{width:84px;height:64px;}
+        }
         @media (max-width:430px){
           .jrr-navlinks .jrr-hide-xs{display:none!important;}
           .jrr-cta-row a{flex:1 1 auto;text-align:center;}
@@ -361,6 +371,8 @@ export default function HomeExperience({
               Browse the 25 tools
             </motion.a>
           </div>
+
+          <GameCta reduced={reduced} />
         </motion.div>
 
       </section>
