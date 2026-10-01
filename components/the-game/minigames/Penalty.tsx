@@ -1,25 +1,19 @@
 'use client';
 
 // Spurs mini-game: "Penalty". Three kicks from the spot; score 2+ to win.
-// Each kick: (1) aim — a reticle sweeps across the goal (drag/tap, or ← → to nudge), lock it;
-// (2) power — a bar oscillates, lock it. Too soft gets saved, too hard sails over the bar.
+// Each kick: (1) aim — a reticle sweeps across the goal, lock it where it is (timing only: where
+// you click or tap never sets the aim); (2) power — a bar oscillates, lock it inside a narrow
+// sweet spot. Too soft gets saved, too hard sails over the bar.
 // The keeper sways, then guesses a side at the kick, so the corners beat him more often.
 // Art is plain navy/white shapes and the text "COYS" only: no crest, no kit, no sponsor.
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type PointerEvent as RPointerEvent,
-} from 'react';
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent as RPointerEvent } from 'react';
 import type { MiniGameProps } from '../types';
 
 const SHOTS = 3;
 const NAVY = '#132257';
 const AIM_MAX = 1.15; // goal half-widths; |x| > 1 is outside the posts
-const SOFT = 0.35; // power below this: easy save
-const OVER = 0.86; // power above this: over the bar
+const SOFT = 0.53; // power below this: easy save
+const OVER = 0.68; // power above this: over the bar
 
 // Scene geometry (SVG viewBox 400 × 300).
 const GX = 200; // goal centre
@@ -41,9 +35,9 @@ const T = {
     lockAim: 'Lock aim',
     shoot: 'Shoot!',
     wait: 'Watch…',
-    keysAim: 'Drag or tap the goal · ← → to nudge · Space to lock',
+    keysAim: 'Lock the reticle as it sweeps · Space, click or tap',
     keysPower: 'Stop in the green · Space, click or tap',
-    touchAim: 'Drag or tap the goal to aim',
+    touchAim: 'Tap to lock the reticle as it sweeps',
     touchPower: 'Tap to stop in the green',
     soft: 'soft',
     sweet: 'sweet spot',
@@ -68,9 +62,9 @@ const T = {
     lockAim: 'Fijar mira',
     shoot: '¡Dispara!',
     wait: 'Mira…',
-    keysAim: 'Arrastra o toca la portería · ← → para ajustar · Espacio para fijar',
+    keysAim: 'Fija la mira mientras se mueve · Espacio, clic o toca',
     keysPower: 'Detente en lo verde · Espacio, clic o toca',
-    touchAim: 'Arrastra o toca la portería para apuntar',
+    touchAim: 'Toca para fijar la mira mientras se mueve',
     touchPower: 'Toca para detenerte en lo verde',
     soft: 'suave',
     sweet: 'punto ideal',
@@ -103,7 +97,8 @@ const ease = (t: number) => 1 - (1 - t) * (1 - t);
 function resolveShot(aim: number, p: number): Outcome {
   const over = p > OVER;
   const soft = p < SOFT;
-  const scatter = 0.05 + 0.08 * clamp((p - 0.6) / 0.26, 0, 1);
+  // Accuracy drops over the harder half of the sweet spot.
+  const scatter = 0.05 + 0.08 * clamp(((p - SOFT) / (OVER - SOFT) - 0.5) / 0.5, 0, 1);
   const x = aim + (Math.random() * 2 - 1) * scatter;
   const h = over ? 1.3 : soft ? 0.04 : 0.06 + clamp((p - SOFT) / (OVER - SOFT), 0, 1) * 0.84;
   const side: -1 | 1 = Math.abs(x) < 0.05 ? (Math.random() < 0.5 ? -1 : 1) : x < 0 ? -1 : 1;
@@ -200,7 +195,6 @@ export default function Penalty({ lang, reducedMotion, soundOn, onFinish }: Mini
   const [fx, setFx] = useState(0); // bump to replay net ripple / cheer / shake
   const [announce, setAnnounce] = useState(() => T[lang].stageAim(1));
 
-  const svg = useRef<SVGSVGElement>(null);
   const sceneG = useRef<SVGGElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const reticle = useRef<SVGGElement>(null);
@@ -222,8 +216,6 @@ export default function Penalty({ lang, reducedMotion, soundOn, onFinish }: Mini
     shot: 0,
     aim: -0.6,
     aimDir: 1,
-    manual: false,
-    dragging: false,
     power: 0,
     powerDir: 1,
     keeperX: 0,
@@ -277,7 +269,7 @@ export default function Penalty({ lang, reducedMotion, soundOn, onFinish }: Mini
       const slow = rm.current ? 0.65 : 1;
       const faster = 1 + s.shot * 0.12;
 
-      if (s.stage === 'aim' && !s.manual) {
+      if (s.stage === 'aim') {
         let a = s.aim + s.aimDir * 1.15 * slow * faster * dt;
         if (a > AIM_MAX) {
           a = AIM_MAX;
@@ -472,7 +464,6 @@ export default function Penalty({ lang, reducedMotion, soundOn, onFinish }: Mini
           return;
         }
         s.shot = next.length;
-        s.manual = false;
         s.aim = Math.random() < 0.5 ? -0.8 : 0.8;
         s.aimDir = s.aim < 0 ? 1 : -1;
         s.power = 0;
@@ -487,7 +478,6 @@ export default function Penalty({ lang, reducedMotion, soundOn, onFinish }: Mini
   const lock = useCallback(() => {
     const s = g.current;
     if (s.stage === 'aim') {
-      s.dragging = false;
       play('tick');
       s.power = 0;
       s.powerDir = 1;
@@ -496,40 +486,13 @@ export default function Penalty({ lang, reducedMotion, soundOn, onFinish }: Mini
     } else if (s.stage === 'power') kick();
   }, [kick, lang, play, setStage]);
 
-  const aimFromPointer = (e: RPointerEvent<SVGSVGElement>) => {
-    const el = svg.current;
-    const m = el?.getScreenCTM();
-    if (!el || !m) return;
-    const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
-    g.current.aim = clamp((pt.x - GX) / GW, -AIM_MAX, AIM_MAX);
-  };
-
+  // A click or tap anywhere on the scene only locks; its position is ignored.
   const onPointerDown = (e: RPointerEvent<SVGSVGElement>) => {
     e.preventDefault();
-    const s = g.current;
-    if (s.stage === 'aim') {
-      s.manual = true;
-      s.dragging = true;
-      aimFromPointer(e);
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } else if (s.stage === 'power') lock();
-  };
-  const onPointerMove = (e: RPointerEvent<SVGSVGElement>) => {
-    if (g.current.dragging && g.current.stage === 'aim') aimFromPointer(e);
-  };
-  const onPointerUp = () => {
-    if (g.current.dragging && g.current.stage === 'aim') lock();
-    g.current.dragging = false;
+    lock();
   };
 
   const onKeyDown = (e: KeyboardEvent) => {
-    const s = g.current;
-    if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && s.stage === 'aim') {
-      e.preventDefault();
-      s.manual = true;
-      s.aim = clamp(s.aim + (e.key === 'ArrowLeft' ? -0.08 : 0.08), -AIM_MAX, AIM_MAX);
-      return;
-    }
     if ((e.key === ' ' || e.key === 'Enter') && e.target !== button.current && !e.repeat) {
       e.preventDefault();
       lock();
@@ -593,17 +556,13 @@ export default function Penalty({ lang, reducedMotion, soundOn, onFinish }: Mini
 
       <div className="relative min-h-[200px] flex-1 overflow-hidden rounded-2xl bg-[#e9edf6] ring-1 ring-gray-200">
         <svg
-          ref={svg}
           viewBox="40 14 320 262"
           preserveAspectRatio="xMidYMid meet"
-          className={`absolute inset-0 h-full w-full select-none ${active ? 'cursor-crosshair' : ''}`}
+          className={`absolute inset-0 h-full w-full select-none ${active ? 'cursor-pointer' : ''}`}
           style={{ touchAction: 'none', overflow: 'visible' }}
           role="img"
           aria-label={t.scene}
           onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={() => (g.current.dragging = false)}
         >
           <defs>
             <pattern id="pk-net" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
