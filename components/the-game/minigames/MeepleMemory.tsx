@@ -1,7 +1,8 @@
 'use client';
 
 // Meeple memory: 12 face-down tiles (6 pairs of board-game pieces) on a felt board.
-// The clock (40 s) starts on the first flip. Win = every pair found before it runs out.
+// The clock (40 s) starts on the first flip, and every wrong pair costs one of 6 lives.
+// Win = every pair found before the clock or the lives run out.
 // Mouse, touch and keyboard (roving tabindex grid: arrows move, Enter/Space flip).
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import type { MiniGameProps } from '../types';
@@ -10,13 +11,16 @@ import { FACE_IDS, FACE_NAMES, Face, TileBack, type FaceId } from './meeplememor
 const PAIRS = 6;
 const TOTAL = PAIRS * 2;
 const TIME = 40; // seconds
+// One life per pair. Flipping only unseen tiles until a known match turns up, a player who
+// remembers everything misses at most PAIRS - 1 times, so the round can always be finished.
+const LIVES = PAIRS;
 const HIDE_MS = 750; // how long a mismatched pair stays up
 const ACCENT = '#16a34a';
 
 const T = {
   en: {
     time: 'Time',
-    moves: 'Moves',
+    lives: 'Lives',
     pairs: 'Pairs',
     keys: 'Arrow keys move · Enter or Space flips',
     board: 'Memory board, 12 tiles',
@@ -27,14 +31,16 @@ const T = {
     flipped: (name: string) => `${cap(name)}.`,
     match: (name: string, p: number) => `Match! ${cap(name)}. ${p} of ${PAIRS} pairs.`,
     noMatch: (a: string, b: string) => `${cap(a)} and ${b}: no match.`,
+    livesLeft: (l: number) => (l === 1 ? '1 life left.' : `${l} lives left.`),
     tenLeft: '10 seconds left.',
     win: (s: number) => `${PAIRS}/${PAIRS} — all pairs with ${s}s to spare!`,
     lose: (p: number) => `Time! ${p}/${PAIRS} pairs found.`,
-    start: 'The clock starts on your first flip.',
+    loseLives: (p: number) => `Out of lives! ${p}/${PAIRS} pairs found.`,
+    start: 'The clock starts on your first flip. Each wrong pair costs a life.',
   },
   es: {
     time: 'Tiempo',
-    moves: 'Jugadas',
+    lives: 'Vidas',
     pairs: 'Pares',
     keys: 'Flechas para moverte · Enter o Espacio para voltear',
     board: 'Tablero de memorama, 12 fichas',
@@ -45,10 +51,12 @@ const T = {
     flipped: (name: string) => `${cap(name)}.`,
     match: (name: string, p: number) => `¡Par! ${cap(name)}. ${p} de ${PAIRS} pares.`,
     noMatch: (a: string, b: string) => `${cap(a)} y ${b}: no son pareja.`,
+    livesLeft: (l: number) => (l === 1 ? 'Te queda 1 vida.' : `Te quedan ${l} vidas.`),
     tenLeft: 'Quedan 10 segundos.',
     win: (s: number) => `${PAIRS}/${PAIRS} — ¡todos los pares y te sobraron ${s} s!`,
     lose: (p: number) => `¡Se acabó el tiempo! Encontraste ${p}/${PAIRS} pares.`,
-    start: 'El reloj arranca con tu primer volteo.',
+    loseLives: (p: number) => `¡Te quedaste sin vidas! Encontraste ${p}/${PAIRS} pares.`,
+    start: 'El reloj arranca con tu primer volteo. Cada par equivocado cuesta una vida.',
   },
 };
 
@@ -179,6 +187,7 @@ export default function MeepleMemory({ lang, reducedMotion, soundOn, onFinish }:
   const result = useRef({ won: false, score: 0 });
 
   const pairs = cards.filter((c) => c.matched).length / 2;
+  const lives = Math.max(0, LIVES - misses);
   const { cols, tile } = fit(box.w, box.h);
   const rows = TOTAL / cols;
   const say = useCallback((s: string) => setMsg((m) => (m === s ? `${s} ` : s)), []);
@@ -224,7 +233,7 @@ export default function MeepleMemory({ lang, reducedMotion, soundOn, onFinish }:
     window.clearTimeout(hideTimer.current);
     if (phase === 'lost') {
       result.current = { won: false, score: Math.round((pairs / PAIRS) * 40) };
-      say(t.lose(pairs));
+      say(lives ? t.lose(pairs) : t.loseLives(pairs));
       blip('lose');
     }
     const id = window.setTimeout(() => {
@@ -265,7 +274,7 @@ export default function MeepleMemory({ lang, reducedMotion, soundOn, onFinish }:
         setPopped([a, b]);
         if (p === PAIRS) {
           const s = Math.max(0, (deadline.current || performance.now() + TIME * 1000) - performance.now()) / 1000;
-          const score = Math.round(45 + 40 * (s / TIME) + 15 * Math.max(0, 1 - misses / 10));
+          const score = Math.round(45 + 40 * (s / TIME) + 15 * Math.max(0, 1 - misses / LIVES));
           result.current = { won: true, score: Math.max(50, Math.min(100, score)) };
           setLeft(s);
           setPhase('won');
@@ -276,10 +285,16 @@ export default function MeepleMemory({ lang, reducedMotion, soundOn, onFinish }:
           say(t.match(name, p));
         }
       } else {
+        const livesLeft = LIVES - misses - 1;
         setOpen(next);
         setMisses((m) => m + 1);
+        if (livesLeft <= 0) {
+          // The wrong pair stays face up under the result.
+          setPhase('lost');
+          return;
+        }
         blip('miss');
-        say(t.noMatch(FACE_NAMES[cards[a].face][lang], name));
+        say(`${t.noMatch(FACE_NAMES[cards[a].face][lang], name)} ${t.livesLeft(livesLeft)}`);
         hideTimer.current = window.setTimeout(() => setOpen([]), HIDE_MS);
       }
     },
@@ -347,9 +362,18 @@ export default function MeepleMemory({ lang, reducedMotion, soundOn, onFinish }:
             {pairs}/{PAIRS}
           </div>
         </div>
-        <div className="text-center">
-          <div className="font-mono text-xs text-gray-500">{t.moves}</div>
-          <div className="text-base font-bold tabular-nums text-gray-900">{moves}</div>
+        <div className="text-center" role="img" aria-label={`${t.lives}: ${lives}/${LIVES}`}>
+          <div className="font-mono text-xs text-gray-500">{t.lives}</div>
+          <div className="flex h-6 items-center gap-1">
+            {Array.from({ length: LIVES }, (_, i) => (
+              <span
+                key={i}
+                className={`h-2.5 w-2.5 rounded-full transition-colors duration-300 ${
+                  i < lives ? 'bg-emerald-500' : 'bg-rose-200 ring-1 ring-rose-400'
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
@@ -435,9 +459,9 @@ export default function MeepleMemory({ lang, reducedMotion, soundOn, onFinish }:
               className={`${reducedMotion ? '' : 'mm-end'} max-w-xs rounded-2xl bg-white/95 px-5 py-3 text-center text-lg font-bold text-gray-900 shadow-lg ring-1 ring-black/5`}
             >
               <span className="mr-1.5" style={{ color: phase === 'won' ? ACCENT : '#e11d48' }} aria-hidden>
-                {phase === 'won' ? '✓' : '⏱'}
+                {phase === 'won' ? '✓' : lives ? '⏱' : '✕'}
               </span>
-              {phase === 'won' ? t.win(Math.ceil(left)) : t.lose(pairs)}
+              {phase === 'won' ? t.win(Math.ceil(left)) : lives ? t.lose(pairs) : t.loseLives(pairs)}
             </p>
           </div>
         )}
