@@ -1,14 +1,15 @@
 'use client';
 
-// Pinta con guía: a pre-sketched landscape on an easel, 9 pencil areas, each with a small colour
-// hint (like a guided workshop). Pick a paint, tap an area to brush it in. A wrong colour still
-// fills (marked, repaintable) and costs 2 s. Win = every area in its colour before the 35 s run out.
-// Mouse, touch and keyboard: arrows move between areas (roving focus), 1–6 or [ ] pick, Enter paints.
+// Pinta con guía: a pre-sketched landscape on an easel, 18 pencil areas in 12 paints, each with a
+// small colour hint (like a guided workshop). Pick a paint, tap an area to brush it in. A wrong colour
+// still fills (marked, repaintable) and costs 2 s. Win = every area in its colour before the 40 s run out.
+// Mouse, touch and keyboard: arrows move between areas (roving focus), 1–9 0 - = or [ ] pick, Enter paints.
 import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import type { MiniGameProps } from '../types';
 import { KEY_ORDER, PAINTS, REGIONS, brushPath } from './paintbyguide/scene';
 
-const TIME = 35; // seconds
+const TIME = 40; // seconds
+const PAINT_KEYS = '1234567890-='; // one key per paint, in palette order
 const PENALTY = 2; // seconds per wrong stroke
 const N = REGIONS.length;
 const ACCENT = '#ec4899';
@@ -18,7 +19,7 @@ const T = {
   en: {
     time: 'Time',
     painted: (n: number) => `${n}/${N} painted`,
-    keys: '1–6 or [ ] pick a paint · Arrows move · Enter paints',
+    keys: '1–9 0 - = or [ ] pick a paint · Arrows move · Enter paints',
     touch: 'Pick a paint, then tap the areas with the same number.',
     clock: 'The clock starts with your first brushstroke.',
     canvas: `Canvas with ${N} pencil-sketched areas`,
@@ -42,7 +43,7 @@ const T = {
   es: {
     time: 'Tiempo',
     painted: (n: number) => `${n}/${N} pintadas`,
-    keys: '1–6 o [ ] para elegir pintura · Flechas para moverte · Enter para pintar',
+    keys: '1–9 0 - = o [ ] para elegir pintura · Flechas para moverte · Enter para pintar',
     touch: 'Elige una pintura y toca las áreas con el mismo número.',
     clock: 'El reloj arranca con tu primera pincelada.',
     canvas: `Lienzo con ${N} áreas bocetadas a lápiz`,
@@ -301,9 +302,10 @@ export default function PaintByGuide({ lang, reducedMotion, soundOn, onFinish }:
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
-    if (/^[1-6]$/.test(e.key)) {
+    const paintKey = e.key.length === 1 ? PAINT_KEYS.indexOf(e.key) : -1;
+    if (paintKey >= 0 && paintKey < PAINTS.length) {
       e.preventDefault();
-      pick(Number(e.key) - 1);
+      pick(paintKey);
       return;
     }
     if (e.key === '[' || e.key === ']') {
@@ -519,7 +521,7 @@ export default function PaintByGuide({ lang, reducedMotion, soundOn, onFinish }:
                         <text
                           y="3.6"
                           textAnchor="middle"
-                          fontSize="10.5"
+                          fontSize={r.need >= 9 ? 9 : 10.5}
                           fontWeight="700"
                           fill={p.ink}
                           style={{ fontFamily: 'var(--font-geist-mono), ui-monospace, monospace' }}
@@ -642,7 +644,7 @@ export default function PaintByGuide({ lang, reducedMotion, soundOn, onFinish }:
           <div
             role="group"
             aria-label={t.palette}
-            className="flex items-end justify-center gap-1.5 rounded-2xl bg-gray-50 px-2 py-1.5 ring-1 ring-gray-100 sm:gap-2.5 sm:px-3"
+            className="grid grid-cols-6 justify-items-center gap-x-1.5 gap-y-1 rounded-2xl bg-gray-50 px-2 py-1.5 ring-1 ring-gray-100 sm:gap-x-2.5 sm:px-3"
           >
             {PAINTS.map((p, i) => {
               const on = brush === i;
@@ -653,11 +655,11 @@ export default function PaintByGuide({ lang, reducedMotion, soundOn, onFinish }:
                   aria-pressed={on}
                   aria-label={t.paint(i + 1, p.name[lang])}
                   onClick={() => pick(i)}
-                  className={`relative flex h-12 w-12 items-center justify-center rounded-full transition-transform duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0070f3] focus-visible:ring-offset-2 ${
+                  className={`relative flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0070f3] focus-visible:ring-offset-2 ${
                     on ? '-translate-y-1' : 'hover:-translate-y-0.5'
                   }`}
                 >
-                  <svg viewBox="0 0 48 48" className="h-11 w-11" aria-hidden>
+                  <svg viewBox="0 0 48 48" className="h-10 w-10" aria-hidden>
                     <path
                       d={BLOB}
                       fill={p.hex}
@@ -671,7 +673,7 @@ export default function PaintByGuide({ lang, reducedMotion, soundOn, onFinish }:
                       x="24"
                       y="29"
                       textAnchor="middle"
-                      fontSize="14"
+                      fontSize={i >= 9 ? 12.5 : 14}
                       fontWeight="700"
                       fill={p.ink}
                       style={{ fontFamily: 'var(--font-geist-mono), ui-monospace, monospace' }}
@@ -699,7 +701,7 @@ export default function PaintByGuide({ lang, reducedMotion, soundOn, onFinish }:
           </p>
         </div>
       ) : (
-        <div className="flex min-h-[86px] items-center justify-center">
+        <div className="flex min-h-[124px] items-center justify-center">
           <div
             className={`rounded-2xl bg-white px-5 py-2.5 text-center shadow-md ring-1 ${
               won ? 'ring-pink-200' : 'ring-gray-200'
