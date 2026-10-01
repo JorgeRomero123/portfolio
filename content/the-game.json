@@ -288,8 +288,8 @@
           "es": "Encuéntralo en 360"
         },
         "howTo": {
-          "en": "Find 3 hidden gems in the 360° photo. Drag or use the arrow keys to look; tap a gem or press Enter when it's in the ring.",
-          "es": "Encuentra 3 gemas escondidas en la foto 360°. Arrastra o usa las flechas para mirar; toca una gema o presiona Enter cuando esté en el círculo."
+          "en": "Find 6 hidden gems in the 360° photo. Drag or use the arrow keys to look; tap a gem or press Enter when it's in the ring.",
+          "es": "Encuentra 6 gemas escondidas en la foto 360°. Arrastra o usa las flechas para mirar; toca una gema o presiona Enter cuando esté en el círculo."
         }
       },
       "card": {
@@ -370,8 +370,8 @@
       },
       "card": {
         "body": {
-          "en": "Jorge loves board games, so this page is one. He also builds small games for the browser: a wheel of fortune and a jigsaw puzzle live in his tools.",
-          "es": "A Jorge le encantan los juegos de mesa, así que esta página es uno. También hace juegos pequeños para el navegador: una ruleta de la fortuna y un rompecabezas viven entre sus herramientas."
+          "en": "Jorge loves board games (Downforce, Star Wars: The Deckbuilding Game, Fire Tower and Hellapagos are his favourites), so this page is one. He also builds small games for the browser: a wheel of fortune and a jigsaw puzzle live in his tools.",
+          "es": "A Jorge le encantan los juegos de mesa (sus favoritos son Downforce, Star Wars: The Deckbuilding Game, Fire Tower y Hellapagos), así que esta página es uno. También hace juegos pequeños para el navegador: una ruleta de la fortuna y un rompecabezas viven entre sus herramientas."
         },
         "links": [
           {
@@ -392,19 +392,19 @@
       },
       "story": {
         "title": {
-          "en": "TODO(jorge): story title about board games",
-          "es": "TODO(jorge): título de la historia sobre juegos de mesa"
+          "en": "Four games always within reach",
+          "es": "Cuatro juegos siempre a la mano"
         },
         "body": {
-          "en": "TODO(jorge): a short story about your board-game nights",
-          "es": "TODO(jorge): una historia corta sobre tus noches de juegos de mesa"
+          "en": "Jorge’s favourites: Downforce, a car race where you also bet on who wins; Star Wars: The Deckbuilding Game, a head-to-head duel of decks; Fire Tower, where you push a wildfire towards your rivals’ towers; and Hellapagos, castaways building a raft before the food and water run out.",
+          "es": "Los favoritos de Jorge: Downforce, una carrera de autos donde también apuestas quién gana; Star Wars: The Deckbuilding Game, un duelo de mazos uno contra uno; Fire Tower, donde empujas un incendio hacia las torres de tus rivales; y Hellapagos, náufragos armando una balsa antes de que se acaben la comida y el agua."
         },
         "href": "/tools"
       },
       "funFacts": [
         {
-          "en": "TODO(jorge): favourite board games (2–3 titles)",
-          "es": "TODO(jorge): juegos de mesa favoritos (2–3 títulos)"
+          "en": "His favourite board games: Downforce, Star Wars: The Deckbuilding Game, Fire Tower and Hellapagos.",
+          "es": "Sus juegos de mesa favoritos: Downforce, Star Wars: The Deckbuilding Game, Fire Tower y Hellapagos."
         },
         {
           "en": "TODO(jorge): the game you always win (or always lose)",
@@ -420,8 +420,8 @@
         "es": "Música"
       },
       "tagline": {
-        "en": "A calm room, a sofa, great speakers.",
-        "es": "Un cuarto tranquilo, un sillón y buenas bocinas."
+        "en": "Lead singer of Eloise.",
+        "es": "Vocalista de Eloise."
       },
       "landmark": {
         "en": "A calm listening corner: a sofa, big speakers and a spinning record",
@@ -439,10 +439,24 @@
       },
       "card": {
         "body": {
-          "en": "Jorge’s music corner is a calm room, a sofa and great speakers. He’s currently learning guitar and singing, so naturally he built two apps that listen to him and grade him.",
-          "es": "El rincón musical de Jorge es un cuarto tranquilo, un sillón y buenas bocinas. Ahora está aprendiendo guitarra y canto, así que, claro, hizo dos apps que lo escuchan y lo califican."
+          "en": "Jorge is the lead singer of Eloise, and the band has songs on Spotify. At home, his music corner is a calm room, a sofa and great speakers, and he keeps practising guitar and singing with two apps he built that listen to him and grade him.",
+          "es": "Jorge es el vocalista de Eloise, y la banda tiene canciones en Spotify. En casa, su rincón musical es un cuarto tranquilo, un sillón y buenas bocinas, y sigue practicando guitarra y canto con dos apps que él mismo hizo y que lo escuchan y lo califican."
         },
         "links": [
+          {
+            "href": "https://open.spotify.com/track/4ojIjMYOBVGoqL3NoTmEls",
+            "label": {
+              "en": "Eloise: “Otoño en el Invierno” on Spotify",
+              "es": "Eloise: “Otoño en el Invierno” en Spotify"
+            }
+          },
+          {
+            "href": "https://open.spotify.com/track/1B7Q4Wpj9I5n17hY6JsviO",
+            "label": {
+              "en": "Eloise: “Junto a Ti” on Spotify",
+              "es": "Eloise: “Junto a Ti” en Spotify"
+            }
+          },
           {
             "href": "/tools/guitarra",
             "label": {
@@ -461,14 +475,14 @@
       },
       "story": {
         "title": {
-          "en": "An app that grades his singing",
-          "es": "Una app que califica cómo canta"
+          "en": "Lead singer of Eloise",
+          "es": "Vocalista de Eloise"
         },
         "body": {
-          "en": "Learning to sing is humbling, so Jorge made it measurable: Aprende a Cantar teaches by levels, transposes exercises to your vocal range and checks your pitch through the microphone.",
-          "es": "Aprender a cantar te baja los humos, así que Jorge lo hizo medible: Aprende a Cantar enseña por niveles, transpone los ejercicios a tu rango vocal y revisa tu afinación con el micrófono."
+          "en": "Jorge sings lead in Eloise. Two of the band’s songs are on Spotify: “Otoño en el Invierno” and “Junto a Ti”. Press play.",
+          "es": "Jorge es la voz principal de Eloise. Dos canciones de la banda están en Spotify: “Otoño en el Invierno” y “Junto a Ti”. Dale play."
         },
-        "href": "/tools/canto"
+        "href": "https://open.spotify.com/track/4ojIjMYOBVGoqL3NoTmEls"
       },
       "funFacts": [
         {
@@ -476,12 +490,12 @@
           "es": "Está aprendiendo guitarra y canto, e hizo Aprende Guitarra y Aprende a Cantar para practicar."
         },
         {
-          "en": "TODO(jorge): the speakers in that calm room",
-          "es": "TODO(jorge): las bocinas de ese cuarto tranquilo"
+          "en": "He’s the lead singer of Eloise; you can hear “Otoño en el Invierno” and “Junto a Ti” on Spotify.",
+          "es": "Es el vocalista de Eloise; puedes escuchar “Otoño en el Invierno” y “Junto a Ti” en Spotify."
         },
         {
-          "en": "TODO(jorge): an album you’d put on for a first-time guest",
-          "es": "TODO(jorge): un disco que le pondrías a alguien que viene por primera vez"
+          "en": "TODO(jorge): the speakers in that calm room",
+          "es": "TODO(jorge): las bocinas de ese cuarto tranquilo"
         }
       ]
     },
@@ -512,30 +526,30 @@
       },
       "card": {
         "body": {
-          "en": "Jorge loves craft beer. This landmark is a small taproom with a row of taps, ready to pour.",
-          "es": "A Jorge le encanta la cerveza artesanal. Este lugar es una pequeña cervecería con una fila de grifos, lista para servir."
+          "en": "Jorge picked up a taste for craft beer while living in Seattle, a city full of breweries. Back in Mexico he kept exploring, and he hasn’t stopped. This landmark is a small taproom with a row of taps, ready to pour.",
+          "es": "Jorge le agarró el gusto a la cerveza artesanal cuando vivía en Seattle, una ciudad llena de cervecerías. De regreso en México siguió buscando, y no ha parado. Este lugar es una pequeña cervecería con una fila de grifos, lista para servir."
         },
         "links": []
       },
       "story": {
         "title": {
-          "en": "TODO(jorge): story title about craft beer",
-          "es": "TODO(jorge): título de la historia sobre cerveza artesanal"
+          "en": "From Seattle to Mexico, one pint at a time",
+          "es": "De Seattle a México, un tarro a la vez"
         },
         "body": {
-          "en": "TODO(jorge): a short craft-beer story (a brewery visit, a first favourite)",
-          "es": "TODO(jorge): una historia corta de cerveza artesanal (una visita a una cervecería, tu primera favorita)"
+          "en": "Seattle has breweries everywhere, but the one Jorge loved was Postdoc Brewing. When he came back to Mexico he kept looking, and his Mexican favourites are MK Brewing, Morenos Tap Room, Cervecería Punto Medio and Hércules.",
+          "es": "En Seattle hay cervecerías por todos lados, pero la que Jorge más quiso fue Postdoc Brewing. Cuando regresó a México siguió buscando, y sus favoritas mexicanas son MK Brewing, Morenos Tap Room, Cervecería Punto Medio y Hércules."
         },
         "href": "/about"
       },
       "funFacts": [
         {
-          "en": "TODO(jorge): favourite beers or styles (2–3)",
-          "es": "TODO(jorge): cervezas o estilos favoritos (2–3)"
+          "en": "His favourite brewery from his Seattle years: Postdoc Brewing.",
+          "es": "Su cervecería favorita de sus años en Seattle: Postdoc Brewing."
         },
         {
-          "en": "TODO(jorge): a favourite brewery or taproom",
-          "es": "TODO(jorge): una cervecería o taproom favorito"
+          "en": "His Mexican favourites: MK Brewing, Morenos Tap Room, Cervecería Punto Medio and Hércules.",
+          "es": "Sus favoritas mexicanas: MK Brewing, Morenos Tap Room, Cervecería Punto Medio y Hércules."
         }
       ]
     },
@@ -744,30 +758,30 @@
       },
       "card": {
         "body": {
-          "en": "Jorge loves to cook. This landmark is a little kitchen with a stove, a few pans and a chopping board ready to go.",
-          "es": "A Jorge le encanta cocinar. Este lugar es una cocinita con estufa, unas sartenes y una tabla para picar lista para empezar."
+          "en": "Jorge is just getting started in the kitchen, and he’s enjoying every bit of it: Mexican classics on one side, Asian comfort food on the other.",
+          "es": "Jorge apenas está empezando en la cocina, y lo está disfrutando muchísimo: clásicos mexicanos por un lado, comida asiática reconfortante por el otro."
         },
         "links": []
       },
       "story": {
         "title": {
-          "en": "TODO(jorge): story title about cooking",
-          "es": "TODO(jorge): título de la historia sobre cocina"
+          "en": "Just getting started",
+          "es": "Apenas empezando"
         },
         "body": {
-          "en": "TODO(jorge): a short kitchen story (a signature dish, who taught you)",
-          "es": "TODO(jorge): una historia corta de cocina (tu platillo estrella, quién te enseñó)"
+          "en": "Jorge is new to cooking and loving it. So far he’s been making Mexican dishes like alambre, enchiladas, tinga and tacos dorados, plus Asian favourites like egg fried rice and katsu curry.",
+          "es": "Jorge es nuevo en la cocina y le está encantando. Hasta ahora ha hecho platillos mexicanos como alambre, enchiladas, tinga y tacos dorados, además de favoritos asiáticos como arroz frito con huevo y katsu curry."
         },
         "href": "/about"
       },
       "funFacts": [
         {
-          "en": "TODO(jorge): signature dish",
-          "es": "TODO(jorge): tu platillo estrella"
+          "en": "Mexican dishes he’s cooking: alambre, enchiladas, tinga and tacos dorados.",
+          "es": "Platillos mexicanos que está cocinando: alambre, enchiladas, tinga y tacos dorados."
         },
         {
-          "en": "TODO(jorge): a dish you want to master next",
-          "es": "TODO(jorge): un platillo que quieres dominar después"
+          "en": "From Asian cooking: egg fried rice and katsu curry.",
+          "es": "De la cocina asiática: arroz frito con huevo y katsu curry."
         }
       ]
     }
