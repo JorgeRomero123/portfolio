@@ -60,8 +60,8 @@ export const PROJECTS: Project[] = [
     body: (
       <>
         Technical co-lead for the profile-management portal — empty repo to production.
-        Kept the Next.js app healthy for {hi('200k+ monthly users')} and led its expansion
-        across continents.
+        Kept the Next.js app healthy and led its expansion to{' '}
+        {hi('1.5M users across 7 countries')}.
       </>
     ),
     tech: ['Next.js', 'React', 'i18n'],

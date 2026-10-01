@@ -28,8 +28,8 @@
     },
     "bullets": [
       {
-        "en": "Technical co-lead of PayPal Fastlane’s profile-management portal, from empty repo to production: 200k+ monthly users and an expansion across continents.",
-        "es": "Co-líder técnico del portal de gestión de perfiles de PayPal Fastlane, de un repo vacío a producción: más de 200 mil usuarios al mes y una expansión entre continentes."
+        "en": "Technical co-lead of PayPal Fastlane’s profile-management portal, from empty repo to production, then scaled to 1.5M users across 7 countries.",
+        "es": "Co-líder técnico del portal de gestión de perfiles de PayPal Fastlane, de un repo vacío a producción, y luego lo escaló a 1.5 millones de usuarios en 7 países."
       },
       {
         "en": "Drove front-end UX on Microsoft Bing’s 0-to-1 Image Inspiration Feed, where daily active users grew 400% over 9 months.",
@@ -94,8 +94,8 @@
       },
       "card": {
         "body": {
-          "en": "Jorge was technical co-lead of PayPal Fastlane’s profile-management portal, from an empty repo to 200k+ monthly users. At Microsoft he drove front-end UX on Bing’s Image Inspiration Feed, where daily active users grew 400% in 9 months. On the side he runs two SaaS products solo: MyAlbumLink and LabWiseLink, a dental-lab order platform with 5-role access control and real-time alerts.",
-          "es": "Jorge fue co-líder técnico del portal de gestión de perfiles de PayPal Fastlane, de un repo vacío a más de 200 mil usuarios al mes. En Microsoft llevó la UX del front end en el Image Inspiration Feed de Bing, donde los usuarios activos diarios crecieron 400% en 9 meses. Por su cuenta opera solo dos productos SaaS: MyAlbumLink y LabWiseLink, una plataforma de pedidos para laboratorios dentales con control de acceso de 5 roles y alertas en tiempo real."
+          "en": "Jorge was technical co-lead of PayPal Fastlane’s profile-management portal, from an empty repo to 1.5M users across 7 countries. At Microsoft he drove front-end UX on Bing’s Image Inspiration Feed, where daily active users grew 400% in 9 months. On the side he runs two SaaS products solo: MyAlbumLink and LabWiseLink, a dental-lab order platform with 5-role access control and real-time alerts.",
+          "es": "Jorge fue co-líder técnico del portal de gestión de perfiles de PayPal Fastlane, de un repo vacío a 1.5 millones de usuarios en 7 países. En Microsoft llevó la UX del front end en el Image Inspiration Feed de Bing, donde los usuarios activos diarios crecieron 400% en 9 meses. Por su cuenta opera solo dos productos SaaS: MyAlbumLink y LabWiseLink, una plataforma de pedidos para laboratorios dentales con control de acceso de 5 roles y alertas en tiempo real."
         },
         "links": [
           {
@@ -123,12 +123,12 @@
       },
       "story": {
         "title": {
-          "en": "From an empty repo to 200k users a month",
-          "es": "De un repo vacío a 200 mil usuarios al mes"
+          "en": "From an empty repo to 1.5M users",
+          "es": "De un repo vacío a 1.5 millones de usuarios"
         },
         "body": {
-          "en": "Fastlane’s profile portal started as an empty repository. Jorge co-led it technically into production, kept the Next.js app healthy at 200k+ monthly users and led its expansion across continents.",
-          "es": "El portal de perfiles de Fastlane empezó como un repositorio vacío. Jorge lo co-lideró técnicamente hasta producción, mantuvo sana la app de Next.js con más de 200 mil usuarios al mes y encabezó su expansión a otros continentes."
+          "en": "Fastlane’s profile portal started as an empty repository. Jorge co-led it technically into production, kept the Next.js app healthy and led its expansion to 1.5M users across 7 countries.",
+          "es": "El portal de perfiles de Fastlane empezó como un repositorio vacío. Jorge lo co-lideró técnicamente hasta producción, mantuvo sana la app de Next.js y encabezó su expansión a 1.5 millones de usuarios en 7 países."
         },
         "href": "/#work"
       },

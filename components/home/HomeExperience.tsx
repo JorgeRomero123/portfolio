@@ -344,7 +344,7 @@ export default function HomeExperience({
           </div>
 
           <p style={{ fontSize: 'clamp(16px,1.5vw,20px)', lineHeight: 1.55, color: '#44557a', marginTop: 26, maxWidth: 560 }}>
-            By day I ship production software to hundreds of thousands of people. By night I
+            By day I ship production software to 1.5 million people. By night I
             build browser toys nobody asked for — a singing coach, a chore tracker that emails
             my roommate, a 360° tour engine.
           </p>
