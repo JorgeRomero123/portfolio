@@ -738,8 +738,8 @@
           "es": "¡Orden lista!"
         },
         "howTo": {
-          "en": "Chop each ingredient on the beat. Tap or press Space.",
-          "es": "Pica cada ingrediente al ritmo. Toca o presiona Espacio."
+          "en": "Catch the ingredients in the ticket's order. ← → or drag to move the pan.",
+          "es": "Atrapa los ingredientes en el orden de la comanda. ← → o arrastra para mover el sartén."
         }
       },
       "card": {
