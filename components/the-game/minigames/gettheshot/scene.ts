@@ -5,8 +5,8 @@
 export const RINGS = 11;
 export const WIN_AT = 7;
 /** Frame half-size in world units (16:9-ish viewfinder). */
-export const RW = 0.58;
-export const RH = 0.32;
+export const RW = 0.29;
+export const RH = 0.16;
 /** Fraction of the frame the crosshair must be inside when the frame passes. */
 export const TOL = 0.72;
 export const SPACING = 5.8;
