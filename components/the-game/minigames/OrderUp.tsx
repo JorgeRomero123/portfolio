@@ -22,6 +22,8 @@ const PAN_EDGE = 52;
 const PAN_EDGE_R = 84; // the handle sticks out to the right
 const INTRO = 1.1;
 const BELL = 1.5;
+const FALL = 390; // base fall speed, world units per second (about 0.9 s from the top to the pan)
+const SPAWN_GAP = 0.41; // seconds between drops, plus a little jitter
 const END_HOLD = 1600; // ms the end state shows before onFinish
 
 const ORDERS: { dish: Dish; steps: Ing[] }[] = [
@@ -347,7 +349,7 @@ export default function OrderUp({ lang, reducedMotion, soundOn, onFinish }: Mini
       let x = lo + Math.random() * (hi - lo);
       for (let k = 0; k < 8 && Math.abs(x - s.lastX) < 80; k++) x = lo + Math.random() * (hi - lo);
       s.lastX = x;
-      const speed = (130 + s.order * 14 + Math.random() * 20) * (rm ? 0.7 : 1);
+      const speed = (FALL + s.order * 42 + Math.random() * 60) * (rm ? 0.7 : 1);
       s.items.push({
         id: s.nextId++,
         ing,
@@ -397,7 +399,7 @@ export default function OrderUp({ lang, reducedMotion, soundOn, onFinish }: Mini
         s.spawnIn -= dt;
         if (s.spawnIn <= 0) {
           spawn();
-          s.spawnIn = (rm ? 1.1 : 0.82) + Math.random() * 0.15;
+          s.spawnIn = SPAWN_GAP * (rm ? 1.34 : 1) + Math.random() * 0.075;
         }
       } else if (s.phase === 'bell') {
         s.phaseT -= dt;
