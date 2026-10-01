@@ -61,6 +61,7 @@ export default function HomeExperience({
   const worldCanvasRef = useRef<HTMLCanvasElement>(null);
   const headlineRef = useRef<HTMLHeadingElement>(null);
   const exploreRef = useRef<HTMLElement>(null);
+  const exploreSpacerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
@@ -183,6 +184,10 @@ export default function HomeExperience({
             start: 'top top',
             end: () => '+=' + distance(),
             pin: true,
+            // Our own wrapper as the spacer, so ScrollTrigger never moves the section
+            // in the DOM. Moving it reloads the YouTube iframe, and in Safari that fires
+            // window `load` mid-move, re-entering ScrollTrigger's refresh and throwing.
+            pinSpacer: exploreSpacerRef.current,
             scrub: 1,
             invalidateOnRefresh: true,
             onUpdate: (self) => {
@@ -495,6 +500,7 @@ export default function HomeExperience({
       </section>
 
       {/* ===== EXPLORE — GSAP-PINNED HORIZONTAL GALLERY ===== */}
+      <div ref={exploreSpacerRef}>
       <section
         ref={exploreRef}
         id="explore"
@@ -573,6 +579,7 @@ export default function HomeExperience({
           </div>
         </div>
       </section>
+      </div>
 
       {/* ===== LIVE 3D DEMO — disabled while the page is light (see SHOW_WEBGL) ===== */}
       {SHOW_WEBGL && (
