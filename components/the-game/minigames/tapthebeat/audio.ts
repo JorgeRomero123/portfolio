@@ -40,9 +40,11 @@ interface SongOpts {
   bars: number;
   /** Kick beats, counted from the end of the count-in. */
   kicks: number[];
+  /** Bars played in double time: snare on every off-beat, sixteenth hats, a driving eighth-note bass. */
+  doubleBars?: number[];
 }
 
-export function scheduleSong(ctx: AudioContext, { t0, spb, countIn, bars, kicks }: SongOpts) {
+export function scheduleSong(ctx: AudioContext, { t0, spb, countIn, bars, kicks, doubleBars = [] }: SongOpts) {
   const master = ctx.createGain();
   master.gain.value = 0.55;
   const comp = ctx.createDynamicsCompressor();
@@ -139,6 +141,12 @@ export function scheduleSong(ctx: AudioContext, { t0, spb, countIn, bars, kicks 
     const b0 = countIn + bar * 4;
     const c = bar % 4;
     pad(at(b0), CHORDS[c], spb * 4);
+    if (doubleBars.includes(bar)) {
+      for (let e = 0; e < 8; e++) bass(at(b0 + e / 2), ROOTS[c] + (e % 4 === 3 ? 12 : 0), spb * 0.35);
+      for (let b = 0; b < 4; b++) snare(at(b0 + b + 0.5));
+      for (let e = 0; e < 16; e++) noiseHit(at(b0 + e / 4), 7500, e % 2 ? 0.03 : 0.055, 0.03);
+      continue;
+    }
     bass(at(b0), ROOTS[c], spb * 0.9);
     bass(at(b0 + 1.5), ROOTS[c], spb * 0.4);
     bass(at(b0 + 2.5), ROOTS[c] + 12, spb * 0.4);

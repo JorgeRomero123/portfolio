@@ -11,7 +11,8 @@ const ACCENT = '#c026d3';
 const BPM = 96;
 const SPB = 60 / BPM;
 const COUNT_IN = 4;
-const BARS = 10;
+const BARS = 12;
+const DOUBLE_BARS = [10, 11]; // the double-time finale: a tap on every half beat
 const LEAD = 2.2; // seconds of lane visible ahead of the ring
 const HIT_X = 14; // ring position, % of lane width
 const PERFECT = 0.06;
@@ -20,12 +21,14 @@ const CATCH = 0.2; // taps within this (but outside GOOD) count as early/late mi
 const INPUT_LAG = 0.01;
 const WIN = 0.7;
 
-// Target beats, counted from the end of the count-in: halves, then quarters, then a little syncopation.
+// Target beats, counted from the end of the count-in: halves, then quarters, then a little
+// syncopation, then two bars of double time.
 const PATTERN: number[] = (() => {
   const b: number[] = [];
   for (let bar = 0; bar < 3; bar++) b.push(bar * 4, bar * 4 + 2);
   for (let bar = 3; bar < 7; bar++) for (let i = 0; i < 4; i++) b.push(bar * 4 + i);
-  for (let bar = 7; bar < BARS; bar++) b.push(bar * 4, bar * 4 + 1, bar * 4 + 2, bar * 4 + 2.5, bar * 4 + 3);
+  for (let bar = 7; bar < DOUBLE_BARS[0]; bar++) b.push(bar * 4, bar * 4 + 1, bar * 4 + 2, bar * 4 + 2.5, bar * 4 + 3);
+  for (const bar of DOUBLE_BARS) for (let i = 0; i < 8; i++) b.push(bar * 4 + i / 2);
   b.push(BARS * 4);
   return b;
 })();
@@ -33,6 +36,8 @@ const TOTAL = PATTERN.length;
 const NEED = Math.ceil(TOTAL * WIN);
 const TIMES = PATTERN.map((b) => (COUNT_IN + b) * SPB);
 const END = TIMES[TIMES.length - 1] + 1.1;
+const DOUBLE_FROM = (COUNT_IN + DOUBLE_BARS[0] * 4) * SPB;
+const DOUBLE_TO = (COUNT_IN + (DOUBLE_BARS[DOUBLE_BARS.length - 1] + 1) * 4) * SPB;
 const GRID = Array.from({ length: COUNT_IN + BARS * 4 + 1 }, (_, i) => i);
 
 type Judge = 'perfect' | 'good' | 'early' | 'late' | 'miss' | 'extra';
@@ -69,6 +74,7 @@ const T = {
     judge: { perfect: 'Perfect!', good: 'Good', early: 'Early', late: 'Late', miss: 'Miss', extra: 'Off beat' } as Record<Judge, string>,
     lane: 'Beat lane. Press Space or Enter on each beat.',
     started: 'The beat started. Tap on each beat.',
+    double: 'Double time!',
     win: (h: number) => `${h}/${TOTAL} — in the groove!`,
     lose: (h: number) => `${h}/${TOTAL} — the groove slipped. So close!`,
     now: 'Now!',
@@ -91,6 +97,7 @@ const T = {
     judge: { perfect: '¡Perfecto!', good: 'Bien', early: 'Antes', late: 'Tarde', miss: 'Fallaste', extra: 'Fuera de ritmo' } as Record<Judge, string>,
     lane: 'Carril de golpes. Presiona Espacio o Enter en cada golpe.',
     started: 'Empezó el ritmo. Toca en cada golpe.',
+    double: '¡Doble tiempo!',
     win: (h: number) => `${h}/${TOTAL} — ¡traes el ritmo!`,
     lose: (h: number) => `${h}/${TOTAL} — se te fue el ritmo. ¡Casi!`,
     now: '¡Ya!',
@@ -155,6 +162,7 @@ export default function TapTheBeat({ lang, reducedMotion, soundOn, onFinish }: M
   const [audioFailed, setAudioFailed] = useState(false);
   const [snap, setSnap] = useState<Snap>(emptySnap);
   const [announce, setAnnounce] = useState('');
+  const doubleSaid = useRef(false);
   const game = useRef<Snap>(emptySnap());
   const ctxRef = useRef<AudioContext | null>(null);
   const clockRef = useRef<() => number>(() => performance.now() / 1000);
@@ -219,7 +227,7 @@ export default function TapTheBeat({ lang, reducedMotion, soundOn, onFinish }: M
     }
     const t0 = clockRef.current() + 0.35;
     t0Ref.current = t0;
-    if (ctx) scheduleSong(ctx, { t0: t0 + lat, spb: SPB, countIn: COUNT_IN, bars: BARS, kicks: PATTERN });
+    if (ctx) scheduleSong(ctx, { t0: t0 + lat, spb: SPB, countIn: COUNT_IN, bars: BARS, kicks: PATTERN, doubleBars: DOUBLE_BARS });
     setPhase('play');
     setAnnounce(t.started);
     requestAnimationFrame(() => pad.current?.focus({ preventScroll: true }));
@@ -274,6 +282,10 @@ export default function TapTheBeat({ lang, reducedMotion, soundOn, onFinish }: M
           g.flash = { kind: 'miss', at: now };
         }
       }
+      if (!doubleSaid.current && now >= DOUBLE_FROM - SPB * 2) {
+        doubleSaid.current = true;
+        setAnnounce(T[lang].double);
+      }
       setSnap({ ...g, targets: g.targets.map((x) => ({ ...x })) });
       if (now > END) {
         setPhase('done');
@@ -283,7 +295,7 @@ export default function TapTheBeat({ lang, reducedMotion, soundOn, onFinish }: M
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [phase]);
+  }, [phase, lang]);
 
   // Show the result briefly, then report once.
   useEffect(() => {
@@ -316,6 +328,8 @@ export default function TapTheBeat({ lang, reducedMotion, soundOn, onFinish }: M
   );
   const pump = reducedMotion || phase !== 'play' ? 1 : 1 + 0.09 * Math.exp(-(now - lastKick) / 0.08);
   const countIn = phase === 'play' && now >= 0 && now < COUNT_IN * SPB ? COUNT_IN - Math.floor(now / SPB) : null;
+  // Heads-up two beats before the double-time bars, and on through them.
+  const doubleTime = phase === 'play' && now >= DOUBLE_FROM - SPB * 2 && now < DOUBLE_TO;
   const flash = snap.flash && now - snap.flash.at < 0.55 ? snap.flash : null;
   const flashPop = flash && !reducedMotion ? 1 + 0.25 * Math.exp(-(now - flash.at) / 0.07) : 1;
   const ringPop = reducedMotion ? 1 : 1 + 0.14 * Math.exp(-Math.max(0, now - snap.tapAt) / 0.07);
@@ -371,6 +385,15 @@ export default function TapTheBeat({ lang, reducedMotion, soundOn, onFinish }: M
       >
         <Speaker pump={pump} label={t.left} />
         <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 text-center">{center}</div>
+        {doubleTime && (
+          <span
+            className="absolute left-1/2 top-3 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 font-mono text-xs font-bold text-white shadow-md"
+            style={{ background: ACCENT }}
+            aria-hidden
+          >
+            ×2 · {t.double}
+          </span>
+        )}
         <Speaker pump={pump} label={t.right} />
 
         {phase === 'done' && (
