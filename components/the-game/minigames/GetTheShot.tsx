@@ -2,7 +2,7 @@
 
 // "Get the shot" (drone videography): a first-person pseudo-3D flight drawn in canvas 2D.
 // Camera frames float towards you; steer so the crosshair sits inside each frame as it passes.
-// 11 frames in ~28 s (slower with reduced motion), light wind drift; win = 7+ good takes.
+// 11 frames in ~26 s (slower with reduced motion), gusty wind; win = 7+ good takes.
 // Pointer: hold/drag to steer (mouse steers towards the pointer, touch is a relative stick).
 // Keyboard: arrow keys / WASD.
 import { useCallback, useEffect, useRef, useState } from 'react';

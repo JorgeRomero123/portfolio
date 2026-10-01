@@ -5,11 +5,11 @@
 export const RINGS = 11;
 export const WIN_AT = 7;
 /** Frame half-size in world units (16:9-ish viewfinder). */
-export const RW = 0.6;
-export const RH = 0.34;
+export const RW = 0.58;
+export const RH = 0.32;
 /** Fraction of the frame the crosshair must be inside when the frame passes. */
-export const TOL = 0.8;
-export const SPACING = 6;
+export const TOL = 0.72;
+export const SPACING = 5.8;
 export const FIRST = 7.5;
 /** Rings are judged when they get this close. */
 export const PASS_Z = 0.35;
@@ -59,10 +59,10 @@ export function makeWorld(): World {
   let py = 0;
   for (let i = 0; i < RINGS; i++) {
     const k = i < 2 ? 0.55 : 1;
-    let ddx = rnd(-0.95, 0.95) * k;
-    if (Math.abs(ddx) < 0.25) ddx = ddx < 0 ? -0.3 : 0.3;
-    px = clamp(px + ddx, -1.2, 1.2);
-    py = clamp(py + rnd(-0.6, 0.6) * k, -0.7, 0.6);
+    let ddx = rnd(-1.1, 1.1) * k;
+    if (Math.abs(ddx) < 0.35) ddx = ddx < 0 ? -0.35 : 0.35;
+    px = clamp(px + ddx, -1.5, 1.5);
+    py = clamp(py + rnd(-0.7, 0.7) * k, -0.85, 0.75);
     rings.push({ x: px, y: py, z: FIRST + i * SPACING, state: 'ahead' });
   }
   const props: Prop[] = [];
@@ -117,8 +117,8 @@ export function step(w: World, dt: number, input: Input, speed: number, flying: 
   w.t += dt;
   const [p1, p2, p3] = w.wp;
   const ramp = flying ? clamp(w.camZ / 6, 0, 1) : 0; // wind builds up after take-off
-  w.windX = ramp * (0.42 * Math.sin(0.43 * w.t + p1) + 0.24 * Math.sin(1.13 * w.t + p2));
-  w.windY = ramp * 0.2 * Math.sin(0.61 * w.t + p3);
+  w.windX = ramp * (0.55 * Math.sin(0.43 * w.t + p1) + 0.3 * Math.sin(1.13 * w.t + p2));
+  w.windY = ramp * 0.25 * Math.sin(0.61 * w.t + p3);
   const ACC = 4.3;
   const DAMP = 3.8;
   const ax = input.x * ACC + w.windX;
