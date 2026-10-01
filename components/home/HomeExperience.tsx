@@ -345,7 +345,7 @@ export default function HomeExperience({
           </h1>
 
           <div style={{ display: 'block', color: '#64789b', fontWeight: 500, fontSize: 'clamp(27px,4.2vw,58px)', letterSpacing: '-0.02em', marginTop: 14, lineHeight: 1 }}>
-            I build for millions, then go build something silly.
+            I build for millions, then go build something fun.
           </div>
 
           <p style={{ fontSize: 'clamp(16px,1.5vw,20px)', lineHeight: 1.55, color: '#44557a', marginTop: 26, maxWidth: 560 }}>

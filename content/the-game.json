@@ -23,7 +23,7 @@
       "es": "Para quien no va a jugar"
     },
     "role": {
-      "en": "Jorge Romero Romanis is a full-stack software engineer based in México (React, TypeScript, Next.js). He builds for millions, then goes and builds something silly.",
+      "en": "Jorge Romero Romanis is a full-stack software engineer based in México (React, TypeScript, Next.js). He builds for millions, then goes and builds something fun.",
       "es": "Jorge Romero Romanis es ingeniero de software full-stack en México (React, TypeScript, Next.js). Construye para millones y luego se va a construir algo por puro gusto."
     },
     "bullets": [
@@ -75,7 +75,7 @@
         "es": "Ingeniería de software"
       },
       "tagline": {
-        "en": "Built for millions, then something silly.",
+        "en": "Built for millions, then something fun.",
         "es": "Para millones, y luego algo por puro gusto."
       },
       "landmark": {
