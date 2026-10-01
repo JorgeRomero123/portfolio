@@ -17,11 +17,11 @@ import { RIVAL_LAP } from '../race';
 import { TOTAL_STAMPS } from '../rewards';
 import { BOARD_STRINGS, STRINGS } from '../strings';
 import type { BoardChoice, Lang, RaceStatus } from '../types';
-import { btnGhost, btnPrimary, btnSecondary } from '../overlays/ui';
+import { btnPrimary, btnSecondary } from '../overlays/ui';
 import { formatTime } from '../leaderboard/rules';
 import type { RunState } from '../leaderboard/panels';
 import type { Board, Stats } from '../leaderboard/stats';
-import { Dialog, cardClass } from './Dialog';
+import { Dialog, cardClass, focusRing } from './Dialog';
 
 const loadPanels = () => import('../leaderboard/panels');
 const Standing = dynamic(() => loadPanels().then((m) => m.Standing), { ssr: false, loading: () => null });
@@ -118,8 +118,19 @@ export function RaceDialog({
         {s.raceAgain}
       </button>
     );
+  // Tinted, with a podium: it has to read as a button next to the white and solid blue ones.
   const boardBtn = (
-    <button type="button" data-testid="race-leaderboard" onClick={() => setView('board')} className={btnGhost}>
+    <button
+      type="button"
+      data-testid="race-leaderboard"
+      onClick={() => setView('board')}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#0070f3]/30 bg-[#0070f3]/[0.08] px-4 text-sm font-semibold text-[#0070f3] transition-[background-color,border-color,transform] duration-300 hover:border-[#0070f3] hover:bg-[#0070f3]/[0.14] active:scale-[0.98] ${focusRing}`}
+    >
+      <svg viewBox="0 0 20 20" className="h-4 w-4 shrink-0" fill="currentColor" aria-hidden>
+        <rect x="7.5" y="4" width="5" height="13" rx="1" />
+        <rect x="2" y="9" width="5" height="8" rx="1" />
+        <rect x="13" y="11.5" width="5" height="5.5" rx="1" />
+      </svg>
       {b.leaderboard}
     </button>
   );
