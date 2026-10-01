@@ -17,7 +17,11 @@ export default function GameStage() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.01 });
+    // The top 64px sit under the sticky site nav (h-16), so a stage scrolled just behind it is hidden.
+    const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), {
+      threshold: 0.01,
+      rootMargin: '-64px 0px 0px 0px',
+    });
     io.observe(el);
     const onVis = () => setTabVisible(document.visibilityState === 'visible');
     document.addEventListener('visibilitychange', onVis);
