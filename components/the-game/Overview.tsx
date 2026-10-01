@@ -2,7 +2,7 @@
 
 // "For people who won't play": the fast, server-rendered overview under the game stage.
 // A client component only so it follows the language toggle; it renders fully on the server
-// (initial lang from Accept-Language), needs no JS and never shows TODO placeholders.
+// (in English, the default), needs no JS and never shows TODO placeholders.
 import { GAME_CONTENT, SECTIONS, isExternal, links, text } from './content';
 import { useLang } from './lang';
 import { FLOW_STRINGS } from './strings';

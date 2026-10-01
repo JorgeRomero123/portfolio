@@ -1,7 +1,7 @@
 'use client';
 
-// Language for /the-game. The server picks `initialLang` from Accept-Language; a visitor's explicit
-// choice is remembered in localStorage (`the-game:lang`) and wins on later visits.
+// Language for /the-game. It starts in `initialLang` (English, like the rest of the site); a visitor's
+// explicit choice is remembered in localStorage (`the-game:lang`) and wins on later visits.
 import { createContext, useCallback, useContext, useMemo, useSyncExternalStore, type ReactNode } from 'react';
 import type { Lang } from './types';
 
