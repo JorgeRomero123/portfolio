@@ -1,6 +1,7 @@
 'use client';
 
-// "Perfect pour" (beer): hold to pour from the tap into a tilted pint glass and straighten it as it
+// "Perfect pour" (beer): hold to pour a black stout from the tap into a tilted pint glass (the one
+// with the G on it, so the pour and the split are the same pint) and straighten it as it
 // fills. A tilted glass makes little foam, an upright one makes lots; tilt too far with a full
 // glass and it spills over the low rim. Each pint is judged on beer level (the fill line) and head
 // thickness (the band above it). A good pour unlocks "Split the G" for that pint (a blind
@@ -10,6 +11,8 @@ import type { MiniGameProps } from '../types';
 import SplitTheG, { SPLIT_TOL } from './perfectpour/SplitTheG';
 
 const ACCENT = '#d97706';
+const STOUT = '#2a1810';
+const CREAM = '#f3e6c8';
 const GLASSES = 3;
 // Glass geometry, in glass-local SVG units (origin at the inside of the base, y up is negative).
 const H = 180;
@@ -502,9 +505,9 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
         <svg viewBox="0 0 360 400" preserveAspectRatio="xMidYMid meet" className="absolute inset-0 h-full w-full overflow-visible" aria-hidden>
           <defs>
             <linearGradient id="pp-beer" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#fbbf24" />
-              <stop offset="0.35" stopColor="#f59e0b" />
-              <stop offset="1" stopColor="#c2410c" />
+              <stop offset="0" stopColor="#3b2418" />
+              <stop offset="0.3" stopColor="#1c120d" />
+              <stop offset="1" stopColor="#0f0906" />
             </linearGradient>
             <clipPath id="pp-inside">
               <polygon points={`${-BW},0 ${BW},0 ${TW},${-H} ${-TW},${-H}`} />
@@ -521,7 +524,7 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
           <polygon points="300,342 760,342 760,640 400,640" fill="#e4cba5" />
           <polygon points="120,318 240,318 246,330 114,330" fill="#9ca3af" />
           <polygon points="120,318 240,318 238,322 122,322" fill="#d1d5db" />
-          {spilled && <ellipse cx="160" cy="327" rx="34" ry="4" fill="#fbbf24" opacity="0.8" />}
+          {spilled && <ellipse cx="160" cy="327" rx="34" ry="4" fill={STOUT} opacity="0.8" />}
 
           {/* tap tower */}
           <polygon points="290,70 316,70 318,330 288,330" fill="#e5e7eb" />
@@ -536,8 +539,8 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
           {/* stream (behind the glass contents) */}
           {flowing && (
             <g>
-              <rect x={PX - 3.5} y={SPOUT_Y} width="7" height={Math.max(0, streamEnd(tilt, S) - SPOUT_Y)} rx="3" fill="#f59e0b" opacity="0.92" />
-              <rect x={PX - 1.5} y={SPOUT_Y} width="1.6" height={Math.max(0, streamEnd(tilt, S) - SPOUT_Y)} fill="#fde68a" opacity="0.8" />
+              <rect x={PX - 3.5} y={SPOUT_Y} width="7" height={Math.max(0, streamEnd(tilt, S) - SPOUT_Y)} rx="3" fill={STOUT} opacity="0.95" />
+              <rect x={PX - 1.5} y={SPOUT_Y} width="1.6" height={Math.max(0, streamEnd(tilt, S) - SPOUT_Y)} fill="#6b4a35" opacity="0.8" />
             </g>
           )}
 
@@ -569,34 +572,49 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
             <g clipPath="url(#pp-inside)">
               {F > 0.003 && (
                 <g transform={`rotate(${counter.toFixed(2)} 0 ${(-S * H).toFixed(2)})`}>
-                  <polygon points={`${foamTop(-S * H)} 130,${400 - S * H} -130,${400 - S * H}`} fill="#fff8e6" stroke="#d9a441" strokeWidth="1.5" strokeLinejoin="round" />
+                  <polygon points={`${foamTop(-S * H)} 130,${400 - S * H} -130,${400 - S * H}`} fill={CREAM} stroke="#c9b089" strokeWidth="1.5" strokeLinejoin="round" />
                   <polygon
                     points={`-130,${(-L * H - 4).toFixed(1)} 130,${(-L * H - 4).toFixed(1)} 130,${400 - L * H} -130,${400 - L * H}`}
-                    fill="#fbe3a6"
+                    fill="#d8c29a"
                   />
                 </g>
               )}
               {L > 0.003 && (
                 <g transform={`rotate(${counter.toFixed(2)} 0 ${(-L * H).toFixed(2)})`}>
                   <rect x="-130" y={-L * H} width="260" height="420" fill="url(#pp-beer)" />
-                  <polygon points={`-130,${-L * H} 130,${-L * H} 130,${-L * H + 5} -130,${-L * H + 3}`} fill="#fcd34d" opacity="0.7" />
+                  <polygon points={`-130,${-L * H} 130,${-L * H} 130,${-L * H + 5} -130,${-L * H + 3}`} fill="#5a3a26" opacity="0.8" />
                   {!reducedMotion &&
                     L > 0.08 &&
                     BUBBLES.map((b, i) => {
                       const depth = L * H * 0.95;
                       const y = -L * H + depth * (1 - ((b.phase + time * b.speed) % 1));
-                      return <circle key={i} cx={b.x * BW * 0.8} cy={y} r={b.r} fill="#fef3c7" opacity="0.7" />;
+                      return <circle key={i} cx={b.x * BW * 0.8} cy={y} r={b.r} fill={CREAM} opacity="0.45" />;
                     })}
                 </g>
               )}
             </g>
             <line x1={-hw(BAND_TOP) - 3} x2={hw(BAND_TOP) + 3} y1={-BAND_TOP * H} y2={-BAND_TOP * H} stroke={ACCENT} strokeWidth="1.2" strokeDasharray="4 3" />
-            <line x1={-hw(FILL) - 5} x2={hw(FILL) + 5} y1={-FILL * H} y2={-FILL * H} stroke="#b45309" strokeWidth="2.5" />
+            <line x1={-hw(FILL) - 5} x2={hw(FILL) + 5} y1={-FILL * H} y2={-FILL * H} stroke={ACCENT} strokeWidth="2.5" />
+            {/* the G printed on the glass: the same pint is split in the next stage */}
+            <text
+              x="0"
+              y={-0.36 * H}
+              textAnchor="middle"
+              fontSize="50"
+              fontWeight="800"
+              fill="#d9a441"
+              stroke="#5b3a12"
+              strokeWidth="1.2"
+              paintOrder="stroke"
+              style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
+            >
+              G
+            </text>
             {/* glass shine + thick base */}
             <polygon points={`${-BW + 5},-6 ${-BW + 11},-6 ${-TW + 13},${-H + 8} ${-TW + 6},${-H + 8}`} fill="#ffffff" opacity="0.55" />
             <polygon points={`${-BW - 3},0 ${BW + 3},0 ${BW + 3},9 ${-BW - 3},9`} fill="#cbd5e1" opacity="0.7" />
             {spilled && (
-              <g fill="#fbbf24" opacity="0.85">
+              <g fill={STOUT} opacity="0.85">
                 <polygon points={`${-TW - 3},${-H + 2} ${-TW + 3},${-H + 2} ${-TW - 1},${-H + 30}`} />
                 <polygon points={`${-TW + 1},${-H + 10} ${-TW + 6},${-H + 10} ${-TW + 2},${-H + 52}`} />
               </g>
@@ -607,7 +625,7 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
         {/* legend: what the two marks mean */}
         <div className="pointer-events-none absolute left-2 top-2 flex flex-col gap-1 text-[11px] font-medium text-gray-700" aria-hidden>
           <span className="flex items-center gap-1.5">
-            <span className="h-[3px] w-4 rounded bg-[#b45309]" />
+            <span className="h-[3px] w-4 rounded bg-[#d97706]" />
             {t.line}
           </span>
           <span className="flex items-center gap-1.5">
