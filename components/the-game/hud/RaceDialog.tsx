@@ -17,7 +17,7 @@ import { RIVAL_LAP } from '../race';
 import { TOTAL_STAMPS } from '../rewards';
 import { BOARD_STRINGS, STRINGS } from '../strings';
 import type { BoardChoice, Lang, RaceStatus } from '../types';
-import { Confetti, btnGhost, btnPrimary, btnSecondary } from '../overlays/ui';
+import { btnGhost, btnPrimary, btnSecondary } from '../overlays/ui';
 import { formatTime } from '../leaderboard/rules';
 import type { RunState } from '../leaderboard/panels';
 import type { Board, Stats } from '../leaderboard/stats';
@@ -29,8 +29,6 @@ const Leaderboard = dynamic(() => loadPanels().then((m) => m.Leaderboard), { ssr
 const JoinForm = dynamic(() => loadPanels().then((m) => m.JoinForm), { ssr: false, loading: () => null });
 
 type View = 'main' | 'ask' | 'form' | 'board';
-
-const CONFETTI = ['#0070f3', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'];
 
 export function RaceDialog({
   lang,
@@ -45,6 +43,7 @@ export function RaceDialog({
   runState,
   boardChoice,
   onBoardChoice,
+  onCelebrate,
   onRaceAgain,
   onClose,
 }: {
@@ -61,6 +60,8 @@ export function RaceDialog({
   runState: RunState;
   boardChoice: BoardChoice;
   onBoardChoice: (c: BoardChoice) => void;
+  /** The winner moves on from the results: the shell fires confetti over the whole stage. */
+  onCelebrate: () => void;
   onRaceAgain: () => void;
   onClose: () => void;
 }) {
@@ -86,7 +87,7 @@ export function RaceDialog({
     let tries = 0;
     const claim = () => {
       const el = body.current?.querySelector<HTMLElement>('[data-view-focus]');
-      if (el) el.focus();
+      if (el) el.focus({ preventScroll: true });
       else if (tries++ < 60) raf = requestAnimationFrame(claim);
     };
     claim();
@@ -129,11 +130,10 @@ export function RaceDialog({
       describedBy="tg-race-body"
       onClose={onClose}
       reducedMotion={reducedMotion}
-      panelClassName={`${cardClass} relative max-h-full w-full max-w-md overflow-y-auto overscroll-contain`}
+      panelClassName={`${cardClass} max-h-full w-full max-w-md overflow-y-auto overscroll-contain`}
     >
       <div className="h-1.5" style={{ background: race === 'lost' ? '#1f2937' : '#0070f3' }} aria-hidden />
-      {view === 'ask' && <Confetti colors={CONFETTI} reducedMotion={reducedMotion} origin={{ x: 0.5, y: 0.3 }} />}
-      <div ref={body} className="relative z-20 p-5">
+      <div ref={body} className="p-5">
         <p className="sr-only" role="status" aria-live="polite">
           {announce}
         </p>
@@ -210,7 +210,10 @@ export function RaceDialog({
               ) : (
                 <>
                   {askPending ? (
-                    <button type="button" data-testid="race-continue" data-autofocus data-view-focus onClick={() => setView('ask')} className={`${btnPrimary} col-span-2 sm:order-last`}>
+                    <button type="button" data-testid="race-continue" data-autofocus data-view-focus onClick={() => {
+                        onCelebrate();
+                        setView('ask');
+                      }} className={`${btnPrimary} col-span-2 sm:order-last`}>
                       {b.continue}
                     </button>
                   ) : (

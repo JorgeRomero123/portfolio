@@ -55,6 +55,7 @@ import type { BoardApi, BoardProps, DieValue, ViewMode } from './board/types';
 import { DartOverlay, type DartResult } from './hud/DartOverlay';
 import { PAUSING_STEPS, type FlowStep } from './overlays/flow';
 import { RaceDialog } from './hud/RaceDialog';
+import { Confetti } from './overlays/ui';
 import { StepPicker } from './hud/StepPicker';
 import { TopBar } from './hud/TopBar';
 import { TurnControls } from './hud/TurnControls';
@@ -71,6 +72,8 @@ interface LandmarkRequest {
 }
 
 type Phase = 'idle' | 'rolling' | 'aiming' | 'picking-steps' | 'moving' | 'landmark';
+
+const RACE_CONFETTI = ['#0070f3', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'];
 
 const sleep = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
 
@@ -105,6 +108,7 @@ export default function GameShell({
   const [passportOpen, setPassportOpen] = useState(false);
   const [raceOpen, setRaceOpen] = useState(false);
   const [runFailed, setRunFailed] = useState<string | null>(null);
+  const [confetti, setConfetti] = useState(0);
   const submitting = useRef(false);
   // Jorge's pawn: moves booked in progress but not yet walked on the board. While any are pending
   // the board keeps showing him where he was (`rivalHold`).
@@ -293,6 +297,7 @@ export default function GameShell({
       boardChoice: 'ask',
     });
     setRaceOpen(false);
+    setConfetti(0);
     setStatus('');
   }, [updateProgress]);
 
@@ -579,11 +584,20 @@ export default function GameShell({
             runState={runState}
             boardChoice={progress.boardChoice}
             onBoardChoice={(boardChoice) => updateProgress({ boardChoice })}
+            onCelebrate={() => setConfetti((n) => n + 1)}
             onRaceAgain={raceAgain}
-            onClose={() => setRaceOpen(false)}
+            onClose={() => {
+              setRaceOpen(false);
+              setConfetti(0);
+            }}
           />
         )}
       </AnimatePresence>
+      {raceOpen && confetti > 0 && (
+        <div key={confetti} className="pointer-events-none absolute inset-0 z-50" aria-hidden>
+          <Confetti colors={RACE_CONFETTI} reducedMotion={reducedMotion} origin={{ x: 0.5, y: 0.55 }} />
+        </div>
+      )}
     </div>
   );
 }
