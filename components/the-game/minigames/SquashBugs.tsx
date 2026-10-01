@@ -2,15 +2,63 @@
 
 // "Squash the bugs": low-poly bugs crawl along the lines of a code editor towards PROD.
 // Click/tap a bug (or pick a line with ↑/↓ and press Space) to squash it. Clicking code that is
-// glowing green (passing) breaks the build. 3 lives; a bug reaching PROD or a broken build costs one.
-// Win: survive 30 s with a life left and at least TARGET squashes.
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react';
+// glowing green (passing) breaks the build. A bug reaching PROD or a broken build costs a life.
+// Win: survive 30 s with a life left and at least `target` squashes.
+// Touch screens get a swarm (see MODES): tapping is far faster than picking a line with the keyboard.
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent,
+} from 'react';
 import type { MiniGameProps } from '../types';
 
 const DURATION = 30;
-const LIVES = 3;
-const TARGET = 15;
 const ACCENT = '#0070f3';
+
+interface Mode {
+  target: number;
+  lives: number;
+  /** Seconds between spawn waves, start → end of the round. */
+  gap: [number, number];
+  /** Seconds a bug takes to cross the editor, start → end of the round. */
+  cross: [number, number];
+  /** Past this fraction of the round a wave may bring two bugs. */
+  burstAfter: number;
+  burstChance: number;
+  haptics: boolean;
+}
+const MODES: { fine: Mode; coarse: Mode } = {
+  // Mouse / keyboard: ~30 bugs.
+  fine: { target: 15, lives: 3, gap: [1.4, 0.85], cross: [6.2, 3.9], burstAfter: 0.35, burstChance: 0.33, haptics: false },
+  // Touch: ~75 bugs, from ~1.7/s up to ~4/s. The last third outruns two thumbs, so the lead built early matters.
+  coarse: { target: 50, lives: 5, gap: [0.6, 0.3], cross: [5.6, 3.6], burstAfter: 0.3, burstChance: 0.3, haptics: true },
+};
+
+const COARSE = '(pointer: coarse)';
+function subscribeCoarse(cb: () => void) {
+  const mq = window.matchMedia(COARSE);
+  mq.addEventListener('change', cb);
+  return () => mq.removeEventListener('change', cb);
+}
+const useCoarsePointer = () =>
+  useSyncExternalStore(
+    subscribeCoarse,
+    () => window.matchMedia(COARSE).matches,
+    () => false,
+  );
+
+function buzz(ms: number) {
+  try {
+    navigator.vibrate?.(ms);
+  } catch {
+    // no haptics available
+  }
+}
 
 const CODE = [
   "import { ship, log } from './deploy';",
@@ -68,6 +116,7 @@ const T = {
     intro: 'Bugs are crawling to production. Squash them before they get there.',
     warn: 'Don’t hit the green code: it passes its tests.',
     pointer: 'Click or tap a bug',
+    swarm: 'It’s a swarm: use both thumbs',
     keys: '↑ ↓ pick a line · Space squash',
     start: 'Start debugging',
     lives: 'Lives',
@@ -85,13 +134,14 @@ const T = {
     winSub: (n: number) => `${n} bugs squashed — clean build.`,
     loseTitle: 'Build failed',
     loseLives: 'Too many bugs made it to production.',
-    loseTarget: (n: number) => `${n} squashed; you needed ${TARGET}.`,
+    loseTarget: (n: number, target: number) => `${n} squashed; you needed ${target}.`,
     file: 'checkout.ts',
   },
   es: {
     intro: 'Hay bugs rumbo a producción. Aplástalos antes de que lleguen.',
     warn: 'No toques el código verde: ese sí pasa sus pruebas.',
     pointer: 'Haz clic o toca un bug',
+    swarm: 'Es un enjambre: usa los dos pulgares',
     keys: '↑ ↓ elige línea · Espacio aplasta',
     start: 'Empezar a depurar',
     lives: 'Vidas',
@@ -109,7 +159,7 @@ const T = {
     winSub: (n: number) => `Aplastaste ${n} bugs: build limpio.`,
     loseTitle: 'Falló el build',
     loseLives: 'Se colaron demasiados bugs a producción.',
-    loseTarget: (n: number) => `Aplastaste ${n}; necesitabas ${TARGET}.`,
+    loseTarget: (n: number, target: number) => `Aplastaste ${n}; necesitabas ${target}.`,
     file: 'checkout.ts',
   },
 };
@@ -146,9 +196,9 @@ interface Game {
 }
 type Snap = Omit<Game, 'nextSpawn' | 'glowTimer' | 'ids' | 'broken' | 'misses' | 'escaped'>;
 
-const newGame = (): Game => ({
+const newGame = (lives: number): Game => ({
   time: 0,
-  lives: LIVES,
+  lives,
   squashed: 0,
   escaped: 0,
   broken: 0,
@@ -265,10 +315,14 @@ const BITS = [
 export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: MiniGameProps) {
   const t = T[lang];
   const [phase, setPhase] = useState<'intro' | 'play' | 'end'>('intro');
-  const [snap, setSnap] = useState<Snap>(() => snapOf(newGame()));
+  // The difficulty follows the device until Start, then stays put for the round.
+  const coarse = useCoarsePointer();
+  const [locked, setLocked] = useState<Mode | null>(null);
+  const mode = locked ?? (coarse ? MODES.coarse : MODES.fine);
+  const [snap, setSnap] = useState<Snap>(() => snapOf(newGame(MODES.fine.lives)));
   const [result, setResult] = useState<{ won: boolean; score: number; squashed: number; lives: number } | null>(null);
   const [announce, setAnnounce] = useState('');
-  const game = useRef<Game>(newGame());
+  const game = useRef<Game>(newGame(MODES.fine.lives));
   const startBtn = useRef<HTMLButtonElement>(null);
   const area = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
@@ -304,17 +358,17 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
       // Spawn waves: interval shrinks and bugs speed up as time runs.
       g.nextSpawn -= dt;
       if (g.nextSpawn <= 0 && g.time < DURATION - 2) {
-        const count = p > 0.35 && Math.random() < 0.33 ? 2 : 1;
+        const count = p > mode.burstAfter && Math.random() < mode.burstChance ? 2 : 1;
         for (let k = 0; k < count; k++) {
           const free = Array.from({ length: N }, (_, i) => i).filter(
             (i) => !g.bugs.some((b) => b.lane === i && b.x < 0.25),
           );
           if (!free.length) break;
           const lane = free[Math.floor(Math.random() * free.length)];
-          const cross = lerp(6.2, 3.9, p) * (reducedMotion ? 1.45 : 1) * (0.9 + Math.random() * 0.25);
+          const cross = lerp(mode.cross[0], mode.cross[1], p) * (reducedMotion ? 1.45 : 1) * (0.9 + Math.random() * 0.25);
           g.bugs.push({ id: g.ids++, lane, x: -0.04, speed: 1.04 / cross, phase: Math.random() * 6 });
         }
-        g.nextSpawn = lerp(1.4, 0.85, p) * (reducedMotion ? 1.2 : 1) * (0.85 + Math.random() * 0.3);
+        g.nextSpawn = lerp(mode.gap[0], mode.gap[1], p) * (reducedMotion ? 1.2 : 1) * (0.85 + Math.random() * 0.3);
       }
 
       for (const b of g.bugs) b.x += b.speed * dt;
@@ -327,6 +381,7 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
           addFx(g, 'escape', b.lane, 1);
         }
         sfxRef.current('escape');
+        if (mode.haptics) buzz(60);
         setAnnounce(`${T[lang].escaped} ${T[lang].livesLeft(g.lives)}`);
       }
 
@@ -348,12 +403,12 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
       g.fx = g.fx.filter((f) => g.time - f.t < FX_LIFE);
 
       if (g.lives <= 0 || g.time >= DURATION) {
-        const won = g.lives > 0 && g.squashed >= TARGET;
+        const won = g.lives > 0 && g.squashed >= mode.target;
         const resolved = g.squashed + g.escaped;
         const catchRate = resolved ? g.squashed / resolved : 0;
         const accuracy = g.squashed / Math.max(1, g.squashed + g.misses + g.broken * 2);
-        const volume = Math.min(1, g.squashed / 20);
-        let score = 100 * (0.4 * catchRate + 0.25 * accuracy + 0.2 * (g.lives / LIVES) + 0.15 * volume);
+        const volume = Math.min(1, g.squashed / (mode.target * (4 / 3)));
+        let score = 100 * (0.4 * catchRate + 0.25 * accuracy + 0.2 * (g.lives / mode.lives) + 0.15 * volume);
         if (!won) score = Math.min(score, 45);
         const r = { won, score: Math.round(Math.max(0, Math.min(100, score))), squashed: g.squashed, lives: g.lives };
         g.bugs = [];
@@ -364,7 +419,7 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
         sfxRef.current(won ? 'win' : 'lose');
         const tt = T[lang];
         setAnnounce(
-          won ? `${tt.winTitle} ${tt.winSub(r.squashed)}` : `${tt.loseTitle}. ${r.lives <= 0 ? tt.loseLives : tt.loseTarget(r.squashed)}`,
+          won ? `${tt.winTitle} ${tt.winSub(r.squashed)}` : `${tt.loseTitle}. ${r.lives <= 0 ? tt.loseLives : tt.loseTarget(r.squashed, mode.target)}`,
         );
         return;
       }
@@ -373,7 +428,7 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [phase, reducedMotion, lang]);
+  }, [phase, reducedMotion, lang, mode]);
 
   // Once playing, keyboard focus lives on the play area (the Start button just unmounted).
   useEffect(() => {
@@ -388,7 +443,8 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
   }, [phase, result]);
 
   const start = () => {
-    game.current = newGame();
+    setLocked(mode);
+    game.current = newGame(mode.lives);
     setSnap(snapOf(game.current));
     setPhase('play');
     sfx('miss'); // unlocks audio on this user gesture (silent when sound is off)
@@ -399,7 +455,8 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
     g.squashed++;
     addFx(g, 'splat', b.lane, b.x);
     sfx('squash');
-    if (g.squashed % 5 === 0 || g.squashed === TARGET) setAnnounce(`${t.squashed}: ${g.squashed}`);
+    if (mode.haptics) buzz(10);
+    if (g.squashed % 5 === 0 || g.squashed === mode.target) setAnnounce(`${t.squashed}: ${g.squashed}`);
   };
   const breakBuild = (g: Game, lane: number, x: number) => {
     g.broken++;
@@ -408,6 +465,7 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
     g.glowTimer = 0.8;
     addFx(g, 'break', lane, x);
     sfx('break');
+    if (mode.haptics) buzz(60);
     setAnnounce(`${t.broke} ${t.livesLeft(g.lives)}`);
   };
   const miss = (g: Game, lane: number, x: number) => {
@@ -469,6 +527,7 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
   };
 
   const timeLeft = Math.max(0, DURATION - snap.time);
+  const lives = phase === 'intro' ? mode.lives : snap.lives;
   const hurt = snap.fx.some((f) => f.kind === 'break' || f.kind === 'escape');
   const walking = !reducedMotion && phase === 'play';
 
@@ -478,24 +537,24 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
 
       {/* HUD */}
       <div className="flex shrink-0 items-center gap-3 text-sm sm:gap-4">
-        <div className="flex items-center gap-1.5" aria-label={`${t.lives}: ${snap.lives}/${LIVES}`} role="img">
+        <div className="flex items-center gap-1.5" aria-label={`${t.lives}: ${lives}/${mode.lives}`} role="img">
           <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-gray-500">{t.lives}</span>
-          {Array.from({ length: LIVES }, (_, i) => (
+          {Array.from({ length: mode.lives }, (_, i) => (
             <span
               key={i}
               className={`h-3 w-3 rounded-full transition-colors duration-300 ${
-                i < snap.lives ? 'bg-emerald-500' : 'bg-rose-200 ring-1 ring-rose-400'
+                i < lives ? 'bg-emerald-500' : 'bg-rose-200 ring-1 ring-rose-400'
               }`}
             />
           ))}
         </div>
-        <div className="flex items-center gap-1.5" role="img" aria-label={`${t.squashed}: ${snap.squashed}/${TARGET}`}>
+        <div className="flex items-center gap-1.5" role="img" aria-label={`${t.squashed}: ${snap.squashed}/${mode.target}`}>
           <BugIcon size={20} walking={false} />
           <span
-            className={`font-mono text-sm font-bold tabular-nums ${snap.squashed >= TARGET ? 'text-emerald-600' : 'text-gray-900'}`}
+            className={`font-mono text-sm font-bold tabular-nums ${snap.squashed >= mode.target ? 'text-emerald-600' : 'text-gray-900'}`}
           >
             {snap.squashed}
-            <span className="font-normal text-gray-400">/{TARGET}</span>
+            <span className="font-normal text-gray-400">/{mode.target}</span>
           </span>
         </div>
         <div className="flex min-w-0 flex-1 items-center gap-2" role="img" aria-label={`${t.time}: ${Math.ceil(timeLeft)} s`}>
@@ -521,10 +580,10 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
             {t.file}
           </span>
           <span
-            className={`ml-auto flex items-center gap-1.5 font-mono text-[11px] ${hurt || snap.lives < LIVES ? 'text-rose-600' : 'text-emerald-700'}`}
+            className={`ml-auto flex items-center gap-1.5 font-mono text-[11px] ${hurt || lives < mode.lives ? 'text-rose-600' : 'text-emerald-700'}`}
           >
-            <span className={`h-2 w-2 rounded-full ${hurt || snap.lives < LIVES ? 'bg-rose-500' : 'bg-emerald-500'}`} aria-hidden />
-            {hurt || snap.lives < LIVES ? t.failing : t.passing}
+            <span className={`h-2 w-2 rounded-full ${hurt || lives < mode.lives ? 'bg-rose-500' : 'bg-emerald-500'}`} aria-hidden />
+            {hurt || lives < mode.lives ? t.failing : t.passing}
           </span>
         </div>
 
@@ -709,6 +768,7 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
               </p>
               <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-700">
                 <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1">{t.pointer}</span>
+                {mode.haptics && <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1">{t.swarm}</span>}
                 <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 font-mono max-sm:hidden pointer-coarse:hidden">{t.keys}</span>
               </div>
               <button
@@ -731,7 +791,7 @@ export default function SquashBugs({ lang, reducedMotion, soundOn, onFinish }: M
                 {result.won ? t.winTitle : t.loseTitle}
               </p>
               <p className="text-sm text-gray-700">
-                {result.won ? t.winSub(result.squashed) : result.lives <= 0 ? t.loseLives : t.loseTarget(result.squashed)}
+                {result.won ? t.winSub(result.squashed) : result.lives <= 0 ? t.loseLives : t.loseTarget(result.squashed, mode.target)}
               </p>
             </div>
           </div>
