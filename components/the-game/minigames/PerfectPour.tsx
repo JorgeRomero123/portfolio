@@ -2,14 +2,15 @@
 
 // "Perfect pour" (beer): hold to pour from the tap into a tilted pint glass and straighten it as it
 // fills. A tilted glass makes little foam, an upright one makes lots; tilt too far with a full
-// glass and it spills over the low rim. Each of 3 glasses is judged on beer level (the fill line)
-// and head thickness (the band above it). Win = at least 2 good pours.
+// glass and it spills over the low rim. Each pint is judged on beer level (the fill line) and head
+// thickness (the band above it). A good pour unlocks "Split the G" for that pint (a blind
+// stopwatch, see perfectpour/SplitTheG). Up to 3 pints; win = split the G on any of them.
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import type { MiniGameProps } from '../types';
+import SplitTheG, { SPLIT_TOL } from './perfectpour/SplitTheG';
 
 const ACCENT = '#d97706';
 const GLASSES = 3;
-const WIN = 2;
 // Glass geometry, in glass-local SVG units (origin at the inside of the base, y up is negative).
 const H = 180;
 const BW = 29; // half-width at the base
@@ -27,10 +28,12 @@ const PIVOT = 0.9;
 const SPOUT_Y = 102;
 
 type Verdict = 'perfect' | 'nice' | 'foamy' | 'flat' | 'short' | 'spill';
-type Phase = 'play' | 'result' | 'done';
+type Phase = 'play' | 'result' | 'split' | 'done';
 interface Pour {
   v: Verdict;
   score: number;
+  /** Set once this pint's "Split the G" has been played (only good pours get one). */
+  split?: boolean;
 }
 interface View {
   t: number; // tilt: 1 = 45°, 0 = upright
@@ -62,8 +65,9 @@ const T = {
       short: 'Short pour',
       spill: 'Spilled!',
     } as Record<Verdict, string>,
-    win: (n: number) => `${n}/${GLASSES} — pour master!`,
-    lose: (n: number) => `${n}/${GLASSES} — the foam won this round`,
+    goSplit: 'Good pour. Now split the G.',
+    win: (n: number) => `You split the G on pint ${n}!`,
+    lose: 'No split this time. The G stays whole.',
   },
   es: {
     area: 'Grifo de cerveza y un tarro inclinado. Mantén Espacio para servir; flechas izquierda y derecha para inclinar el tarro.',
@@ -84,8 +88,9 @@ const T = {
       short: 'Te quedaste corto',
       spill: '¡Se derramó!',
     } as Record<Verdict, string>,
-    win: (n: number) => `${n}/${GLASSES} — ¡maestro del grifo!`,
-    lose: (n: number) => `${n}/${GLASSES} — esta vez ganó la espuma`,
+    goSplit: 'Buen servido. Ahora parte la G.',
+    win: (n: number) => `¡Partiste la G en el tarro ${n}!`,
+    lose: 'Esta vez no se partió. La G quedó entera.',
   },
 };
 
@@ -214,6 +219,57 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
     setPhase(p);
   };
 
+  const end = useCallback((won: boolean, score: number) => {
+    setPhaseBoth('done');
+    later(() => {
+      if (finished.current) return;
+      finished.current = true;
+      onFinishRef.current({ won, score: Math.round(clamp(score, 0, 100)) });
+    }, 1500);
+  }, []);
+
+  /** This pint is over without a split: set up the next one, or end the round. */
+  const nextPint = useCallback(() => {
+    const s = sim.current;
+    const list = pourList.current;
+    if (list.length >= GLASSES) {
+      end(false, Math.min(45, (list.reduce((a, p) => a + p.score, 0) / list.length) * 0.45));
+      return;
+    }
+    s.L = 0;
+    s.F = 0;
+    s.t = 1;
+    s.wob = 0;
+    s.glass = list.length;
+    s.blocked = s.pouring; // a fresh press is needed for the next glass
+    setGlass(list.length);
+    setPoured(false);
+    setPhaseBoth('play');
+    requestAnimationFrame(() => area.current?.focus({ preventScroll: true }));
+  }, [end]);
+
+  const onSplit = useCallback(
+    (ok: boolean, err: number) => {
+      const list = pourList.current.map((p, i, all) => (i === all.length - 1 ? { ...p, split: ok } : p));
+      pourList.current = list;
+      setPours(list);
+      // Fewer pints and a cleaner split score higher.
+      if (ok) end(true, 100 - (list.length - 1) * 12 - (Math.abs(err) / SPLIT_TOL) * 12);
+      else nextPint();
+    },
+    [end, nextPint],
+  );
+
+  const splitSound = useCallback(
+    (kind: 'start' | 'split' | 'miss') => {
+      ensureAudio();
+      if (kind === 'start') blip([392], 'sine', 0.04);
+      else if (kind === 'split') blip([660, 880, 1175]);
+      else blip([247, 196], 'sine', 0.09);
+    },
+    [blip, ensureAudio],
+  );
+
   const finishGlass = useCallback(
     (spilled: boolean) => {
       const s = sim.current;
@@ -227,29 +283,11 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
       else if (pour.v === 'nice') blip([660, 880]);
       else blip(pour.v === 'spill' ? [220, 165] : [247], 'sine', 0.09);
       later(() => {
-        if (list.length < GLASSES) {
-          s.L = 0;
-          s.F = 0;
-          s.t = 1;
-          s.wob = 0;
-          s.glass = list.length;
-          s.blocked = s.pouring; // a fresh press is needed for the next glass
-          setGlass(list.length);
-          setPoured(false);
-          setPhaseBoth('play');
-          return;
-        }
-        setPhaseBoth('done');
-        const good = list.filter((p) => isGood(p.v)).length;
-        const score = Math.round(list.reduce((a, p) => a + p.score, 0) / list.length);
-        later(() => {
-          if (finished.current) return;
-          finished.current = true;
-          onFinishRef.current({ won: good >= WIN, score });
-        }, 1400);
+        if (isGood(pour.v)) setPhaseBoth('split');
+        else nextPint();
       }, 1500);
     },
-    [blip],
+    [blip, nextPint],
   );
 
   const finishRef = useRef(finishGlass);
@@ -382,8 +420,9 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
   const angle = -MAX_TILT * tilt;
   const slosh = reducedMotion ? 0 : wob * Math.sin(time * 9);
   const counter = MAX_TILT * tilt + slosh;
-  const good = pours.filter((p) => isGood(p.v)).length;
   const last = pours[pours.length - 1];
+  const won = pours.some((p) => p.split);
+  const wonOn = pours.findIndex((p) => p.split) + 1;
   const showCoach = phase === 'play' && glass === 0 && flowing && S >= 0.5 && tilt > 0.45;
   const showStart = phase === 'play' && glass === 0 && !poured;
   const spilled = phase !== 'play' && last?.v === 'spill';
@@ -394,12 +433,14 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
 
   const live =
     phase === 'done'
-      ? good >= WIN
-        ? t.win(good)
-        : t.lose(good)
+      ? won
+        ? t.win(wonOn)
+        : t.lose
       : phase === 'result' && last
-        ? `${t.verdict[last.v]} ${t.glass(pours.length)}`
-        : t.glass(glass + 1);
+        ? `${t.verdict[last.v]} ${isGood(last.v) ? t.goSplit : t.glass(pours.length)}`
+        : phase === 'split'
+          ? ''
+          : t.glass(glass + 1);
 
   return (
     <div className="flex h-full flex-col items-center gap-2 px-4 pb-4 pt-3 sm:px-6">
@@ -408,22 +449,24 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
         <div className="flex items-center gap-2" aria-hidden>
           {Array.from({ length: GLASSES }, (_, i) => {
             const p = pours[i];
-            const cls = !p
-              ? i === glass && phase !== 'done'
+            // A pint is settled once its pour failed or its split was played.
+            const settled = !!p && (!isGood(p.v) || p.split !== undefined);
+            const cls = !settled
+              ? i === (p ? i : glass) && phase !== 'done'
                 ? 'border-[#d97706] bg-amber-50'
                 : 'border-gray-200 bg-white'
-              : isGood(p.v)
+              : p.split
                 ? 'border-emerald-500 bg-emerald-500'
                 : 'border-gray-300 bg-gray-300';
             return (
               <span key={i} className={`flex h-7 w-6 items-end justify-center rounded-b-md rounded-t-sm border-2 ${cls}`}>
-                {p && <span className="mb-0.5 text-[10px] font-bold leading-none text-white">{isGood(p.v) ? '✓' : '×'}</span>}
+                {settled && <span className="mb-0.5 text-[10px] font-bold leading-none text-white">{p.split ? '✓' : '×'}</span>}
               </span>
             );
           })}
         </div>
         <p className="min-w-0 flex-1 text-center text-sm font-semibold leading-tight text-balance text-gray-900" aria-hidden>
-          {phase === 'done' ? `${good}/${GLASSES}` : t.glass(Math.min(GLASSES, phase === 'result' ? pours.length : glass + 1))}
+          {t.glass(Math.min(GLASSES, phase === 'play' ? glass + 1 : Math.max(1, pours.length)))}
         </p>
         <p aria-live="polite" className="sr-only">
           {live}
@@ -595,12 +638,14 @@ export default function PerfectPour({ lang, reducedMotion, soundOn, onFinish }: 
             }`}
           >
             {t.verdict[last.v]}
+            {isGood(last.v) && <span className="block text-sm font-semibold">{t.goSplit}</span>}
           </p>
         )}
+        {phase === 'split' && <SplitTheG key={pours.length} lang={lang} reducedMotion={reducedMotion} onSound={splitSound} onDone={onSplit} />}
         {phase === 'done' && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl bg-white/70">
-            <p className={`rounded-2xl bg-white px-5 py-3 text-xl font-bold shadow-lg ring-1 ${good >= WIN ? 'text-emerald-700 ring-emerald-300' : 'text-gray-800 ring-gray-200'}`}>
-              {good >= WIN ? t.win(good) : t.lose(good)}
+            <p className={`mx-4 rounded-2xl bg-white px-5 py-3 text-center text-xl font-bold shadow-lg ring-1 ${won ? 'text-emerald-700 ring-emerald-300' : 'text-gray-800 ring-gray-200'}`}>
+              {won ? t.win(wonOn) : t.lose}
             </p>
           </div>
         )}
