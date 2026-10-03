@@ -28,6 +28,8 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://jorgeromeroromanis.com'),
+  alternates: { types: { 'text/markdown': '/agent.md' } },
   title: "Jorge Romero Romanis - Full-Stack Software Engineer",
   description: "Full-stack software engineer (React, TypeScript, Next.js) who scaled PayPal's Fastlane to 1.5M users across 7 countries. Portfolio of shipped projects, plus photography, 360 tours, and interactive tools.",
 };
@@ -61,6 +63,11 @@ export default async function RootLayout({
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <p className="text-center text-gray-600">
                 © {new Date().getFullYear()} Jorge Romero Romanis. All rights reserved.
+              </p>
+              <p className="text-center mt-2">
+                <a href="/agent.md" className="font-mono text-xs text-gray-500 hover:text-blue-600 underline underline-offset-4">
+                  Are you an AI agent? Click here
+                </a>
               </p>
             </div>
           </footer>

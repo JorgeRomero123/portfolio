@@ -25,6 +25,7 @@ import ToolWall from './ToolWall';
 import ClientSites from './ClientSites';
 import GalleryTile from './GalleryTile';
 import GameCta from './GameCta';
+import AgentLink from './AgentLink';
 import {
   ACCENT, MONO, SANS, NAV_LINKS, TECH, STATS, TRUTHS, PROJECTS, TOOL_COUNT,
   CLIENT_SITES,
@@ -245,6 +246,8 @@ export default function HomeExperience({
           .jrr-brandtext{display:none!important;}
           .jrr-navlinks{gap:14px!important;font-size:11px!important;letter-spacing:0.04em!important;}
           .jrr-available{display:none!important;}
+          /* the hero has no room for a third row here; the one in #contact stays */
+          .jrr-agent-hero{display:none!important;}
         }
         @keyframes jrr-hop{0%,62%,100%{transform:translateY(0)}72%{transform:translateY(-7px)}84%{transform:translateY(0) scaleY(.9)}}
         .jrr-pawn{animation:jrr-hop 2.4s ease-in-out infinite;}
@@ -375,6 +378,7 @@ export default function HomeExperience({
             >
               Browse the 25 tools
             </motion.a>
+            <AgentLink className="jrr-agent-hero" />
           </div>
 
           <GameCta reduced={reduced} />
@@ -624,6 +628,7 @@ export default function HomeExperience({
               More about me →
             </Link>
           </motion.div>
+          <AgentLink />
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginTop: 'clamp(70px,12vh,130px)', paddingTop: 28, borderTop: '1px solid #e4eaf3', fontFamily: MONO, fontSize: 12, color: '#9aa8c2', letterSpacing: '0.06em' }}>

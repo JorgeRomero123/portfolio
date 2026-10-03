@@ -27,3 +27,9 @@ export async function getAboutContent(): Promise<string> {
   const fileContents = await fs.readFile(filePath, 'utf8');
   return fileContents;
 }
+
+export async function getAgentBrief(): Promise<string> {
+  const filePath = path.join(contentDirectory, 'agent.md');
+  const fileContents = await fs.readFile(filePath, 'utf8');
+  return fileContents;
+}
