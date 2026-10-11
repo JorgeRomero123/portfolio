@@ -27,11 +27,24 @@ const jetBrainsMono = JetBrains_Mono({
   weight: ["400", "500", "700"],
 });
 
+const TITLE = "Jorge Romero Romanis - Full-Stack Software Engineer";
+const DESCRIPTION = "Full-stack software engineer (React, TypeScript, Next.js) who scaled PayPal's Fastlane to 1.5M users across 7 countries. Portfolio of shipped projects, plus photography, 360 tours, and interactive tools.";
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://jorgeromeroromanis.com'),
   alternates: { types: { 'text/markdown': '/agent.md' } },
-  title: "Jorge Romero Romanis - Full-Stack Software Engineer",
-  description: "Full-stack software engineer (React, TypeScript, Next.js) who scaled PayPal's Fastlane to 1.5M users across 7 countries. Portfolio of shipped projects, plus photography, 360 tours, and interactive tools.",
+  title: TITLE,
+  description: DESCRIPTION,
+  // No `url` here: every page without its own Open Graph block inherits this one, and they
+  // would all claim to be the home. The image comes from app/opengraph-image.tsx.
+  openGraph: {
+    type: 'website',
+    siteName: 'Jorge Romero Romanis',
+    title: TITLE,
+    description: DESCRIPTION,
+    locale: 'en_US',
+  },
+  twitter: { card: 'summary_large_image', title: TITLE, description: DESCRIPTION },
 };
 
 export default async function RootLayout({
