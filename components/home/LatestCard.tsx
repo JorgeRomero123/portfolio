@@ -108,7 +108,7 @@ export default function LatestCard({ reduced }: { reduced: boolean }) {
   return (
     <a
       ref={ref}
-      href="https://artoverlay.com"
+      href="https://artoverlay.com/?utm_source=portfolio&utm_medium=referral&utm_campaign=latest-card"
       target="_blank"
       rel="noopener"
       data-reveal

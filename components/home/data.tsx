@@ -113,7 +113,7 @@ export const PROJECTS: Project[] = [
     tech: ['RBAC', 'SSE', 'State machine'],
   },
   {
-    href: 'https://artoverlay.com',
+    href: 'https://artoverlay.com/?utm_source=portfolio&utm_medium=referral&utm_campaign=shipped-card',
     tag: 'solo · free',
     tagColor: '#0070f3',
     tagBorder: '#bcd8fb',
