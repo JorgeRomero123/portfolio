@@ -317,7 +317,9 @@ export default function HomeExperience({
       </motion.nav>
 
       {/* ===== HERO ===== */}
-      <section id="top" style={{ position: 'relative', height: '100vh', minHeight: 680, overflow: 'hidden' }}>
+      {/* A minimum height, not a fixed one: on a short phone the copy is taller than the
+          screen, and centring it in a fixed box pushed its first line up under the nav. */}
+      <section id="top" style={{ position: 'relative', minHeight: 'max(100vh, 680px)', overflow: 'hidden', display: 'flex' }}>
         {SHOW_WEBGL && (
           <canvas ref={heroCanvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }} />
         )}
@@ -336,8 +338,10 @@ export default function HomeExperience({
         <motion.div
           style={{
             y: heroCopyY, opacity: heroCopyOpacity,
-            position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex',
-            flexDirection: 'column', justifyContent: 'center', padding: '0 clamp(24px,7vw,110px)',
+            position: 'relative', flex: 1, minWidth: 0, pointerEvents: 'none', display: 'flex',
+            flexDirection: 'column', justifyContent: 'center',
+            // the top padding is the fixed nav's height, so the copy can never sit under it
+            padding: '96px clamp(24px,7vw,110px) 56px',
           }}
         >
           <div style={{ fontFamily: MONO, fontSize: 13, letterSpacing: '0.28em', textTransform: 'uppercase', color: ACCENT, marginBottom: 22 }}>
