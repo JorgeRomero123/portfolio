@@ -26,6 +26,7 @@ import ClientSites from './ClientSites';
 import GalleryTile from './GalleryTile';
 import GameCta from './GameCta';
 import AgentLink from './AgentLink';
+import LatestCard from './LatestCard';
 import {
   ACCENT, MONO, SANS, NAV_LINKS, TECH, STATS, TRUTHS, PROJECTS, TOOL_COUNT,
   CLIENT_SITES,
@@ -401,6 +402,17 @@ export default function HomeExperience({
           ))}
         </div>
       </div>
+
+      {/* ===== LATEST — the one coloured thing on the page ===== */}
+      <section id="latest" style={{ maxWidth: 1180, margin: '0 auto', padding: 'clamp(70px,11vh,130px) clamp(24px,7vw,40px) 0' }}>
+        <div data-reveal style={{ display: 'flex', alignItems: 'baseline', gap: 18, marginBottom: 34, flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: MONO, fontSize: 13, color: ACCENT, letterSpacing: '0.1em' }}>new</span>
+          <h2 style={{ fontSize: 'clamp(30px,4.4vw,52px)', fontWeight: 700, letterSpacing: '-0.03em' }}>Latest from me</h2>
+          <span style={{ fontFamily: MONO, fontSize: 13, color: '#8494b0', letterSpacing: '0.04em', marginLeft: 'auto' }}>live · solo · free</span>
+        </div>
+
+        <LatestCard reduced={reduced} />
+      </section>
 
       {/* ===== STATS ===== */}
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: 'clamp(90px,14vh,170px) clamp(24px,7vw,40px)' }}>
