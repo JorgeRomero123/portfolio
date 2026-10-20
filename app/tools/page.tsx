@@ -54,9 +54,16 @@ const categories: { label: string; tools: Tool[] }[] = [
       { name: 'Aprende a Cantar', description: 'Pitch training that transposes every level to your vocal range', href: '/tools/canto', icon: '🎤', color: 'from-emerald-500 to-teal-600' },
       { name: 'Mi Rutina', description: 'Rutina diaria con racha, niveles y modo depa o parque', href: '/tools/exercise-routine', icon: '💪', color: 'from-emerald-500 to-teal-600' },
       { name: 'Quehaceres del Depa', description: 'Chore tracker with email reminders', href: '/tools/quehaceres', icon: '🧹', color: 'from-emerald-500 to-teal-600' },
+      { name: 'Once Ideal', description: 'Card game: manage Spurs through a 10-match season with a deck of tactics', href: '/games/once-ideal.html', icon: '⚽', color: 'from-emerald-500 to-teal-600' },
+      { name: 'Náufrago', description: 'Solo deck-building card game: survive the island, sink two pirate ships', href: '/games/naufrago.html', icon: '🏝️', color: 'from-emerald-500 to-teal-600' },
     ],
   },
 ];
+
+// The games are single static HTML files in public/games: a plain link loads them as full pages.
+function ToolLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return href.endsWith('.html') ? <a href={href}>{children}</a> : <Link href={href}>{children}</Link>;
+}
 
 export default function ToolsPage() {
   return (
@@ -79,7 +86,7 @@ export default function ToolsPage() {
             <StaggerChildren className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3" staggerDelay={0.04}>
               {category.tools.map((tool) => (
                 <StaggerItem key={tool.href}>
-                  <Link href={tool.href}>
+                  <ToolLink href={tool.href}>
                     <div className="group flex items-start gap-3 p-4 rounded-xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 h-full">
                       <span className={`flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br ${tool.color} flex items-center justify-center text-xl`}>
                         {tool.icon}
@@ -93,7 +100,7 @@ export default function ToolsPage() {
                         </p>
                       </div>
                     </div>
-                  </Link>
+                  </ToolLink>
                 </StaggerItem>
               ))}
             </StaggerChildren>
