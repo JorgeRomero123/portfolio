@@ -9,8 +9,8 @@ export const metadata = {
 
 export default function ProjectionMapperPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <div className="mb-5 flex items-center justify-between gap-4">
+    <div className="max-w-4xl lg:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-4">
+      <div className="mb-5 lg:mb-3 flex items-center justify-between gap-4">
         <Link
           href="/tools"
           className="inline-flex items-center text-sm font-medium text-gray-400 hover:text-gray-900 transition-colors"

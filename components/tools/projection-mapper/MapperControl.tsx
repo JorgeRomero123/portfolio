@@ -11,6 +11,8 @@ import {
 
 const SWATCHES = ['#ff8ad8', '#ffffff', '#ff7a1a', '#7dff6a', '#7fd3ff', '#b46bff', '#ff2a2a', '#ffd166'];
 const CORNERS = ['Top left', 'Top right', 'Bottom right', 'Bottom left'];
+// Both columns fill the viewport under the sticky site nav on laptops.
+const COLUMN_H = 'lg:h-[calc(100dvh-7rem)]';
 
 function pickRoom(): string {
   const fromUrl = new URLSearchParams(location.search).get('room');
@@ -82,8 +84,9 @@ export default function MapperControl() {
     const canvas = canvasRef.current, wrap = wrapRef.current;
     if (!canvas || !wrap) return;
     const st = state;
-    const maxW = wrap.clientWidth;
-    const H = Math.min(maxW / st.aspect, innerHeight * 0.55);
+    // Side-by-side layout: the stage fills its column. Stacked (phones): cap its height.
+    const maxH = matchMedia('(min-width: 1024px)').matches ? wrap.clientHeight : innerHeight * 0.55;
+    const H = Math.min(wrap.clientWidth / st.aspect, maxH);
     const W = H * st.aspect;
     const dpr = devicePixelRatio || 1;
     if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {
@@ -129,8 +132,10 @@ export default function MapperControl() {
 
   useEffect(() => { draw(); }, [draw]);
   useEffect(() => {
+    const ro = new ResizeObserver(() => draw());
+    if (wrapRef.current) ro.observe(wrapRef.current);
     addEventListener('resize', draw);
-    return () => removeEventListener('resize', draw);
+    return () => { ro.disconnect(); removeEventListener('resize', draw); };
   }, [draw]);
 
   const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -195,6 +200,36 @@ export default function MapperControl() {
     }, false);
   };
 
+  // Keyboard shortcuts, so fine-tuning on a laptop doesn't need the mouse.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable) return;
+      const k = e.key;
+      const arrows: Record<string, [number, number]> = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
+      if (arrows[k] && sel) {
+        e.preventDefault();
+        const step = e.shiftKey ? 10 : 1;
+        nudge(arrows[k][0] * step, arrows[k][1] * step);
+      } else if ((e.metaKey || e.ctrlKey) && k.toLowerCase() === 'z') {
+        e.preventDefault();
+        undo();
+      } else if (e.metaKey || e.ctrlKey || e.altKey) {
+        return;
+      } else if (k >= '1' && k <= '4') {
+        setCorner(+k - 1);
+      } else if (k.toLowerCase() === 'w') {
+        setCorner(-1);
+      } else if (k.toLowerCase() === 'g') {
+        commit((st) => { st.showGrid = !st.showGrid; }, false);
+      } else if (k.toLowerCase() === 'b') {
+        commit((st) => { st.blackout = !st.blackout; }, false);
+      }
+    };
+    addEventListener('keydown', onKey);
+    return () => removeEventListener('keydown', onKey);
+  });
+
   const move = (dir: number) => commit((st) => {
     const i = st.surfaces.findIndex((s) => s.id === st.selected), j = i + dir;
     if (i < 0 || j < 0 || j >= st.surfaces.length) return;
@@ -229,61 +264,9 @@ export default function MapperControl() {
   const label = 'mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400';
 
   return (
-    <div className="space-y-4">
-      {/* Room / connection */}
-      <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-wrap items-center gap-3">
-          <div>
-            <p className={label + ' mb-0.5'}>Room</p>
-            <p className="font-mono text-2xl font-bold tracking-[0.25em] text-gray-900">{room}</p>
-          </div>
-          <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${status === 'online' ? 'bg-green-50 text-green-700' : status === 'local' ? 'bg-gray-100 text-gray-600' : 'bg-yellow-50 text-yellow-700'}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${status === 'online' ? 'bg-green-500' : status === 'local' ? 'bg-gray-400' : 'bg-yellow-500'}`} />
-            {status === 'online' ? 'Phone sync on' : status === 'local' ? 'This browser only' : 'Connecting'}
-          </span>
-          <div className="ml-auto flex flex-wrap gap-2">
-            <button className={btnOn} onClick={() => window.open(outputUrl, 'pm-output', 'popup,width=1280,height=720')}>
-              Open projector window
-            </button>
-          </div>
-        </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
-            <p className="font-medium text-gray-800">Control from your phone</p>
-            {remoteSyncAvailable ? (
-              <div className="mt-1 flex items-center gap-2">
-                <code className="min-w-0 flex-1 truncate text-xs text-gray-500">{phoneUrl}</code>
-                <button
-                  className="text-xs font-semibold text-[#0070f3]"
-                  onClick={() => navigator.clipboard?.writeText(phoneUrl).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); })}
-                >
-                  {copied ? 'Copied' : 'Copy'}
-                </button>
-              </div>
-            ) : (
-              <p className="mt-1 text-xs">Phone sync isn&apos;t configured on this deployment; use a second window in this browser.</p>
-            )}
-          </div>
-          <form
-            className="flex items-end gap-2 rounded-lg bg-gray-50 p-3"
-            onSubmit={(e) => { e.preventDefault(); const r = normalizeRoom(joinDraft); if (r) { switchRoom(r); setJoinDraft(''); } }}
-          >
-            <label className="flex-1 text-sm">
-              <span className="font-medium text-gray-800">Join another room</span>
-              <input
-                value={joinDraft}
-                onChange={(e) => setJoinDraft(e.target.value)}
-                placeholder="CODE"
-                className="mt-1 w-full rounded-md border border-gray-200 bg-white px-2 py-1.5 font-mono uppercase tracking-widest outline-none focus:border-[#0070f3]"
-              />
-            </label>
-            <button className={btn}>Join</button>
-          </form>
-        </div>
-      </section>
-
+    <div className="space-y-4 lg:grid lg:grid-cols-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start lg:gap-5 lg:space-y-0">
       {/* Stage */}
-      <section className="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
+      <section className={`rounded-2xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4 lg:sticky lg:top-20 lg:flex lg:flex-col ${COLUMN_H}`}>
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <button className={state.showGrid ? btnOn : btn} onClick={() => commit((s) => { s.showGrid = !s.showGrid; }, false)}>Grid</button>
           <button
@@ -301,10 +284,10 @@ export default function MapperControl() {
             + Surface
           </button>
         </div>
-        <div ref={wrapRef} className="flex justify-center">
+        <div ref={wrapRef} className="flex justify-center lg:relative lg:min-h-0 lg:flex-1">
           <canvas
             ref={canvasRef}
-            className="block touch-none rounded-xl"
+            className="block touch-none rounded-xl lg:absolute lg:inset-0 lg:m-auto"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={endDrag}
@@ -330,129 +313,191 @@ export default function MapperControl() {
         )}
       </section>
 
-      {/* Selected surface */}
-      {sel && (
-        <section className="space-y-5 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-          <div>
-            <p className={label}>Name</p>
-            <input
-              value={sel.name}
-              onChange={(e) => editSel((s) => { s.name = e.target.value; })}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#0070f3]"
-            />
-          </div>
-
-          <div>
-            <p className={label}>Content</p>
-            <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-5">
-              {EFFECT_LIST.map(([k, l]) => (
-                <button key={k} className={`${sel.content === k ? btnOn : btn} px-1`} onClick={() => editSel((s) => { s.content = k; }, true)}>
-                  {l}
-                </button>
-              ))}
+      {/* Settings: own scroll column next to the stage on laptops */}
+      <div className={`space-y-4 lg:sticky lg:top-20 lg:overflow-y-auto lg:overscroll-contain lg:pr-1 ${COLUMN_H}`}>
+        {/* Room / connection */}
+        <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-wrap items-center gap-3">
+            <div>
+              <p className={label + ' mb-0.5'}>Room</p>
+              <p className="font-mono text-2xl font-bold tracking-[0.25em] text-gray-900">{room}</p>
+            </div>
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${status === 'online' ? 'bg-green-50 text-green-700' : status === 'local' ? 'bg-gray-100 text-gray-600' : 'bg-yellow-50 text-yellow-700'}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${status === 'online' ? 'bg-green-500' : status === 'local' ? 'bg-gray-400' : 'bg-yellow-500'}`} />
+              {status === 'online' ? 'Phone sync on' : status === 'local' ? 'This browser only' : 'Connecting'}
+            </span>
+            <div className="ml-auto flex flex-wrap gap-2">
+              <button className={btnOn} onClick={() => window.open(outputUrl, 'pm-output', 'popup,width=1280,height=720')}>
+                Open projector window
+              </button>
             </div>
           </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
+              <p className="font-medium text-gray-800">Control from your phone</p>
+              {remoteSyncAvailable ? (
+                <div className="mt-1 flex items-center gap-2">
+                  <code className="min-w-0 flex-1 truncate text-xs text-gray-500">{phoneUrl}</code>
+                  <button
+                    className="text-xs font-semibold text-[#0070f3]"
+                    onClick={() => navigator.clipboard?.writeText(phoneUrl).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); })}
+                  >
+                    {copied ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+              ) : (
+                <p className="mt-1 text-xs">Phone sync isn&apos;t configured on this deployment; use a second window in this browser.</p>
+              )}
+            </div>
+            <form
+              className="flex items-end gap-2 rounded-lg bg-gray-50 p-3"
+              onSubmit={(e) => { e.preventDefault(); const r = normalizeRoom(joinDraft); if (r) { switchRoom(r); setJoinDraft(''); } }}
+            >
+              <label className="flex-1 text-sm">
+                <span className="font-medium text-gray-800">Join another room</span>
+                <input
+                  value={joinDraft}
+                  onChange={(e) => setJoinDraft(e.target.value)}
+                  placeholder="CODE"
+                  className="mt-1 w-full rounded-md border border-gray-200 bg-white px-2 py-1.5 font-mono uppercase tracking-widest outline-none focus:border-[#0070f3]"
+                />
+              </label>
+              <button className={btn}>Join</button>
+            </form>
+          </div>
+        </section>
 
-          {sel.content === 'text' && (
+        {/* Selected surface */}
+        {sel ? (
+          <section className="space-y-5 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
             <div>
-              <p className={label}>Text</p>
+              <p className={label}>Name</p>
               <input
-                value={sel.text}
-                maxLength={24}
-                onChange={(e) => editSel((s) => { s.text = e.target.value; })}
+                value={sel.name}
+                onChange={(e) => editSel((s) => { s.name = e.target.value; })}
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#0070f3]"
               />
             </div>
-          )}
 
-          {sel.content === 'media' && (
             <div>
-              <p className={label}>Image / video</p>
-              {sameDeviceAsOutput ? (
-                <>
-                  <label className={`${btn} inline-block cursor-pointer`}>
-                    Add file
-                    <input type="file" accept="image/*,video/*" hidden onChange={(e) => { onUpload(e.target.files?.[0]); e.target.value = ''; }} />
-                  </label>
-                  <p className="mt-1.5 text-xs text-gray-500">Files stay in this browser; nothing is uploaded.</p>
-                  <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
-                    {media.map((m) => (
-                      <MediaThumb
-                        key={m.id}
-                        item={m}
-                        active={sel.media === m.id}
-                        onPick={() => editSel((s) => { s.media = m.id; }, true)}
-                        onDelete={() => deleteMedia(m.id).then(refreshMedia)}
-                      />
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <p className="rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
-                  Images and videos are added on the computer that runs the projector window. Open this room there to pick one.
-                </p>
-              )}
-            </div>
-          )}
-
-          <div>
-            <p className={label}>Colour</p>
-            <div className="flex flex-wrap items-center gap-2">
-              {SWATCHES.map((c) => (
-                <button
-                  key={c}
-                  aria-label={`Colour ${c}`}
-                  className={`h-8 w-8 rounded-full border-2 shadow-sm ${sel.color === c ? 'border-gray-900' : 'border-gray-200'}`}
-                  style={{ background: c }}
-                  onClick={() => editSel((s) => { s.color = c; })}
-                />
-              ))}
-              <input type="color" value={sel.color} onChange={(e) => editSel((s) => { s.color = e.target.value; })} className="h-9 w-11 cursor-pointer rounded-lg border border-gray-200 bg-white p-0.5" />
-            </div>
-            <Slider label="Speed" value={sel.speed} min={0} max={3} step={0.05} format={(v) => `${v.toFixed(2)}x`} onChange={(v) => editSel((s) => { s.speed = v; })} />
-            <Slider label="Brightness" value={sel.opacity} min={0} max={1} step={0.01} format={(v) => `${Math.round(v * 100)}%`} onChange={(v) => editSel((s) => { s.opacity = v; })} />
-          </div>
-
-          <div>
-            <p className={label}>Nudge corner</p>
-            <div className="flex flex-wrap items-start gap-4">
-              <div className="grid min-w-[180px] flex-1 grid-cols-2 gap-1.5">
-                {CORNERS.map((n, i) => (
-                  <button key={n} className={corner === i ? btnOn : btn} onClick={() => setCorner(i)}>{n}</button>
+              <p className={label}>Content</p>
+              <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-5 lg:grid-cols-4">
+                {EFFECT_LIST.map(([k, l]) => (
+                  <button key={k} className={`${sel.content === k ? btnOn : btn} px-1`} onClick={() => editSel((s) => { s.content = k; }, true)}>
+                    {l}
+                  </button>
                 ))}
-                <button className={`${corner === -1 ? btnOn : btn} col-span-2`} onClick={() => setCorner((c) => (c === -1 ? 0 : -1))}>
-                  Whole surface
-                </button>
-              </div>
-              <div className="grid grid-cols-3 gap-1.5">
-                <span />
-                <button className={`${btn} h-11 w-12`} aria-label="Up" onClick={() => nudge(0, -1)}>&uarr;</button>
-                <span />
-                <button className={`${btn} h-11 w-12`} aria-label="Left" onClick={() => nudge(-1, 0)}>&larr;</button>
-                <span />
-                <button className={`${btn} h-11 w-12`} aria-label="Right" onClick={() => nudge(1, 0)}>&rarr;</button>
-                <span />
-                <button className={`${btn} h-11 w-12`} aria-label="Down" onClick={() => nudge(0, 1)}>&darr;</button>
-                <span />
               </div>
             </div>
-            <p className="mt-2 text-xs text-gray-500">Each tap moves one projector pixel.</p>
-          </div>
 
-          <div className="flex flex-wrap gap-2 border-t border-gray-100 pt-4">
-            <button className={btn} onClick={() => editSel((s) => { s.visible = !s.visible; }, true)}>{sel.visible ? 'Hide' : 'Show'}</button>
-            <button className={btn} onClick={() => commit((st) => { const c = duplicateSurface(sel); st.surfaces.push(c); st.selected = c.id; })}>Duplicate</button>
-            <button className={btn} onClick={() => move(1)}>Bring forward</button>
-            <button className={btn} onClick={() => move(-1)}>Send back</button>
-            <button
-              className={`${btn} ml-auto text-red-600`}
-              onClick={() => commit((st) => { st.surfaces = st.surfaces.filter((s) => s.id !== sel.id); st.selected = st.surfaces.at(-1)?.id ?? null; })}
-            >
-              Delete
-            </button>
-          </div>
-        </section>
-      )}
+            {sel.content === 'text' && (
+              <div>
+                <p className={label}>Text</p>
+                <input
+                  value={sel.text}
+                  maxLength={24}
+                  onChange={(e) => editSel((s) => { s.text = e.target.value; })}
+                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#0070f3]"
+                />
+              </div>
+            )}
+
+            {sel.content === 'media' && (
+              <div>
+                <p className={label}>Image / video</p>
+                {sameDeviceAsOutput ? (
+                  <>
+                    <label className={`${btn} inline-block cursor-pointer`}>
+                      Add file
+                      <input type="file" accept="image/*,video/*" hidden onChange={(e) => { onUpload(e.target.files?.[0]); e.target.value = ''; }} />
+                    </label>
+                    <p className="mt-1.5 text-xs text-gray-500">Files stay in this browser; nothing is uploaded.</p>
+                    <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
+                      {media.map((m) => (
+                        <MediaThumb
+                          key={m.id}
+                          item={m}
+                          active={sel.media === m.id}
+                          onPick={() => editSel((s) => { s.media = m.id; }, true)}
+                          onDelete={() => deleteMedia(m.id).then(refreshMedia)}
+                        />
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
+                    Images and videos are added on the computer that runs the projector window. Open this room there to pick one.
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div>
+              <p className={label}>Colour</p>
+              <div className="flex flex-wrap items-center gap-2">
+                {SWATCHES.map((c) => (
+                  <button
+                    key={c}
+                    aria-label={`Colour ${c}`}
+                    className={`h-8 w-8 rounded-full border-2 shadow-sm ${sel.color === c ? 'border-gray-900' : 'border-gray-200'}`}
+                    style={{ background: c }}
+                    onClick={() => editSel((s) => { s.color = c; })}
+                  />
+                ))}
+                <input type="color" value={sel.color} onChange={(e) => editSel((s) => { s.color = e.target.value; })} className="h-9 w-11 cursor-pointer rounded-lg border border-gray-200 bg-white p-0.5" />
+              </div>
+              <Slider label="Speed" value={sel.speed} min={0} max={3} step={0.05} format={(v) => `${v.toFixed(2)}x`} onChange={(v) => editSel((s) => { s.speed = v; })} />
+              <Slider label="Brightness" value={sel.opacity} min={0} max={1} step={0.01} format={(v) => `${Math.round(v * 100)}%`} onChange={(v) => editSel((s) => { s.opacity = v; })} />
+            </div>
+
+            <div>
+              <p className={label}>Nudge corner</p>
+              <div className="flex flex-wrap items-start gap-4">
+                <div className="grid min-w-[180px] flex-1 grid-cols-2 gap-1.5">
+                  {CORNERS.map((n, i) => (
+                    <button key={n} className={corner === i ? btnOn : btn} onClick={() => setCorner(i)}>{n}</button>
+                  ))}
+                  <button className={`${corner === -1 ? btnOn : btn} col-span-2`} onClick={() => setCorner((c) => (c === -1 ? 0 : -1))}>
+                    Whole surface
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  <span />
+                  <button className={`${btn} h-11 w-12`} aria-label="Up" onClick={() => nudge(0, -1)}>&uarr;</button>
+                  <span />
+                  <button className={`${btn} h-11 w-12`} aria-label="Left" onClick={() => nudge(-1, 0)}>&larr;</button>
+                  <span />
+                  <button className={`${btn} h-11 w-12`} aria-label="Right" onClick={() => nudge(1, 0)}>&rarr;</button>
+                  <span />
+                  <button className={`${btn} h-11 w-12`} aria-label="Down" onClick={() => nudge(0, 1)}>&darr;</button>
+                  <span />
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-gray-500">Each tap moves one projector pixel.</p>
+              <p className="mt-1 hidden text-xs text-gray-500 lg:block">
+                Keyboard: arrows nudge (Shift for 10px) · 1–4 pick a corner · W whole surface · ⌘Z undo · G grid · B blackout
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2 border-t border-gray-100 pt-4">
+              <button className={btn} onClick={() => editSel((s) => { s.visible = !s.visible; }, true)}>{sel.visible ? 'Hide' : 'Show'}</button>
+              <button className={btn} onClick={() => commit((st) => { const c = duplicateSurface(sel); st.surfaces.push(c); st.selected = c.id; })}>Duplicate</button>
+              <button className={btn} onClick={() => move(1)}>Bring forward</button>
+              <button className={btn} onClick={() => move(-1)}>Send back</button>
+              <button
+                className={`${btn} ml-auto text-red-600`}
+                onClick={() => commit((st) => { st.surfaces = st.surfaces.filter((s) => s.id !== sel.id); st.selected = st.surfaces.at(-1)?.id ?? null; })}
+              >
+                Delete
+              </button>
+            </div>
+          </section>
+        ) : (
+          <section className="hidden rounded-2xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500 lg:block">
+            Select a surface on the left, or add one, to change what it shows.
+          </section>
+        )}
+      </div>
     </div>
   );
 }
