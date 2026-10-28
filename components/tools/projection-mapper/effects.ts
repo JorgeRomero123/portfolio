@@ -9,12 +9,13 @@ import type { Surface } from './model';
 interface Ghost { x: number; y: number; size: number; born: number; life: number; drift: number; ph: number }
 interface Eye { x: number; y: number; r: number; born: number; life: number; blink: number }
 interface Drip { x: number; speed: number; width: number; off: number }
+interface Walker { start: number; dur: number; dir: number; run: boolean }
 
 export interface EffectMemory {
   ghosts?: Ghost[];
   eyes?: Eye[];
   drips?: Drip[];
-  walker?: { start: number; dur: number; dir: number } | null;
+  walker?: Walker | null;
   next?: number;
   flashAt?: number;
   double?: boolean;
@@ -52,6 +53,66 @@ function ghostPath(ctx: CanvasRenderingContext2D, x: number, y: number, s: numbe
     ctx.lineTo(px, py);
   }
   ctx.closePath();
+}
+
+/**
+ * A human silhouette mid-stride. `gy` is the ground line, `H` the figure height,
+ * `phase` the gait cycle in radians, `dir` 1 = facing right, -1 = facing left.
+ */
+function drawFigure(ctx: CanvasRenderingContext2D, x: number, gy: number, H: number, phase: number, dir: number, run: boolean) {
+  const legAmp = run ? 0.7 : 0.45, kneeAmp = run ? 1.9 : 0.5;
+  const armAmp = run ? 1.0 : 0.4, elbow = run ? 1.6 : 0.35;
+  const lean = run ? 0.28 : 0.06;
+  const thigh = H * 0.26, shin = H * 0.26, upperArm = H * 0.16, foreArm = H * 0.15;
+  const hipY = gy - H * 0.5 - Math.abs(Math.sin(phase)) * H * (run ? 0.05 : 0.015);
+  const hip: Point2 = [x, hipY];
+  const shoulder: Point2 = [x + Math.sin(lean) * H * 0.3 * dir, hipY - Math.cos(lean) * H * 0.3];
+  // Angles are measured from straight down; positive points forward.
+  const limb = (from: Point2, angle: number, len: number): Point2 => [from[0] + Math.sin(angle) * len * dir, from[1] + Math.cos(angle) * len];
+
+  ctx.save();
+  ctx.fillStyle = ctx.strokeStyle = '#000';
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = H * 0.03;
+  const segment = (pts: Point2[], width: number) => {
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
+    ctx.stroke();
+  };
+  for (const off of [0, Math.PI]) {
+    const swing = Math.sin(phase + off);
+    // Legs: the knee folds while the leg swings forward.
+    const a = legAmp * swing;
+    const knee = limb(hip, a, thigh);
+    const foot = limb(knee, a - kneeAmp * Math.max(0, Math.cos(phase + off)), shin);
+    segment([hip, knee, foot], H * 0.08);
+    // Arms swing opposite to the leg on the same side.
+    const b = -armAmp * swing;
+    const elbowPt = limb(shoulder, b, upperArm);
+    segment([shoulder, elbowPt, limb(elbowPt, b + elbow, foreArm)], H * 0.065);
+  }
+  segment([hip, shoulder], H * 0.14);
+  const head: Point2 = [shoulder[0] + Math.sin(lean) * H * 0.1 * dir, shoulder[1] - H * 0.11];
+  ctx.beginPath(); ctx.arc(head[0], head[1], H * 0.068, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+type Point2 = [number, number];
+
+/** Advance a figure that crosses the surface now and then. Returns its position, or null between crossings. */
+function crossing(mem: EffectMemory, t: number, w: number, firstDelay: [number, number], pickRun: () => boolean) {
+  if (!mem.walker) {
+    const run = pickRun();
+    mem.walker = { start: t + rand(...firstDelay), dur: run ? rand(1.3, 2.2) : rand(4, 6), dir: Math.random() < 0.5 ? 1 : -1, run };
+  }
+  const wk = mem.walker;
+  const p = (t - wk.start) / wk.dur;
+  if (p > 1) { mem.walker = null; return null; }
+  if (p < 0) return null;
+  const x = wk.dir > 0 ? -0.3 * w + p * 1.6 * w : 1.3 * w - p * 1.6 * w;
+  return { x, dir: wk.dir, run: wk.run, phase: t * (wk.run ? 14 : 7) };
 }
 
 export const effects: Record<string, Effect> = {
@@ -97,16 +158,20 @@ export const effects: Record<string, Effect> = {
     g.addColorStop(1, rgba(s.color, Math.max(0, flick * 0.35)));
     clear(ctx, w, h);
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
-    mem.walker ??= { start: t + rand(2, 5), dur: rand(3, 5), dir: Math.random() < 0.5 ? 1 : -1 };
-    const p = (t - mem.walker.start) / mem.walker.dur;
-    if (p > 1) mem.walker = null;
-    else if (p > 0) {
-      const x = mem.walker.dir > 0 ? -0.3 * w + p * 1.6 * w : 1.3 * w - p * 1.6 * w;
-      const H = h * 0.75, top = h - H + Math.abs(Math.sin(p * 20)) * h * 0.02;
-      ctx.fillStyle = '#000';
-      ctx.beginPath(); ctx.arc(x, top + H * 0.12, H * 0.1, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(x, top + H * 0.6, H * 0.17, H * 0.42, 0, 0, Math.PI * 2); ctx.fill();
-    }
+    // Seen through a window: the figure's legs are below the sill.
+    const f = crossing(mem, t, w, [2, 5], () => false);
+    if (f) drawFigure(ctx, f.x, h * 1.25, h * 1.1, f.phase, f.dir, f.run);
+  },
+
+  shadow(ctx, w, h, t, s, mem) {
+    // A softly lit wall that someone keeps running (or creeping) past.
+    clear(ctx, w, h);
+    const g = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.max(w, h) * 0.75);
+    g.addColorStop(0, rgba(s.color, 0.75));
+    g.addColorStop(1, rgba(s.color, 0.3));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    const f = crossing(mem, t, w, [0.5, 3], () => Math.random() < 0.7);
+    if (f) drawFigure(ctx, f.x, h * 0.97, h * 0.8, f.phase, f.dir, f.run);
   },
 
   lightning(ctx, w, h, t, s, mem) {
@@ -242,7 +307,7 @@ export const effects: Record<string, Effect> = {
 };
 
 export const EFFECT_LIST: [string, string][] = [
-  ['ghosts', 'Ghosts'], ['windows', 'Window light'], ['lightning', 'Lightning'], ['eyes', 'Eyes'],
+  ['ghosts', 'Ghosts'], ['shadow', 'Running shadow'], ['windows', 'Window light'], ['lightning', 'Lightning'], ['eyes', 'Eyes'],
   ['outline', 'Neon outline'], ['slime', 'Slime'], ['static', 'TV static'], ['text', 'Text'],
   ['color', 'Colour'], ['rainbow', 'Rainbow'], ['white', 'White'], ['none', 'Off'], ['media', 'Image / video'],
 ];
