@@ -57,7 +57,9 @@ export default async function RootLayout({
   const isAdminRoute = pathname.startsWith('/admin');
   // The homepage is a self-contained dark experience with its own nav/footer.
   const isHome = pathname === '/';
-  const bareLayout = isAdminRoute || isHome;
+  // The projector output is a fullscreen black canvas with no site chrome.
+  const isProjectorOutput = pathname.startsWith('/tools/projection-mapper/output');
+  const bareLayout = isAdminRoute || isHome || isProjectorOutput;
 
   return (
     <html lang="en" className={isHome ? 'bg-[#f7f9fc]' : 'bg-gray-50'}>

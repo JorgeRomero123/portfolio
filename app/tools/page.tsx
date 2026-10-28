@@ -53,6 +53,7 @@ const categories: { label: string; tools: Tool[] }[] = [
       { name: 'Aprende Guitarra', description: 'Level-based course with mic-verified chord practice', href: '/tools/guitarra', icon: '🎸', color: 'from-emerald-500 to-teal-600' },
       { name: 'Aprende a Cantar', description: 'Pitch training that transposes every level to your vocal range', href: '/tools/canto', icon: '🎤', color: 'from-emerald-500 to-teal-600' },
       { name: 'Mi Rutina', description: 'Rutina diaria con racha, niveles y modo depa o parque', href: '/tools/exercise-routine', icon: '💪', color: 'from-emerald-500 to-teal-600' },
+      { name: 'Projection Mapper', description: 'Haunt your house with a cheap projector, mapped from your phone', href: '/tools/projection-mapper', icon: '👻', color: 'from-emerald-500 to-teal-600' },
       { name: 'Quehaceres del Depa', description: 'Chore tracker with email reminders', href: '/tools/quehaceres', icon: '🧹', color: 'from-emerald-500 to-teal-600' },
       { name: 'Once Ideal', description: 'Card game: manage Spurs through a 10-match season with a deck of tactics', href: '/games/once-ideal.html', icon: '⚽', color: 'from-emerald-500 to-teal-600' },
       { name: 'Náufrago', description: 'Solo deck-building card game: survive the island, sink two pirate ships', href: '/games/naufrago.html', icon: '🏝️', color: 'from-emerald-500 to-teal-600' },
