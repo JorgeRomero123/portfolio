@@ -71,11 +71,11 @@ export function ElevatorCar({ doors = 'open', occupied = true, ...p }: Props & {
 
 /**
  * One storey of glass shaft. Tiles vertically without seams: the rails have no top or
- * bottom edge, and the beam sits mid-tile.
+ * bottom edge, the beam sits mid-tile, and there's no wobble to misalign the joins.
  */
 export function ElevatorShaft(p: Props) {
   return (
-    <InkSvg viewBox="0 0 200 300" label="" {...p}>
+    <InkSvg viewBox="0 0 200 300" label="" wobble={0} {...p}>
       {() => (
         <>
           <rect x={18} y={0} width={164} height={300} fill={C.lavender} stroke="none" opacity={0.35} />

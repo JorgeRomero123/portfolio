@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { C } from '@/components/illustration/ink';
 import { Familjen_Grotesk, Newsreader } from 'next/font/google';
 import Tree, { TallTree } from '@/components/illustration/Tree';
 import Jorge, {
@@ -9,6 +10,7 @@ import {
   Drone, BoardGame, Camera360, CoysPennant, SoccerBall, Pencil, Canvas, Drawing, Glasses, Laptop, Coffee,
   Camera, Projector, PictureFrames, PottedPlant, DeskLamp, Mailbox, Birds,
 } from '@/components/illustration/objects';
+import { FloorSlab, Railing, SlatWall, Window, Room, Rooftop } from '@/components/illustration/building';
 import { ElevatorCar, ElevatorShaft, FloorDial, ButtonPanel, Ding } from '@/components/illustration/elevator';
 
 /**
@@ -31,7 +33,28 @@ const FLOORS = [
 
 const full = { width: '100%', height: 'auto' } as const;
 
+const strip = (Strip: (p: { style?: React.CSSProperties }) => ReactNode, n: number) => (
+  <div style={{ display: 'flex' }}>
+    {Array.from({ length: n }, (_, i) => <Strip key={i} style={{ width: `${100 / n}%`, height: 'auto', display: 'block' }} />)}
+  </div>
+);
+
 const ASSETS: { name: string; note: string; render: ReactNode }[] = [
+  { name: 'Rooftop', note: 'components/illustration/building.tsx', render: <Rooftop style={full} /> },
+  { name: 'Room', note: 'lavender wall, lamp', render: <Room style={full} /> },
+  { name: 'Room · window', note: 'peach wall, window, no lamp', render: <Room wall={C.peach} window lamp={false} style={full} /> },
+  { name: 'Window', note: 'curtains on', render: <Window style={{ width: '70%', height: 'auto', display: 'block', margin: '0 auto' }} /> },
+  { name: 'Floor slab (tiles →)', note: 'three side by side', render: strip(FloorSlab, 3) },
+  { name: 'Railing (tiles →)', note: 'three side by side', render: strip(Railing, 3) },
+  {
+    name: 'Slat wall (tiles ↔ ↕)',
+    note: '2×2',
+    render: (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+        {[0, 1, 2, 3].map((i) => <SlatWall key={i} style={{ width: '100%', height: 'auto', display: 'block' }} />)}
+      </div>
+    ),
+  },
   { name: 'Elevator car · open', note: 'components/illustration/elevator.tsx', render: <ElevatorCar style={full} /> },
   { name: 'Elevator car · closed', note: 'doors="closed" — slides via CSS transition', render: <ElevatorCar doors="closed" style={full} /> },
   {
