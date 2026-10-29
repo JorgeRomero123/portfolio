@@ -1,8 +1,9 @@
 import type { Surface } from './model';
 
 /**
- * Procedural effects. Black = no light from the projector, so every effect paints
- * on black and lights only what it needs to. `t` is seconds, already speed-scaled;
+ * Procedural effects. Each frame starts transparent and lights only what it needs to,
+ * so overlapping surfaces show through each other (the page behind is black, which
+ * the projector shows as no light). `t` is seconds, already speed-scaled;
  * `mem` is per-surface scratch space that persists between frames.
  */
 
@@ -36,8 +37,7 @@ function clear(ctx: CanvasRenderingContext2D, w: number, h: number) {
   ctx.globalCompositeOperation = 'source-over';
   ctx.globalAlpha = 1;
   ctx.shadowBlur = 0;
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, w, h);
+  ctx.clearRect(0, 0, w, h);
 }
 
 function ghostPath(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, t: number) {
@@ -181,7 +181,8 @@ export const effects: Record<string, Effect> = {
     let k = Math.exp(-since * 9);
     if (mem.double && since > 0.18) k = Math.max(k, Math.exp(-(since - 0.18) * 7));
     clear(ctx, w, h);
-    ctx.fillStyle = `rgb(${8 + 247 * k},${10 + 245 * k},${30 + 225 * k})`;
+    // Transparent between flashes; a cold white flash fades out.
+    ctx.fillStyle = `rgba(225,232,255,${k})`;
     ctx.fillRect(0, 0, w, h);
   },
 
