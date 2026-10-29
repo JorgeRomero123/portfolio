@@ -2,6 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { Familjen_Grotesk, Newsreader, JetBrains_Mono } from 'next/font/google';
 import BuildingExperience, { type FramedPhoto, type Panorama } from '@/components/building/BuildingExperience';
+import game from '@/content/the-game.json';
 import { getGalleryData } from '@/lib/content';
 import type { Photo360Data } from '@/lib/types';
 
@@ -44,12 +45,16 @@ async function getPanoramas(): Promise<Panorama[]> {
   }
 }
 
+/** Just the colours of The Game's stops, for the board on the link; the rest stays on /the-game. */
+const GAME_COLORS = game.sections.map((s) => s.color);
+
 export default async function Home() {
   const [photos, panoramas] = await Promise.all([getFramedPhotos(), getPanoramas()]);
   return (
     <BuildingExperience
       photos={photos}
       panoramas={panoramas}
+      gameColors={GAME_COLORS}
       fonts={{
         display: familjen.style.fontFamily,
         body: newsreader.style.fontFamily,

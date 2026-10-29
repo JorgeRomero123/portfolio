@@ -10,6 +10,7 @@ import {
 import { ButtonPanel, Ding, ElevatorCar, FloorDial } from '@/components/illustration/elevator';
 import { Rooftop } from '@/components/illustration/building';
 import ArtOverlayBillboard from './ArtOverlayBillboard';
+import GameBoard from './GameBoard';
 import { PROJECTS, STATS, TRUTHS } from '@/components/home/data';
 import { ALL_TOOLS, TOOL_CATEGORIES } from '@/lib/tools';
 
@@ -24,6 +25,9 @@ type Fonts = { display: string; body: string; mono: string };
 export type FramedPhoto = { url: string; place: string; drone: boolean };
 export type Panorama = { id: string; url: string; title: string };
 
+type FloorId = (typeof FLOORS)[number]['id'];
+const floorIndex = (id: FloorId) => FLOORS.findIndex((f) => f.id === id);
+
 const EMAIL = 'jorgeromanis@yahoo.com.mx';
 
 /** Top to bottom, matching the order of the sections on the page. */
@@ -33,7 +37,7 @@ const FLOORS = [
   { id: 'tools', key: '3', label: 'tools' },
   { id: 'gallery', key: '2', label: 'gallery' },
   { id: 'contact', key: '1', label: 'contact' },
-];
+] as const;
 /** The dial reads bottom to top. */
 const DIAL = [...FLOORS].reverse().map((f) => f.key);
 const PANEL_H = 56 + FLOORS.length * 46; // ButtonPanel's viewBox height
@@ -69,10 +73,12 @@ const SHAFT: CSSProperties = {
   ].join(', '),
 };
 
-export default function BuildingExperience({ fonts, photos, panoramas }: {
+export default function BuildingExperience({ fonts, photos, panoramas, gameColors }: {
   fonts: Fonts;
   photos: FramedPhoto[];
   panoramas: Panorama[];
+  /** The Game's stop colours, for the little board on the link to it. */
+  gameColors: string[];
 }) {
   const floorRefs = useRef<(HTMLElement | null)[]>([]);
   const [active, setActive] = useState(0);
@@ -123,12 +129,12 @@ export default function BuildingExperience({ fonts, photos, panoramas }: {
     };
   }, []);
 
-  const goTo = (i: number) => {
+  const goTo = (id: FloorId) => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    floorRefs.current[i]?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+    floorRefs.current[floorIndex(id)]?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
   };
 
-  const floorRef = (i: number) => (el: HTMLElement | null) => { floorRefs.current[i] = el; };
+  const floorRef = (id: FloorId) => (el: HTMLElement | null) => { floorRefs.current[floorIndex(id)] = el; };
 
   return (
     <div style={{ background: C.paper, color: INK, fontFamily: fonts.body, overflowX: 'clip' }}>
@@ -167,11 +173,11 @@ export default function BuildingExperience({ fonts, photos, panoramas }: {
 
         {/* ===== FLOORS ===== */}
         <div style={{ minWidth: 0 }}>
-          <Roof refCb={floorRef(0)} fonts={fonts} onWork={() => goTo(1)} onTools={() => goTo(2)} />
-          <WorkFloor refCb={floorRef(1)} fonts={fonts} />
-          <ToolsFloor refCb={floorRef(2)} fonts={fonts} />
-          <GalleryFloor refCb={floorRef(3)} fonts={fonts} photos={photos} panoramas={panoramas} />
-          <ContactFloor refCb={floorRef(4)} fonts={fonts} />
+          <Roof refCb={floorRef('roof')} fonts={fonts} gameColors={gameColors} onWork={() => goTo('work')} onTools={() => goTo('tools')} />
+          <WorkFloor refCb={floorRef('work')} fonts={fonts} />
+          <ToolsFloor refCb={floorRef('tools')} fonts={fonts} />
+          <GalleryFloor refCb={floorRef('gallery')} fonts={fonts} photos={photos} panoramas={panoramas} />
+          <ContactFloor refCb={floorRef('contact')} fonts={fonts} />
           <Street fonts={fonts} />
         </div>
       </div>
@@ -185,7 +191,7 @@ export default function BuildingExperience({ fonts, photos, panoramas }: {
             href={`#${f.id}`}
             aria-label={`Floor ${f.key}: ${f.label}`}
             aria-current={i === active ? 'location' : undefined}
-            onClick={(e) => { e.preventDefault(); goTo(i); }}
+            onClick={(e) => { e.preventDefault(); goTo(f.id); }}
             style={{ top: `${((26 + i * 46) / PANEL_H) * 100}%`, height: `${(40 / PANEL_H) * 100}%` }}
           />
         ))}
@@ -221,7 +227,8 @@ function Storey({ id, refCb, wall, children, minHeight }: {
   );
 }
 
-function FloorPlate({ fonts, k, label }: { fonts: Fonts; k: string; label: string }) {
+function FloorPlate({ fonts, id }: { fonts: Fonts; id: FloorId }) {
+  const { key: k, label } = FLOORS[floorIndex(id)];
   return (
     <div style={{ ...card(3), display: 'inline-flex', alignItems: 'center', gap: 10, padding: '4px 12px 4px 4px', background: C.mustard, fontFamily: fonts.mono, fontSize: 13, fontWeight: 700 }}>
       <span style={{ width: 26, height: 26, borderRadius: '50%', background: C.cream, border: `2px solid ${INK}`, display: 'grid', placeItems: 'center' }}>{k}</span>
@@ -232,7 +239,7 @@ function FloorPlate({ fonts, k, label }: { fonts: Fonts; k: string; label: strin
 
 /* ---------------------------------------------------------------- roof */
 
-function Roof({ refCb, fonts, onWork, onTools }: FloorProps & { onWork: () => void; onTools: () => void }) {
+function Roof({ refCb, fonts, gameColors, onWork, onTools }: FloorProps & { gameColors: string[]; onWork: () => void; onTools: () => void }) {
   return (
     <section id="roof" ref={refCb} style={{ position: 'relative', background: SKY, minHeight: 'max(100vh, 640px)', display: 'flex', flexDirection: 'column' }}>
       <Birds style={{ position: 'absolute', zIndex: 3, top: 14, left: '30%', width: 'clamp(80px,10vw,130px)', height: 'auto' }} />
@@ -283,6 +290,14 @@ function Roof({ refCb, fonts, onWork, onTools }: FloorProps & { onWork: () => vo
                   Browse the {ALL_TOOLS.length} tools
                 </a>
               </div>
+              {/* the board game is just a link to it, like on the old homepage */}
+              <a href="/the-game" className="bld-lift" style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 22, padding: '8px 16px 8px 8px', border: `2.5px dashed ${INK}`, borderRadius: 10, color: INK, textDecoration: 'none' }}>
+                <GameBoard colors={gameColors} style={{ width: 'clamp(84px,9vw,112px)', height: 'auto', flex: '0 0 auto' }} />
+                <span style={{ minWidth: 0 }}>
+                  <span style={{ display: 'block', fontFamily: fonts.mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase' }}>the playable portfolio</span>
+                  <span style={{ display: 'block', fontFamily: fonts.display, fontWeight: 700, fontSize: 'clamp(17px,1.6vw,21px)', lineHeight: 1.15, marginTop: 3 }}>Play my portfolio as a board game →</span>
+                </span>
+              </a>
             </div>
             {/* sign posts down to the parapet */}
             <div aria-hidden style={{ display: 'flex', justifyContent: 'space-around', height: 'clamp(28px,5vh,56px)' }}>
@@ -312,7 +327,7 @@ const STAT_COLORS = [C.pink, C.mustard, C.green, C.cornflower];
 function WorkFloor({ refCb, fonts }: FloorProps) {
   return (
     <Storey id="work" refCb={refCb} wall={C.lavender}>
-      <FloorPlate fonts={fonts} k="4" label="work" />
+      <FloorPlate fonts={fonts} id="work" />
       <h2 style={{ fontFamily: fonts.display, fontWeight: 700, fontSize: 'clamp(36px,5vw,68px)', letterSpacing: '-0.04em', lineHeight: 1, margin: '20px 0 0' }}>
         Things I&rsquo;ve shipped
       </h2>
@@ -374,7 +389,7 @@ function ToolsFloor({ refCb, fonts }: FloorProps) {
   return (
     <Storey id="tools" refCb={refCb} wall={C.peach}>
       <Drawing style={{ position: 'absolute', top: -18, right: 0, width: 'clamp(84px,11vw,150px)', height: 'auto', transform: 'rotate(4deg)' }} />
-      <FloorPlate fonts={fonts} k="3" label="tools" />
+      <FloorPlate fonts={fonts} id="tools" />
       <h2 style={{ fontFamily: fonts.display, fontWeight: 700, fontSize: 'clamp(36px,5vw,68px)', letterSpacing: '-0.04em', lineHeight: 1, margin: '20px 0 0' }}>
         The workshop
       </h2>
@@ -442,7 +457,7 @@ const Hanger = () => (
 function GalleryFloor({ refCb, fonts, photos, panoramas }: FloorProps & { photos: FramedPhoto[]; panoramas: Panorama[] }) {
   return (
     <Storey id="gallery" refCb={refCb} wall="#F2CBC6">
-      <FloorPlate fonts={fonts} k="2" label="gallery" />
+      <FloorPlate fonts={fonts} id="gallery" />
       <h2 style={{ fontFamily: fonts.display, fontWeight: 700, fontSize: 'clamp(36px,5vw,68px)', letterSpacing: '-0.04em', lineHeight: 1, margin: '20px 0 0' }}>
         The gallery
       </h2>
@@ -514,7 +529,7 @@ const NOTE_COLORS = [C.cream, C.mustard, C.cream, C.peach];
 function ContactFloor({ refCb, fonts }: FloorProps) {
   return (
     <Storey id="contact" refCb={refCb} wall="#CDE0C3">
-      <FloorPlate fonts={fonts} k="1" label="contact" />
+      <FloorPlate fonts={fonts} id="contact" />
       <h2 style={{ fontFamily: fonts.display, fontWeight: 700, fontSize: 'clamp(40px,6.4vw,92px)', letterSpacing: '-0.045em', lineHeight: 1.06, margin: '20px 0 0', maxWidth: '14ch' }}>
         Let&rsquo;s build something{' '}
         {/* the highlight starts a fifth of the way down, clear of the line above's descenders */}

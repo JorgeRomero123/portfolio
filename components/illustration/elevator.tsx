@@ -151,7 +151,7 @@ export type PanelFloor = { key: string; label: string };
  * The car's button panel, drawn. On the page it sits behind real buttons/links, so the
  * labels here are decoration and the panel is hidden from assistive tech.
  */
-export function ButtonPanel({ floors, active = 0, ...p }: Props & { floors: PanelFloor[]; active?: number }) {
+export function ButtonPanel({ floors, active = 0, ...p }: Props & { floors: readonly PanelFloor[]; active?: number }) {
   const h = 56 + floors.length * 46;
   return (
     <InkSvg viewBox={`0 0 170 ${h}`} label="" {...p}>
