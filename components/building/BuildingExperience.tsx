@@ -9,6 +9,7 @@ import {
 } from '@/components/illustration/objects';
 import { ButtonPanel, Ding, ElevatorCar, FloorDial } from '@/components/illustration/elevator';
 import { Rooftop } from '@/components/illustration/building';
+import ArtOverlayBillboard from './ArtOverlayBillboard';
 import { PROJECTS, STATS, TRUTHS } from '@/components/home/data';
 import { ALL_TOOLS, TOOL_CATEGORIES } from '@/lib/tools';
 
@@ -234,46 +235,65 @@ function FloorPlate({ fonts, k, label }: { fonts: Fonts; k: string; label: strin
 function Roof({ refCb, fonts, onWork, onTools }: FloorProps & { onWork: () => void; onTools: () => void }) {
   return (
     <section id="roof" ref={refCb} style={{ position: 'relative', background: SKY, minHeight: 'max(100vh, 640px)', display: 'flex', flexDirection: 'column' }}>
-      <Birds style={{ position: 'absolute', top: '4%', left: '38%', width: 'clamp(90px,12vw,150px)', height: 'auto' }} />
-      <Drone className="bld-bob" style={{ position: 'absolute', top: '6%', right: '6%', width: 'clamp(100px,14vw,180px)', height: 'auto' }} />
+      <Birds style={{ position: 'absolute', zIndex: 3, top: 14, left: '30%', width: 'clamp(80px,10vw,130px)', height: 'auto' }} />
+      <Drone className="bld-bob" style={{ position: 'absolute', zIndex: 3, top: 'clamp(40px,7vh,70px)', right: '3%', width: 'clamp(90px,12vw,160px)', height: 'auto' }} />
 
-      <div className="bld-hero" style={{ flex: 1, display: 'grid', gridTemplateColumns: '1.15fr 1fr', alignItems: 'end', gap: 'clamp(16px,3vw,40px)', padding: 'clamp(110px,16vh,160px) clamp(18px,4vw,52px) 0' }}>
-        {/* the hero copy, on a sign planted on the roof */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
-          <div style={{ ...card(7), padding: 'clamp(20px,3vw,36px)', position: 'relative', zIndex: 1 }}>
-            <div style={{ fontFamily: fonts.mono, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14 }}>
-              méxico · software engineer · builds too much
-            </div>
-            <h1 style={{ fontFamily: fonts.display, fontWeight: 700, fontSize: 'clamp(48px,7.2vw,104px)', lineHeight: 0.92, letterSpacing: '-0.045em', margin: 0 }}>
-              {/* inline-block so the highlight can't paint over the tight line above */}
-              Hi, I&rsquo;m <span style={{ background: C.pink, padding: '0 0.1em', display: 'inline-block', lineHeight: 1 }}>Jorge.</span>
-            </h1>
-            <p style={{ fontFamily: fonts.display, fontWeight: 600, fontSize: 'clamp(22px,2.6vw,34px)', lineHeight: 1.08, letterSpacing: '-0.02em', margin: '14px 0 0' }}>
-              I build for millions, then go build something fun.
-            </p>
-            <p style={{ fontSize: 'clamp(16px,1.35vw,19px)', lineHeight: 1.55, margin: '16px 0 0', maxWidth: 520 }}>
-              By day I ship production software to 1.5 million people. By night I build browser
-              toys nobody asked for: a singing coach, a chore tracker that emails my roommate, a
-              360° tour engine.
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 24 }}>
-              <a href="#work" onClick={(e) => { e.preventDefault(); onWork(); }} className="bld-lift" style={{ ...card(4), background: INK, color: C.paper, textDecoration: 'none', fontFamily: fonts.display, fontWeight: 700, padding: '12px 20px' }}>
-                Take the elevator down ↓
-              </a>
-              <a href="#tools" onClick={(e) => { e.preventDefault(); onTools(); }} className="bld-lift" style={{ ...card(4), background: C.mustard, color: INK, textDecoration: 'none', fontFamily: fonts.display, fontWeight: 700, padding: '12px 20px' }}>
-                Browse the {ALL_TOOLS.length} tools
-              </a>
-            </div>
-          </div>
-          {/* sign posts down to the parapet */}
-          <div aria-hidden style={{ display: 'flex', justifyContent: 'space-around', height: 'clamp(28px,5vh,56px)' }}>
-            {[0, 1].map((i) => <div key={i} style={{ width: 14, background: C.bark, border: `3px solid ${INK}`, borderTop: 'none' }} />)}
-          </div>
+      {/* everything standing on the roof; the billboard's legs run down behind it */}
+      <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {['22%', '68%'].map((left) => (
+          <span
+            key={left}
+            aria-hidden
+            style={{
+              position: 'absolute', top: 0, bottom: 0, left, width: 26, zIndex: 0,
+              borderLeft: `3px solid ${INK}`, borderRight: `3px solid ${INK}`,
+              background: `repeating-linear-gradient(45deg, transparent 0 9px, ${INK} 9px 11px), repeating-linear-gradient(-45deg, transparent 0 9px, ${INK} 9px 11px), ${C.steel}`,
+            }}
+          />
+        ))}
+
+        <div style={{ padding: 'clamp(84px,12vh,120px) clamp(18px,4vw,52px) 0' }}>
+          <ArtOverlayBillboard />
         </div>
 
-        <div className="bld-roofprops" style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-          <Rooftop parapet={false} style={{ ...fill, flex: '1 1 auto', minWidth: 0 }} />
-          <PottedPlant style={{ width: '24%', height: 'auto', flex: '0 0 auto', marginBottom: -4 }} />
+        <div className="bld-hero" style={{ flex: 1, display: 'grid', gridTemplateColumns: '1.15fr 1fr', alignItems: 'end', gap: 'clamp(16px,3vw,40px)', padding: 'clamp(48px,7vh,80px) clamp(18px,4vw,52px) 0' }}>
+          {/* the hero copy, on a sign planted on the roof */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
+            <div style={{ ...card(7), padding: 'clamp(20px,3vw,36px)', position: 'relative', zIndex: 1 }}>
+              <div style={{ fontFamily: fonts.mono, fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14 }}>
+                méxico · software engineer · builds too much
+              </div>
+              <h1 style={{ fontFamily: fonts.display, fontWeight: 700, fontSize: 'clamp(48px,7.2vw,104px)', lineHeight: 0.92, letterSpacing: '-0.045em', margin: 0 }}>
+                {/* inline-block so the highlight can't paint over the tight line above */}
+                Hi, I&rsquo;m <span style={{ background: C.pink, padding: '0 0.1em', display: 'inline-block', lineHeight: 1 }}>Jorge.</span>
+              </h1>
+              <p style={{ fontFamily: fonts.display, fontWeight: 600, fontSize: 'clamp(22px,2.6vw,34px)', lineHeight: 1.08, letterSpacing: '-0.02em', margin: '14px 0 0' }}>
+                I build for millions, then go build something fun.
+              </p>
+              <p style={{ fontSize: 'clamp(16px,1.35vw,19px)', lineHeight: 1.55, margin: '16px 0 0', maxWidth: 520 }}>
+                By day I ship production software to 1.5 million people. By night I build browser
+                toys nobody asked for: a singing coach, a chore tracker that emails my roommate, a
+                360° tour engine.
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 24 }}>
+                <a href="#work" onClick={(e) => { e.preventDefault(); onWork(); }} className="bld-lift" style={{ ...card(4), background: INK, color: C.paper, textDecoration: 'none', fontFamily: fonts.display, fontWeight: 700, padding: '12px 20px' }}>
+                  Take the elevator down ↓
+                </a>
+                <a href="#tools" onClick={(e) => { e.preventDefault(); onTools(); }} className="bld-lift" style={{ ...card(4), background: C.mustard, color: INK, textDecoration: 'none', fontFamily: fonts.display, fontWeight: 700, padding: '12px 20px' }}>
+                  Browse the {ALL_TOOLS.length} tools
+                </a>
+              </div>
+            </div>
+            {/* sign posts down to the parapet */}
+            <div aria-hidden style={{ display: 'flex', justifyContent: 'space-around', height: 'clamp(28px,5vh,56px)' }}>
+              {[0, 1].map((i) => <div key={i} style={{ width: 14, background: C.bark, border: `3px solid ${INK}`, borderTop: 'none' }} />)}
+            </div>
+          </div>
+
+          <div className="bld-roofprops" style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+            <Rooftop parapet={false} style={{ ...fill, flex: '1 1 auto', minWidth: 0 }} />
+            <PottedPlant style={{ width: '24%', height: 'auto', flex: '0 0 auto', marginBottom: -4 }} />
+          </div>
         </div>
       </div>
 
