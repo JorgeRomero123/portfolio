@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ALL_TOOLS } from '@/lib/tools';
 
 /** The single accent. Change it here and the whole page follows. */
 export const ACCENT = '#0070f3';
@@ -24,7 +25,7 @@ export const TECH = [
 export const STATS = [
   { value: 200, suffix: 'k+', label: 'monthly users on a portal I co-led at PayPal' },
   { value: 400, suffix: '%',  label: 'DAU growth I helped ship at Microsoft Bing' },
-  { value: 25,  suffix: '',   label: 'tools on this site, built for an audience of mostly me' },
+  { value: ALL_TOOLS.length, suffix: '', label: 'tools on this site, built for an audience of mostly me' },
   { value: 2,   suffix: '',   label: 'SaaS products running solo — billing, auth, the boring parts too' },
 ];
 
@@ -211,4 +212,5 @@ export const TOOL_GROUPS: { label: string; accent: string; tools: { name: string
   },
 ];
 
-export const TOOL_COUNT = TOOL_GROUPS.reduce((n, g) => n + g.tools.length, 0);
+/** From the full list behind /tools, which has more than the wall above shows. */
+export const TOOL_COUNT = ALL_TOOLS.length;
