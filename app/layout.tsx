@@ -55,19 +55,17 @@ export default async function RootLayout({
   const headersList = await headers();
   const pathname = headersList.get('x-pathname') || '';
   const isAdminRoute = pathname.startsWith('/admin');
-  // The homepage is a self-contained dark experience with its own nav/footer.
+  // The homepage is the building, which draws its own navigation (the elevator) and footer.
   const isHome = pathname === '/';
   // The projector output is a fullscreen black canvas with no site chrome.
   const isProjectorOutput = pathname.startsWith('/tools/projection-mapper/output');
-  // The building (the homepage-in-progress) draws its own chrome, like the homepage.
-  const isBuilding = pathname.startsWith('/building');
-  const bareLayout = isAdminRoute || isHome || isProjectorOutput || isBuilding;
+  const bareLayout = isAdminRoute || isHome || isProjectorOutput;
 
   return (
-    <html lang="en" className={isHome ? 'bg-[#f7f9fc]' : 'bg-gray-50'}>
+    <html lang="en" className={isHome ? 'bg-[#F4EDE1]' : 'bg-gray-50'}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${jetBrainsMono.variable} antialiased ${
-          isHome ? 'bg-[#f7f9fc] text-[#0b1b3a]' : 'bg-gray-50 text-gray-900'
+          isHome ? 'bg-[#F4EDE1] text-[#1B1B1B]' : 'bg-gray-50 text-gray-900'
         }`}
       >
         {!bareLayout && <Navigation />}

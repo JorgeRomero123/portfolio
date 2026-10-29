@@ -17,8 +17,8 @@
 - **Theme**: Light, on cream paper — never plain white. Texture over emptiness: halftone dots, riso grain, colour-blocked sections
 - **Color palette**: Cream paper `#F4EDE1`, ink `#1B1B1B`, peach `#F0C49B`, lavender `#B8B6EA`, grass green `#3F8F45`, mustard `#E5A23C`, dusty pink `#D98580`, cornflower `#6C7DE0`. Warm and slightly muted — no neon, no gradients, no purple-to-blue AI glow
 - **Surfaces**: 2–3px ink borders, hard offset shadows (e.g. `4px 4px 0 #1B1B1B`) instead of soft blurred ones, halftone fills for shadows/backgrounds, the odd slightly rotated sticker/label. No glassmorphism, no `backdrop-blur` decoration
-- **Hero**: An isometric cutaway building illustration where each room is a piece of Jorge's work (coding, photography/drone, 360 tours, Projection Mapper, card games, Spurs balcony); rooms are clickable and link to their section
-- **Typography**: Characterful display face with an ink-drawn feel for headlines (chosen via `/font-lab`), quiet humanist sans for body, JetBrains Mono for code/labels. Geist and Space Grotesk are retired — they read as template defaults
+- **Homepage**: A cutaway building you ride down in a glass elevator (`components/building/`): rooftop hero and Art Overlay billboard, then floors for work, tools, gallery and contact. Illustrations are original hand-coded SVG in `components/illustration/`
+- **Typography**: Familjen Grotesk for headlines, Newsreader for body, JetBrains Mono for code/labels. Geist and Space Grotesk are retired — they read as template defaults
 - **Motion**: Playful and physical — wobbles, hops, stickers that peel, hover lifts that grow the hard shadow. Purposeful, respects reduced motion
 - **Anti-references**: Generic template/v0/AI-generated sites, Geist-on-white, `rounded-2xl` everywhere, gradient blobs, glassmorphism, overly corporate layouts, dark-mode-only developer portfolios
 - **References**: Editorial magazine illustration and risograph print; the boldness of a creative agency, with engineering rigor underneath
@@ -35,7 +35,7 @@
 - Framer Motion for animation, Recharts for data viz
 - @react-three/fiber for 3D, Pannellum for 360 photos
 - Deployed on Vercel with Cloudflare R2 for media storage
-- Fonts via `next/font/google` (display/body pairing being chosen in `/font-lab`; JetBrains Mono for code)
+- Fonts via `next/font/google`: Familjen Grotesk + Newsreader, JetBrains Mono for code
 
 ## Code Graph (graphify)
 

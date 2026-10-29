@@ -1,36 +1,60 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import HomeExperience from '@/components/home/HomeExperience';
+import { Familjen_Grotesk, Newsreader, JetBrains_Mono } from 'next/font/google';
+import BuildingExperience, { type FramedPhoto, type Panorama } from '@/components/building/BuildingExperience';
 import { getGalleryData } from '@/lib/content';
 import type { Photo360Data } from '@/lib/types';
 
-/** First real frame from a collection, used as the hero image for its tile. */
-async function getPhotographyHero() {
+/**
+ * The homepage: a building you ride down in an elevator, floor by floor. Title and
+ * description come from the root layout.
+ */
+
+const familjen = Familjen_Grotesk({ subsets: ['latin'] });
+const newsreader = Newsreader({ subsets: ['latin'], axes: ['opsz'] });
+const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['500', '700'] });
+
+/** Six landscape photos for the gallery wall: one from each place first, then the rest in order. */
+async function getFramedPhotos(): Promise<FramedPhoto[]> {
   try {
-    const { photos } = await getGalleryData();
-    const hero = photos.find((p) => !p.isPortrait) ?? photos[0];
-    return hero ? { url: hero.url, title: hero.title } : null;
+    const landscape = (await getGalleryData()).photos.filter((p) => !p.isPortrait);
+    const picks = [...new Map(landscape.map((p) => [p.category, p] as const)).values()];
+    for (const p of landscape) {
+      if (picks.length >= 6) break;
+      if (!picks.includes(p)) picks.push(p);
+    }
+    return picks.slice(0, 6).map((p) => ({
+      url: p.url,
+      place: p.category,
+      // drone frames are named after the camera's files
+      drone: p.title.startsWith('DJI_'),
+    }));
   } catch {
-    return null;
+    return [];
   }
 }
 
-async function getPanoramaHero() {
+async function getPanoramas(): Promise<Panorama[]> {
   try {
     const file = path.join(process.cwd(), 'content', 'photos360.json');
     const data: Photo360Data = JSON.parse(await fs.readFile(file, 'utf8'));
-    const hero = data.photos[0];
-    return hero ? { url: hero.url, title: hero.title } : null;
+    return data.photos.slice(0, 3).map(({ id, url, title }) => ({ id, url, title }));
   } catch {
-    return null;
+    return [];
   }
 }
 
 export default async function Home() {
-  const [photographyHero, panoramaHero] = await Promise.all([
-    getPhotographyHero(),
-    getPanoramaHero(),
-  ]);
-
-  return <HomeExperience photographyHero={photographyHero} panoramaHero={panoramaHero} />;
+  const [photos, panoramas] = await Promise.all([getFramedPhotos(), getPanoramas()]);
+  return (
+    <BuildingExperience
+      photos={photos}
+      panoramas={panoramas}
+      fonts={{
+        display: familjen.style.fontFamily,
+        body: newsreader.style.fontFamily,
+        mono: mono.style.fontFamily,
+      }}
+    />
+  );
 }
