@@ -163,10 +163,13 @@ export function Room({ wall = C.lavender, window: hasWindow = false, lamp = true
 
 const BULBS = [C.pink, C.mustard, C.cornflower, C.green, C.pink, C.mustard, C.cornflower];
 
-/** The roof terrace: water tank, antenna, string lights, parapet. The hero floor. */
-export function Rooftop(p: Props) {
+/**
+ * The roof terrace: water tank, antenna, string lights, parapet. The hero floor.
+ * `parapet={false}` crops the wall off, for when the page draws a full-width one.
+ */
+export function Rooftop({ parapet = true, ...p }: Props & { parapet?: boolean }) {
   return (
-    <InkSvg viewBox="0 0 400 220" label="" {...p}>
+    <InkSvg viewBox={parapet ? '0 0 400 220' : '0 0 400 184'} label="" {...p}>
       {(ids) => (
         <>
           {/* water tank on legs */}
@@ -195,9 +198,13 @@ export function Rooftop(p: Props) {
           <path d="M 250 180 L 250 150 Q 250 138 262 138 L 270 138" fill="none" stroke={C.steel} strokeWidth={6} />
 
           {/* parapet with coping */}
-          <rect x={0} y={176} width={400} height={44} fill={C.peach} />
-          <rect x={0} y={176} width={400} height={44} fill={`url(#${ids.dots})`} stroke="none" opacity={0.15} />
-          <rect x={-4} y={170} width={408} height={10} rx={2} fill={C.steel} />
+          {parapet && (
+            <>
+              <rect x={0} y={176} width={400} height={44} fill={C.peach} />
+              <rect x={0} y={176} width={400} height={44} fill={`url(#${ids.dots})`} stroke="none" opacity={0.15} />
+              <rect x={-4} y={170} width={408} height={10} rx={2} fill={C.steel} />
+            </>
+          )}
         </>
       )}
     </InkSvg>
