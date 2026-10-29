@@ -33,7 +33,8 @@ const EMAIL = 'jorgeromanis@yahoo.com.mx';
 /** Top to bottom, matching the order of the sections on the page. */
 const FLOORS = [
   { id: 'roof', key: 'R', label: 'hello' },
-  { id: 'work', key: '4', label: 'work' },
+  { id: 'work', key: '5', label: 'work' },
+  { id: 'game', key: '4', label: 'game room' },
   { id: 'tools', key: '3', label: 'tools' },
   { id: 'gallery', key: '2', label: 'gallery' },
   { id: 'contact', key: '1', label: 'contact' },
@@ -148,6 +149,9 @@ export default function BuildingExperience({ fonts, photos, panoramas, gameColor
         @keyframes bld-pop { from { transform: scale(.3) rotate(-20deg); opacity: 0; } }
         .bld-lift { transition: transform .25s, box-shadow .25s; }
         .bld-lift:hover { transform: translate(-3px,-3px) rotate(0deg) !important; box-shadow: 9px 9px 0 ${INK} !important; }
+        .bld-apron { transition: transform .25s, box-shadow .25s; }
+        .bld-table:hover .bld-apron { transform: translate(-3px,-3px); box-shadow: 9px 9px 0 ${INK}; }
+        .bld-table:focus-visible { outline: 3px solid ${C.cornflower}; outline-offset: 6px; }
         @media (prefers-reduced-motion: reduce) { .bld-bob, .bld-pop { animation: none; } }
         @media (max-width: 760px) {
           .bld { --shaft: 74px; }
@@ -175,6 +179,7 @@ export default function BuildingExperience({ fonts, photos, panoramas, gameColor
         <div style={{ minWidth: 0 }}>
           <Roof refCb={floorRef('roof')} fonts={fonts} gameColors={gameColors} onWork={() => goTo('work')} onTools={() => goTo('tools')} />
           <WorkFloor refCb={floorRef('work')} fonts={fonts} />
+          <GameRoom refCb={floorRef('game')} fonts={fonts} colors={gameColors} />
           <ToolsFloor refCb={floorRef('tools')} fonts={fonts} />
           <GalleryFloor refCb={floorRef('gallery')} fonts={fonts} photos={photos} panoramas={panoramas} />
           <ContactFloor refCb={floorRef('contact')} fonts={fonts} />
@@ -376,6 +381,50 @@ function WorkFloor({ refCb, fonts }: FloorProps) {
         <JorgeAtLaptop style={{ width: 'clamp(190px,26vw,320px)', height: 'auto' }} />
         <DeskLamp style={{ width: 'clamp(70px,9vw,120px)', height: 'auto' }} />
       </div>
+    </Storey>
+  );
+}
+
+/* ----------------------------------------------------------------- game */
+
+/**
+ * The Game's room: one big table with the board on it and "Play my portfolio" painted
+ * on its apron. The whole table is the link; nothing is playable here.
+ */
+function GameRoom({ refCb, fonts, colors }: FloorProps & { colors: string[] }) {
+  return (
+    <Storey id="game" refCb={refCb} wall="#F3DCA4">
+      <FloorPlate fonts={fonts} id="game" />
+
+      <a href="/the-game" className="bld-table" style={{ display: 'block', maxWidth: 980, margin: '0 auto', color: INK, textDecoration: 'none' }}>
+        {/* pendant lamp over the table */}
+        <div aria-hidden style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ width: 3, height: 'clamp(16px,3vw,40px)', background: INK }} />
+          <div style={{ width: 'clamp(70px,9vw,110px)', height: 'clamp(32px,4vw,48px)', background: C.mustard, border: `3px solid ${INK}`, borderRadius: '60px 60px 6px 6px' }} />
+          <div style={{ width: 'min(70%, 520px)', height: 'clamp(40px,6vw,80px)', marginTop: -2, background: 'linear-gradient(rgba(229,162,60,.35), rgba(229,162,60,0))', clipPath: 'polygon(42% 0, 58% 0, 100% 100%, 0 100%)' }} />
+        </div>
+
+        {/* the board, resting on the tabletop */}
+        <GameBoard colors={colors} style={{ display: 'block', width: 'min(78%, 600px)', height: 'auto', margin: 'calc(-1 * clamp(20px,3vw,40px)) auto -4%' }} />
+
+        {/* tabletop, then the apron with the lettering */}
+        <div aria-hidden style={{ position: 'relative', height: 'clamp(18px,2vw,26px)', background: `${dots(0.3)}, ${C.bark}`, border: `3px solid ${INK}`, borderRadius: 8 }} />
+        <div className="bld-apron" style={{ margin: '0 3%', background: C.pink, border: `3px solid ${INK}`, borderTop: 'none', boxShadow: `6px 6px 0 ${INK}`, padding: 'clamp(16px,2.6vw,30px) clamp(16px,3vw,40px)', textAlign: 'center' }}>
+          <div style={{ fontFamily: fonts.display, fontWeight: 700, fontSize: 'clamp(40px,7vw,104px)', letterSpacing: '-0.045em', lineHeight: 0.95 }}>
+            Play my portfolio
+          </div>
+          <div style={{ fontSize: 'clamp(16px,1.6vw,21px)', lineHeight: 1.4, marginTop: 10 }}>
+            Roll the dice through {colors.length} stops of my life and work, win the mini-games,
+            collect every stamp. <b style={{ whiteSpace: 'nowrap' }}>Roll the dice →</b>
+          </div>
+        </div>
+        {/* legs */}
+        <div aria-hidden style={{ display: 'flex', justifyContent: 'space-between', margin: '0 9%' }}>
+          {[0, 1].map((i) => (
+            <div key={i} style={{ width: 'clamp(18px,2vw,26px)', height: 'clamp(50px,8vw,110px)', background: C.bark, border: `3px solid ${INK}`, borderTop: 'none' }} />
+          ))}
+        </div>
+      </a>
     </Storey>
   );
 }
