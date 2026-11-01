@@ -616,3 +616,49 @@ export function Birds(p: Props) {
     </InkSvg>
   );
 }
+
+/* -------------------------------------------------------------------- robot */
+
+/** A boxy little robot on treads, waving, with a screen for a face. */
+export function Robot(p: Props) {
+  return (
+    <InkSvg label="A little robot, waving" {...p}>
+      {(ids) => (
+        <>
+          <ellipse cx={120} cy={222} rx={70} ry={10} fill={`url(#${ids.dots})`} stroke="none" opacity={0.5} />
+          {/* antenna */}
+          <path d="M 120 46 L 120 24" fill="none" strokeWidth={5} />
+          <circle cx={120} cy={20} r={9} fill={C.pink} />
+          {/* waving arm, behind the body */}
+          <InkLine d="M 170 138 L 196 112 L 204 76" width={10} color={C.steel} />
+          <circle cx={205} cy={68} r={11} fill={C.mustard} />
+          {/* resting arm */}
+          <InkLine d="M 70 138 L 50 168 L 52 186" width={10} color={C.steel} />
+          <circle cx={52} cy={192} r={10} fill={C.mustard} />
+          {/* treads */}
+          <rect x={72} y={190} width={96} height={28} rx={14} fill={C.charcoal} />
+          {[90, 120, 150].map((x) => <circle key={x} cx={x} cy={204} r={7} fill={C.steel} strokeWidth={2.5} />)}
+          {/* body */}
+          <rect x={70} y={122} width={100} height={72} rx={10} fill={C.cornflower} />
+          <rect x={132} y={126} width={34} height={64} rx={6} fill={`url(#${ids.dots})`} stroke="none" opacity={0.3} />
+          <rect x={88} y={138} width={36} height={22} rx={4} fill={C.cream} />
+          <path d="M 94 149 L 102 149 L 106 142 L 110 156 L 114 149 L 120 149" fill="none" strokeWidth={2.5} />
+          {[140, 154].map((x, i) => <circle key={x} cx={x} cy={149} r={6} fill={i ? C.mustard : C.pink} />)}
+          {/* neck and head */}
+          <rect x={108} y={108} width={24} height={16} fill={C.steel} />
+          <rect x={64} y={46} width={112} height={66} rx={14} fill={C.steel} />
+          <rect x={56} y={66} width={10} height={26} rx={4} fill={C.mustard} />
+          <rect x={174} y={66} width={10} height={26} rx={4} fill={C.mustard} />
+          <rect x={76} y={56} width={88} height={46} rx={8} fill={C.navy} />
+          {/* the face on the screen */}
+          <g stroke={C.cream} strokeWidth={5} fill="none">
+            <path d="M 96 76 L 96 82" />
+            <path d="M 136 79 Q 144 71 152 79" />
+            <path d="M 104 90 Q 120 98 136 90" />
+          </g>
+          <path d="M 82 62 L 94 62" stroke={C.cream} strokeWidth={3} opacity={0.6} />
+        </>
+      )}
+    </InkSvg>
+  );
+}

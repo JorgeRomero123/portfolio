@@ -5,7 +5,7 @@ import { C } from '@/components/illustration/ink';
 import Tree, { TallTree } from '@/components/illustration/Tree';
 import { JorgeAtLaptop, JorgePlayingCards, JorgeWithCamera } from '@/components/illustration/Jorge';
 import {
-  Birds, Camera360, Coffee, CoysPennant, DeskLamp, Drawing, Drone, Mailbox, PottedPlant, Projector,
+  Birds, Camera360, Coffee, CoysPennant, DeskLamp, Drawing, Drone, Mailbox, PottedPlant, Projector, Robot,
 } from '@/components/illustration/objects';
 import { ButtonPanel, Ding, ElevatorCar, FloorDial } from '@/components/illustration/elevator';
 import { Rooftop } from '@/components/illustration/building';
@@ -152,12 +152,26 @@ export default function BuildingExperience({ fonts, photos, panoramas, gameColor
         .bld-apron { transition: transform .25s, box-shadow .25s; }
         .bld-table:hover .bld-apron { transform: translate(-3px,-3px); box-shadow: 9px 9px 0 ${INK}; }
         .bld-table:focus-visible { outline: 3px solid ${C.cornflower}; outline-offset: 6px; }
+        .bld-robot svg { transition: transform .25s; transform-origin: bottom; }
+        .bld-robot:hover svg { transform: translateY(-6px) rotate(-4deg); }
+        .bld-robot:hover .bld-bubble { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 ${INK}; }
+        .bld-bubble { transition: transform .25s, box-shadow .25s; }
+        .bld-strip { display: none; }
         @media (prefers-reduced-motion: reduce) { .bld-bob, .bld-pop { animation: none; } }
         @media (max-width: 760px) {
-          .bld { --shaft: 74px; }
+          .bld { --shaft: 52px; }
           .bld-panel { display: none; }
+          .bld-strip { display: flex; }
           .bld-hero { grid-template-columns: 1fr !important; }
-          .bld-roofprops { max-width: 340px; margin-left: auto; }
+          .bld-roofprops { max-width: 400px; margin-left: auto; }
+          .bld-robot { flex-basis: 40% !important; }
+          .bld-ground { padding-bottom: 76px !important; } /* clear of the floor strip */
+          /* thinner side walls and padding, so the rooms get the width back */
+          .bld-room { border-left-width: 8px !important; border-right-width: 8px !important; padding: 28px 16px 0 !important; }
+          .bld-stats { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+          .bld-stat { font-size: 40px !important; }
+          .bld-shelf { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)) !important; }
+          .bld-shelf a > div:last-child { font-size: 13px !important; }
         }
       `}</style>
 
@@ -201,6 +215,22 @@ export default function BuildingExperience({ fonts, photos, panoramas, gameColor
           />
         ))}
       </nav>
+
+      {/* on phones the drawn panel is too big, so the same buttons run in a strip */}
+      <nav aria-label="Floors" className="bld-strip" style={{ position: 'fixed', right: 12, bottom: 12, zIndex: 40, gap: 4, padding: 5, background: C.steel, border: `3px solid ${INK}`, borderRadius: 999, boxShadow: `4px 4px 0 ${INK}` }}>
+        {FLOORS.map((f, i) => (
+          <a
+            key={f.id}
+            href={`#${f.id}`}
+            aria-label={`Floor ${f.key}: ${f.label}`}
+            aria-current={i === active ? 'location' : undefined}
+            onClick={(e) => { e.preventDefault(); goTo(f.id); }}
+            style={{ width: 38, height: 38, borderRadius: '50%', display: 'grid', placeItems: 'center', background: i === active ? C.mustard : C.cream, border: `2.5px solid ${INK}`, color: INK, textDecoration: 'none', fontFamily: fonts.mono, fontSize: 14, fontWeight: 700 }}
+          >
+            {f.key}
+          </a>
+        ))}
+      </nav>
     </div>
   );
 }
@@ -216,7 +246,7 @@ function Storey({ id, refCb, wall, children, minHeight }: {
   return (
     <section id={id} ref={refCb} style={{ position: 'relative', scrollMarginTop: 0 }}>
       <div style={{ background: C.steel, height: 14, borderBottom: `3px solid ${INK}` }} />
-      <div style={{
+      <div className="bld-room" style={{
         position: 'relative', background: wall, minHeight,
         borderLeft: `16px solid ${C.peach}`, borderRight: `16px solid ${C.peach}`,
         boxShadow: `inset 3px 0 0 ${INK}, inset -3px 0 0 ${INK}`,
@@ -311,8 +341,9 @@ function Roof({ refCb, fonts, gameColors, onWork, onTools }: FloorProps & { game
           </div>
 
           <div className="bld-roofprops" style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+            <AgentRobot fonts={fonts} />
             <Rooftop parapet={false} style={{ ...fill, flex: '1 1 auto', minWidth: 0 }} />
-            <PottedPlant style={{ width: '24%', height: 'auto', flex: '0 0 auto', marginBottom: -4 }} />
+            <PottedPlant style={{ width: '18%', height: 'auto', flex: '0 0 auto', marginBottom: -4 }} />
           </div>
         </div>
       </div>
@@ -322,6 +353,20 @@ function Roof({ refCb, fonts, gameColors, onWork, onTools }: FloorProps & { game
       <div style={{ height: 44, background: `${dots(0.15)}, ${C.peach}` }} />
       <div style={{ height: 30, borderTop: `3px solid ${INK}`, borderBottom: `3px solid ${INK}`, background: `${dots(0.4)}, linear-gradient(${C.peach} 0 8px, ${C.steel} 8px)` }} />
     </section>
+  );
+}
+
+/** A robot on the roof holding up a sign for AI agents: it links to the Markdown brief. */
+function AgentRobot({ fonts }: { fonts: Fonts }) {
+  return (
+    <a href="/agent.md" className="bld-robot" style={{ flex: '0 0 30%', display: 'flex', flexDirection: 'column', alignItems: 'center', color: INK, textDecoration: 'none', marginBottom: -4 }}>
+      <span className="bld-bubble" style={{ ...card(3), position: 'relative', display: 'block', padding: '7px 9px', fontFamily: fonts.mono, fontSize: 12, fontWeight: 700, lineHeight: 1.25, textAlign: 'center', marginBottom: 10 }}>
+        If you are an AI, click here
+        {/* the bubble's tail */}
+        <span aria-hidden style={{ position: 'absolute', left: '50%', bottom: -10, width: 14, height: 14, marginLeft: -7, background: C.cream, borderRight: `3px solid ${INK}`, borderBottom: `3px solid ${INK}`, transform: 'rotate(45deg)' }} />
+      </span>
+      <Robot style={{ ...fill, maxWidth: 150 }} />
+    </a>
   );
 }
 
@@ -338,10 +383,10 @@ function WorkFloor({ refCb, fonts }: FloorProps) {
       </h2>
 
       {/* the numbers, painted straight onto the wall */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))', gap: 'clamp(16px,2.5vw,32px)', marginTop: 'clamp(24px,3vw,40px)' }}>
+      <div className="bld-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))', gap: 'clamp(16px,2.5vw,32px)', marginTop: 'clamp(24px,3vw,40px)' }}>
         {STATS.map((s, i) => (
           <div key={s.label}>
-            <div style={{ fontFamily: fonts.display, fontWeight: 700, fontSize: 'clamp(48px,5.5vw,76px)', lineHeight: 0.9, letterSpacing: '-0.05em' }}>
+            <div className="bld-stat" style={{ fontFamily: fonts.display, fontWeight: 700, fontSize: 'clamp(48px,5.5vw,76px)', lineHeight: 0.9, letterSpacing: '-0.05em' }}>
               <span style={{ background: STAT_COLORS[i % STAT_COLORS.length], padding: '0 0.08em', boxDecorationBreak: 'clone', WebkitBoxDecorationBreak: 'clone' }}>
                 {s.value}{s.suffix}
               </span>
@@ -457,7 +502,7 @@ function ToolsFloor({ refCb, fonts }: FloorProps) {
               <span style={{ opacity: 0.6 }}>· {cat.tools.length}</span>
             </div>
             {/* no column gap, so the plank under each box joins its neighbours into one shelf */}
-            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(118px, 1fr))', rowGap: 28 }}>
+            <ul className="bld-shelf" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(118px, 1fr))', rowGap: 28 }}>
               {cat.tools.map((t, i) => (
                 <li key={t.href} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
                   <a
@@ -641,7 +686,7 @@ function Street({ fonts }: { fonts: Fonts }) {
         <TallTree style={{ width: 'clamp(70px,10vw,130px)', height: 'auto' }} />
         <Tree style={{ width: 'clamp(120px,18vw,240px)', height: 'auto' }} />
       </div>
-      <div style={{ background: `${dots(0.3)}, ${C.green}`, borderTop: `3px solid ${INK}`, padding: '14px clamp(12px,3vw,40px)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, fontFamily: fonts.mono, fontSize: 12, fontWeight: 700, color: INK }}>
+      <div className="bld-ground" style={{ background: `${dots(0.3)}, ${C.green}`, borderTop: `3px solid ${INK}`, padding: '14px clamp(12px,3vw,40px)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, fontFamily: fonts.mono, fontSize: 12, fontWeight: 700, color: INK }}>
         <span style={{ background: C.cream, padding: '2px 8px', border: `2px solid ${INK}` }}>© 2026 Jorge Romero Romanis</span>
         <span style={{ background: C.cream, padding: '2px 8px', border: `2px solid ${INK}` }}>built in méxico · {ALL_TOOLS.length} tools · COYS</span>
       </div>
