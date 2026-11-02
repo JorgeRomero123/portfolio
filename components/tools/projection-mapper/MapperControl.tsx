@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { EFFECT_LIST } from './effects';
+import { EFFECT_COLORS, EFFECT_SECTIONS } from './effects';
 import { addMedia, deleteMedia, listMedia, type MediaItem } from './media';
 import { duplicateSurface, newSurface, type MapState, type Point, type Surface } from './model';
 import {
@@ -381,16 +381,31 @@ export default function MapperControl() {
 
             <div>
               <p className={label}>Content</p>
-              <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-5 lg:grid-cols-4">
-                {EFFECT_LIST.map(([k, l]) => (
-                  <button key={k} className={`${sel.content === k ? btnOn : btn} px-1`} onClick={() => editSel((s) => { s.content = k; }, true)}>
-                    {l}
-                  </button>
+              <div className="space-y-3">
+                {EFFECT_SECTIONS.map(({ title, effects }) => (
+                  <div key={title}>
+                    <p className="mb-1.5 text-xs font-medium text-gray-500">{title}</p>
+                    <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-5 lg:grid-cols-4">
+                      {effects.map(([k, l]) => (
+                        <button
+                          key={k}
+                          className={`${sel.content === k ? btnOn : btn} px-1`}
+                          onClick={() => editSel((s) => {
+                            if (s.content !== k && EFFECT_COLORS[k]) s.color = EFFECT_COLORS[k];
+                            if (k === 'greeting' && s.text === 'BOO') s.text = 'Merry Christmas';
+                            s.content = k;
+                          }, true)}
+                        >
+                          {l}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
 
-            {sel.content === 'text' && (
+            {(sel.content === 'text' || sel.content === 'greeting') && (
               <div>
                 <p className={label}>Text</p>
                 <input

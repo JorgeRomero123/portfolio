@@ -1,3 +1,5 @@
+import { christmasEffects } from './christmas';
+import { clear, rand, rgba } from './kit';
 import type { Surface } from './model';
 
 /**
@@ -22,23 +24,15 @@ export interface EffectMemory {
   double?: boolean;
   buf?: OffscreenCanvas;
   img?: ImageData;
+  /** Fixed random numbers for the Christmas particles. */
+  seeds?: number[][];
+  sprites?: Map<string, OffscreenCanvas>;
+  dir?: number;
 }
 
-type Effect = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number, s: Surface, mem: EffectMemory, font: string) => void;
+export interface EffectFonts { spooky: string; festive: string }
 
-const rand = (a: number, b: number) => a + Math.random() * (b - a);
-
-function rgba(hex: string, a: number) {
-  const n = parseInt((hex || '#ffffff').slice(1), 16);
-  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
-}
-
-function clear(ctx: CanvasRenderingContext2D, w: number, h: number) {
-  ctx.globalCompositeOperation = 'source-over';
-  ctx.globalAlpha = 1;
-  ctx.shadowBlur = 0;
-  ctx.clearRect(0, 0, w, h);
-}
+export type Effect = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number, s: Surface, mem: EffectMemory, fonts: EffectFonts) => void;
 
 function ghostPath(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, t: number) {
   ctx.beginPath();
@@ -269,7 +263,7 @@ export const effects: Record<string, Effect> = {
     ctx.drawImage(mem.buf, 0, 0, w, h);
   },
 
-  text(ctx, w, h, t, s, _mem, font) {
+  text(ctx, w, h, t, s, _mem, { spooky: font }) {
     clear(ctx, w, h);
     const txt = s.text || 'BOO';
     let size = h * 0.6;
@@ -305,10 +299,26 @@ export const effects: Record<string, Effect> = {
   },
 
   none(ctx, w, h) { clear(ctx, w, h); },
+
+  ...christmasEffects,
 };
 
-export const EFFECT_LIST: [string, string][] = [
-  ['ghosts', 'Ghosts'], ['shadow', 'Running shadow'], ['windows', 'Window light'], ['lightning', 'Lightning'], ['eyes', 'Eyes'],
-  ['outline', 'Neon outline'], ['slime', 'Slime'], ['static', 'TV static'], ['text', 'Text'],
-  ['color', 'Colour'], ['rainbow', 'Rainbow'], ['white', 'White'], ['none', 'Off'], ['media', 'Image / video'],
+export const EFFECT_SECTIONS: { title: string; effects: [string, string][] }[] = [
+  { title: 'Christmas', effects: [
+    ['snow', 'Snowfall'], ['snowflakes', 'Snowflakes'], ['stars', 'Stars'], ['reindeer', 'Reindeer'],
+    ['santa', 'Santa'], ['sleigh', "Santa's sleigh"], ['lights', 'Fairy lights'], ['greeting', 'Greeting'],
+  ] },
+  { title: 'Halloween', effects: [
+    ['ghosts', 'Ghosts'], ['shadow', 'Running shadow'], ['windows', 'Window light'], ['lightning', 'Lightning'], ['eyes', 'Eyes'],
+    ['slime', 'Slime'], ['static', 'TV static'], ['text', 'Text'],
+  ] },
+  { title: 'Basics', effects: [
+    ['outline', 'Neon outline'], ['color', 'Colour'], ['rainbow', 'Rainbow'], ['white', 'White'], ['none', 'Off'], ['media', 'Image / video'],
+  ] },
 ];
+
+/** The colour each effect looks best in, applied when it's picked. It can still be changed after. */
+export const EFFECT_COLORS: Record<string, string> = {
+  snow: '#ffffff', snowflakes: '#7fd3ff', stars: '#ffd166', reindeer: '#ff2a2a',
+  santa: '#ffd166', sleigh: '#ffd166', greeting: '#ffd166',
+};

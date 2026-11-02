@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Creepster } from 'next/font/google';
+import { Creepster, Mountains_of_Christmas } from 'next/font/google';
 import { effects, type EffectMemory } from './effects';
 import { getMedia } from './media';
 import { quadTransform, type MapState, type Point, type Surface } from './model';
 import { getDeviceId, joinRoom, loadState, normalizeRoom, type Room, type SyncStatus } from './sync';
 
 const creepster = Creepster({ weight: '400', subsets: ['latin'] });
+const mountains = Mountains_of_Christmas({ weight: '700', subsets: ['latin'] });
+const FONTS = { spooky: creepster.style.fontFamily, festive: mountains.style.fontFamily };
 
 /**
  * Fullscreen projector output. Every surface is a canvas (or media element) sized to
@@ -164,7 +166,7 @@ export default function ProjectorOutput({ initialRoom }: { initialRoom: string |
         if (s.visible && !v.media) {
           // Each surface keeps its own clock so speed changes don't make it jump.
           v.time += (Math.min(100, now - (v.last ?? now)) / 1000) * s.speed;
-          (effects[s.content] ?? effects.none)(v.ctx, w, h, v.time, s, v.mem, creepster.style.fontFamily);
+          (effects[s.content] ?? effects.none)(v.ctx, w, h, v.time, s, v.mem, FONTS);
         }
         v.last = now;
         drawGrid(v, s, state);
