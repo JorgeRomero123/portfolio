@@ -51,3 +51,6 @@ next-env.d.ts
 scripts/
 skills-lock.json
 graphify-out/
+
+# Stock-preview cut-out for local use only: never commit or deploy.
+public/projection-mapper/catrinas/catrina-sombrero-azul.webp

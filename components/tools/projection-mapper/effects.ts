@@ -10,12 +10,15 @@ import type { Surface } from './model';
  */
 
 interface Ghost { x: number; y: number; size: number; born: number; life: number; drift: number; ph: number }
+interface Catrina { x: number; y: number; size: number; born: number; life: number; drift: number; ph: number; image: number }
 interface Eye { x: number; y: number; r: number; born: number; life: number; blink: number }
 interface Drip { x: number; speed: number; width: number; off: number }
 interface Walker { start: number; dur: number; dir: number; run: boolean }
 
 export interface EffectMemory {
   ghosts?: Ghost[];
+  catrinas?: Catrina[];
+  catrinaCount?: number;
   eyes?: Eye[];
   drips?: Drip[];
   walker?: Walker | null;
@@ -47,6 +50,19 @@ function ghostPath(ctx: CanvasRenderingContext2D, x: number, y: number, s: numbe
     ctx.lineTo(px, py);
   }
   ctx.closePath();
+}
+
+// Cut-out skeletons in /public. Loaded on first use. The last is git-ignored, so it only
+// exists on this machine; deployed copies skip it and rotate through the rest.
+const CATRINA_FILES = ['catrin-suit', 'catrin-sombrero', 'catrina-flores', 'catrinas-couple', 'catrina-sombrero-azul'];
+let catrinaImages: HTMLImageElement[] | null = null;
+function loadCatrinas() {
+  catrinaImages ??= CATRINA_FILES.map((name) => {
+    const img = new Image();
+    img.src = `/projection-mapper/catrinas/${name}.webp`;
+    return img;
+  });
+  return catrinaImages;
 }
 
 /**
@@ -140,6 +156,39 @@ export const effects: Record<string, Effect> = {
       ctx.beginPath();
       ctx.ellipse(x, y + g.size * 0.2, g.size * 0.06, g.size * 0.09 * (0.6 + 0.4 * Math.sin(t * 3 + g.ph)), 0, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
+    }
+  },
+
+  catrinas(ctx, w, h, t, s, mem) {
+    // Like the ghosts: they fade in, sway to their own music, drift up and fade away.
+    clear(ctx, w, h);
+    const images = loadCatrinas().filter((img) => img.complete && img.naturalWidth);
+    if (!images.length) return;
+    const list = (mem.catrinas ??= []);
+    const target = Math.min(6, Math.max(2, Math.round((w * h) / 180000)));
+    while (list.length < target) {
+      // Taking turns gives every catrina a go, and the golden ratio spreads them out.
+      const n = (mem.catrinaCount = (mem.catrinaCount ?? -1) + 1);
+      list.push({ x: 0.14 + ((n * 0.618) % 1) * 0.72, y: rand(0.48, 0.62), size: rand(0.55, 0.8) * Math.min(w, h),
+        born: t - (t < 0.1 ? rand(0, 3) : -rand(0, 2)), life: rand(6, 10), drift: rand(-0.3, 0.3), ph: rand(0, 6), image: n });
+    }
+    mem.catrinas = list.filter((c) => t - c.born < c.life);
+    for (const c of mem.catrinas) {
+      const age = (t - c.born) / c.life;
+      if (age < 0) continue;
+      const img = images[c.image % images.length];
+      // The longer side matches `size`, so wide and tall cut-outs look equally big.
+      const k = c.size / Math.max(img.naturalWidth, img.naturalHeight);
+      const dw = img.naturalWidth * k, dh = img.naturalHeight * k;
+      const x = c.x * w + Math.sin(t * 0.8 + c.ph) * c.size * 0.12 + c.drift * age * w * 0.2;
+      const y = c.y * h - age * h * 0.1 + Math.abs(Math.sin(t * 2.2 + c.ph)) * -c.size * 0.04;
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, Math.sin(Math.PI * age) * 2.5);
+      ctx.translate(x, y);
+      ctx.rotate(Math.sin(t * 2.2 + c.ph) * 0.09);
+      ctx.shadowColor = s.color; ctx.shadowBlur = c.size * 0.12;
+      ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
       ctx.restore();
     }
   },
@@ -309,7 +358,7 @@ export const EFFECT_SECTIONS: { title: string; effects: [string, string][] }[] =
     ['santa', 'Santa'], ['sleigh', "Santa's sleigh"], ['lights', 'Fairy lights'], ['greeting', 'Greeting'],
   ] },
   { title: 'Halloween', effects: [
-    ['ghosts', 'Ghosts'], ['shadow', 'Running shadow'], ['windows', 'Window light'], ['lightning', 'Lightning'], ['eyes', 'Eyes'],
+    ['ghosts', 'Ghosts'], ['catrinas', 'Catrinas'], ['shadow', 'Running shadow'], ['windows', 'Window light'], ['lightning', 'Lightning'], ['eyes', 'Eyes'],
     ['slime', 'Slime'], ['static', 'TV static'], ['text', 'Text'],
   ] },
   { title: 'Basics', effects: [
@@ -320,5 +369,5 @@ export const EFFECT_SECTIONS: { title: string; effects: [string, string][] }[] =
 /** The colour each effect looks best in, applied when it's picked. It can still be changed after. */
 export const EFFECT_COLORS: Record<string, string> = {
   snow: '#ffffff', snowflakes: '#7fd3ff', stars: '#ffd166', reindeer: '#ff2a2a',
-  santa: '#ffd166', sleigh: '#ffd166', greeting: '#ffd166',
+  santa: '#ffd166', sleigh: '#ffd166', greeting: '#ffd166', catrinas: '#ff7a1a',
 };
