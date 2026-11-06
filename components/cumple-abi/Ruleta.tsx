@@ -14,7 +14,9 @@ const C = SIZE / 2;
 function polar(angleDeg: number, radius: number) {
   // 0° = arriba, sentido horario.
   const a = ((angleDeg - 90) * Math.PI) / 180;
-  return [C + radius * Math.cos(a), C + radius * Math.sin(a)];
+  // Redondeado: servidor y navegador difieren en el último decimal y rompen la hidratación.
+  const round = (v: number) => Math.round(v * 100) / 100;
+  return [round(C + radius * Math.cos(a)), round(C + radius * Math.sin(a))];
 }
 
 function slicePath(start: number, end: number) {
@@ -39,13 +41,13 @@ export default function Ruleta() {
   const [result, setResult] = useState<Theme | null>(null);
   const pending = useRef<number | null>(null);
 
-  const reducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  const duration = reducedMotion ? 600 : 4200;
+  const [duration, setDuration] = useState(4200);
 
   function spin() {
     if (spinning) return;
+    // Se lee al girar (no en el render) para no desajustar la hidratación.
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    setDuration(reducedMotion ? 600 : 4200);
     const index = Math.floor(Math.random() * n);
     const jitter = (Math.random() - 0.5) * slice * 0.7;
     // Rotación (mod 360) que deja el centro de la rebanada bajo la flecha de arriba.
@@ -83,7 +85,7 @@ export default function Ruleta() {
             viewBox={`0 0 ${SIZE} ${SIZE}`}
             className="block w-full h-auto"
             role="img"
-            aria-label={`Ruleta con ${n} temáticas: ${THEMES.map((t) => t.label).join(', ')}`}
+            aria-label={`Ruleta con ${n} opciones: ${THEMES.map((t) => t.label).join(', ')}`}
             style={{
               transform: `rotate(${rotation}deg)`,
               transition: `transform ${duration}ms cubic-bezier(0.12, 0.7, 0.12, 1)`,
@@ -95,7 +97,7 @@ export default function Ruleta() {
               const start = i * slice;
               const mid = start + slice / 2;
               return (
-                <g key={t.label}>
+                <g key={`${t.group}-${t.short}`}>
                   <path
                     d={n === 1 ? `M ${C} ${C - R} A ${R} ${R} 0 1 1 ${C - 0.01} ${C - R} Z` : slicePath(start, start + slice)}
                     fill={sliceColor(i, n)}
@@ -106,24 +108,24 @@ export default function Ruleta() {
                   <g transform={`rotate(${mid} ${C} ${C})`}>
                     <text
                       x={C}
-                      y={C - R * 0.84}
+                      y={C - R * (n > 12 ? 0.86 : 0.84)}
                       textAnchor="middle"
-                      fontSize="22"
+                      fontSize={n > 12 ? 15 : 22}
                     >
                       {t.emoji}
                     </text>
                     <text
                       transform={`rotate(-90 ${C} ${C})`}
-                      x={C + R * 0.66}
+                      x={C + R * (n > 12 ? 0.74 : 0.66)}
                       y={C}
                       textAnchor="end"
                       dominantBaseline="middle"
-                      fontSize={(t.short ?? t.label).length > 8 ? 14 : 17}
+                      fontSize={n > 12 ? (t.short.length > 9 ? 9.5 : 11) : t.short.length > 8 ? 14 : 17}
                       fontWeight="700"
                       fill={INK}
                       style={{ fontFamily: 'var(--font-abi-display), sans-serif' }}
                     >
-                      {t.short ?? t.label}
+                      {t.short}
                     </text>
                   </g>
                 </g>
@@ -148,7 +150,7 @@ export default function Ruleta() {
       <div aria-live="polite" className="mb-8 min-h-[9rem] w-full max-w-sm">
         {result && (
           <div className="abi-pop -rotate-1 rounded-lg border-[3px] border-[#1B1B1B] bg-white p-5 text-center shadow-[5px_5px_0_#1B1B1B]">
-            <p className="font-mono text-xs uppercase tracking-widest text-[#1B1B1B]/70">Te tocó</p>
+            <p className="font-mono text-xs uppercase tracking-widest text-[#1B1B1B]/70">Te tocó · {result.group}</p>
             <p className="mt-1 text-4xl font-bold" style={{ fontFamily: 'var(--font-abi-display), sans-serif' }}>
               {result.emoji} {result.label}
             </p>
