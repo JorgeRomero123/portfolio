@@ -7,6 +7,11 @@ const PRINT_DASHBOARD_PASS = '1234';
 export default auth((req) => {
   const { pathname } = req.nextUrl;
 
+  // Las rutas distinguen mayúsculas; que /cumple-abi (o cualquier variante) llegue a /cumple-Abi.
+  if (pathname.toLowerCase() === '/cumple-abi' && pathname !== '/cumple-Abi') {
+    return NextResponse.redirect(new URL('/cumple-Abi', req.url));
+  }
+
   // Add pathname to headers for layout detection
   const response = NextResponse.next();
   response.headers.set('x-pathname', pathname);

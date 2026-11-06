@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    // El arreglo de mayúsculas (/cumple-abi → /cumple-Abi) vive en middleware.ts:
+    // estos redirects no distinguen mayúsculas y harían un loop.
+    return [
+      { source: '/cumple-abbie', destination: '/cumple-Abi', permanent: false },
+    ];
+  },
   images: {
     remotePatterns: [
       {

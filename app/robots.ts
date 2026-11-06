@@ -11,7 +11,7 @@ export default function robots(): MetadataRoute.Robots {
         '/print-dashboard',
         '/myalbumlink-embed-test',
         '/tools/quehaceres',
-        '/cumple-abbie',
+        '/cumple-Abi',
       ],
     },
   };
