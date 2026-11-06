@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Familjen_Grotesk, Newsreader } from 'next/font/google';
 import Ruleta from '@/components/cumple-abi/Ruleta';
+import AbiPintando from '@/components/cumple-abi/AbiPintando';
 
 const display = Familjen_Grotesk({ subsets: ['latin'], weight: ['500', '700'], variable: '--font-abi-display' });
 const body = Newsreader({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-abi-body' });
@@ -11,15 +12,22 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const CONFETTI = [
-  { top: '6%', left: '8%', color: '#D98580', rot: 20 },
-  { top: '12%', left: '86%', color: '#6C7DE0', rot: -15 },
-  { top: '30%', left: '4%', color: '#E5A23C', rot: 40 },
-  { top: '44%', left: '93%', color: '#3F8F45', rot: 10 },
-  { top: '64%', left: '6%', color: '#B8B6EA', rot: -30 },
-  { top: '78%', left: '90%', color: '#D98580', rot: 25 },
-  { top: '90%', left: '14%', color: '#6C7DE0', rot: -10 },
-];
+// Confeti que cae sin parar. Valores fijos (no Math.random) para que el HTML salga igual siempre.
+const COLORS = ['#D98580', '#6C7DE0', '#E5A23C', '#3F8F45', '#B8B6EA', '#F0C49B'];
+const CONFETTI = Array.from({ length: 30 }, (_, i) => {
+  const r = (k: number) => ((Math.sin((i + 1) * 12.9898 * k) * 43758.5453) % 1 + 1) % 1;
+  return {
+    left: `${Math.round(r(1) * 96 + 2)}%`,
+    color: COLORS[i % COLORS.length],
+    round: i % 4 === 0,
+    size: 8 + Math.round(r(2) * 6),
+    fall: (7 + r(3) * 7).toFixed(2),
+    delay: (-r(4) * 14).toFixed(2),
+    sway: (1.6 + r(5) * 1.6).toFixed(2),
+    // Con movimiento reducido, cada pieza se queda quieta a esta altura (en vh).
+    rest: Math.round(r(6) * 95),
+  };
+});
 
 export default function CumpleAbiPage() {
   return (
@@ -38,7 +46,14 @@ export default function CumpleAbiPage() {
         .abi-pop { animation: abi-pop .45s ease-out both }
         @keyframes abi-wobble { 0%,100% { transform: rotate(-3deg) } 50% { transform: rotate(3deg) } }
         .abi-wobble { animation: abi-wobble 2.4s ease-in-out infinite }
-        @media (prefers-reduced-motion: reduce) { .abi-pop, .abi-wobble { animation: none } }
+        @keyframes abi-fall { from { transform: translateY(-5vh) } to { transform: translateY(110vh) } }
+        .abi-fall { animation: abi-fall linear infinite }
+        @keyframes abi-sway { 0% { transform: translateX(-10px) rotate(-35deg) } 100% { transform: translateX(10px) rotate(35deg) } }
+        .abi-sway { animation: abi-sway ease-in-out infinite alternate }
+        @media (prefers-reduced-motion: reduce) {
+          .abi-pop, .abi-wobble, .abi-sway { animation: none }
+          .abi-fall { animation: none; transform: translateY(calc(var(--i, 0) * 1vh)) }
+        }
       `}</style>
 
       {/* Bandera francesa arriba */}
@@ -48,17 +63,34 @@ export default function CumpleAbiPage() {
         <div className="flex-1 bg-[#D98580]" />
       </div>
 
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         {CONFETTI.map((c, i) => (
           <span
             key={i}
-            className="absolute block h-4 w-2.5 rounded-sm border-2 border-[#1B1B1B]"
-            style={{ top: c.top, left: c.left, background: c.color, transform: `rotate(${c.rot}deg)` }}
-          />
+            className="abi-fall absolute -top-6 block"
+            style={
+              {
+                left: c.left,
+                animationDuration: `${c.fall}s`,
+                animationDelay: `${c.delay}s`,
+                '--i': c.rest,
+              } as React.CSSProperties
+            }
+          >
+            <span
+              className={`abi-sway block border-2 border-[#1B1B1B] ${c.round ? 'rounded-full' : 'rounded-sm'}`}
+              style={{
+                width: c.round ? c.size : c.size * 0.6,
+                height: c.size,
+                background: c.color,
+                animationDuration: `${c.sway}s`,
+              }}
+            />
+          </span>
         ))}
       </div>
 
-      <div className="relative mx-auto flex min-h-full max-w-md flex-col items-center px-4 pb-16 pt-10 text-center">
+      <div className="relative z-10 mx-auto flex min-h-full max-w-md flex-col items-center px-4 pb-16 pt-10 text-center">
         <span
           className="abi-wobble inline-block rounded-md border-[3px] border-[#1B1B1B] bg-[#B8B6EA] px-3 py-1 font-mono text-xs font-bold uppercase tracking-widest shadow-[3px_3px_0_#1B1B1B]"
         >
@@ -80,7 +112,9 @@ export default function CumpleAbiPage() {
           Gira la ruleta, mira qué te tocó y dibújalo en el lienzo para Abi.
         </p>
 
-        <div className="mt-10 w-full">
+        <AbiPintando className="mt-6 h-auto w-full max-w-[300px]" />
+
+        <div className="mt-8 w-full">
           <Ruleta />
         </div>
 

@@ -11,9 +11,11 @@ export type Theme = {
   prompt: string;
   /** Temática a la que pertenece (se llena sola desde GROUPS). */
   group: string;
+  /** Identificador estable (se llena solo): así se guarda qué opciones ya salieron. */
+  id: string;
 };
 
-type Group = { group: string; items: Omit<Theme, 'group'>[] };
+type Group = { group: string; items: Omit<Theme, 'group' | 'id'>[] };
 
 const GROUPS: Group[] = [
   {
@@ -43,9 +45,28 @@ const GROUPS: Group[] = [
       { short: 'Gnomo', label: 'El gnomo viajero', emoji: '🧙', prompt: 'Dibuja al gnomo viajero posando frente a algún lugar del mundo.' },
       { short: 'Crème brûlée', label: 'Una crème brûlée', emoji: '🍮', prompt: 'Dibuja una crème brûlée a punto de romper su costra con la cuchara.' },
       { short: 'Frambuesas', label: 'Frambuesas en los dedos', emoji: '🍓', prompt: 'Dibuja una mano con una frambuesa en cada dedo.' },
-      { short: 'Fotomatón', label: 'El fotomatón', emoji: '📸', prompt: 'Dibuja una tira de fotos de fotomatón con cuatro caras distintas.' },
       { short: 'Flequillo', label: 'Amélie y su flequillo', emoji: '💇‍♀️', prompt: 'Dibuja a Amélie con su flequillo y su sonrisa traviesa.' },
       { short: 'Sacré-Cœur', label: 'El Sacré-Cœur', emoji: '⛪', prompt: 'Dibuja el Sacré-Cœur en lo alto de Montmartre.' },
+    ],
+  },
+  {
+    group: 'Stitch',
+    items: [
+      { short: 'Stitch', label: 'Stitch', emoji: '👽', prompt: 'Dibuja a Stitch con sus orejotas y su sonrisa de travieso.' },
+      { short: 'Stitch y Angel', label: 'Stitch y Angel', emoji: '💗', prompt: 'Dibuja a Stitch con Angel, su novia rosa.' },
+      { short: 'Surfista', label: 'Stitch surfista', emoji: '🏄', prompt: 'Dibuja a Stitch surfeando una ola en Hawái.' },
+      { short: 'Ukulele', label: 'Stitch con ukulele', emoji: '🎸', prompt: 'Dibuja a Stitch tocando el ukulele.' },
+    ],
+  },
+  {
+    group: 'Toy Story',
+    items: [
+      { short: 'Woody', label: 'Woody', emoji: '🤠', prompt: 'Dibuja a Woody con su sombrero de vaquero.' },
+      { short: 'Buzz', label: 'Buzz Lightyear', emoji: '🚀', prompt: 'Dibuja a Buzz Lightyear… ¡al infinito y más allá!' },
+      { short: 'Rex', label: 'Rex', emoji: '🦖', prompt: 'Dibuja a Rex, el dinosaurio más nervioso del cuarto.' },
+      { short: 'Marcianitos', label: 'Los marcianitos', emoji: '🛸', prompt: 'Dibuja a los marcianitos verdes de tres ojos. «¡La garra!»' },
+      { short: 'Jessie', label: 'Jessie', emoji: '👢', prompt: 'Dibuja a Jessie, la vaquera de trenza roja.' },
+      { short: 'Hamm', label: 'Hamm', emoji: '🐷', prompt: 'Dibuja a Hamm, el cochinito alcancía.' },
     ],
   },
   {
@@ -63,6 +84,14 @@ const GROUPS: Group[] = [
   },
 ];
 
+const slug = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
 /** Reparte los grupos en orden alterno (Francia, Snoopy, Amélie, Abi, …). */
 function interleave(groups: Group[]): Theme[] {
   const out: Theme[] = [];
@@ -70,10 +99,11 @@ function interleave(groups: Group[]): Theme[] {
   for (let i = 0; i < longest; i++) {
     for (const g of groups) {
       const item = g.items[i];
-      if (item) out.push({ ...item, group: g.group });
+      if (item) out.push({ ...item, group: g.group, id: slug(`${g.group}-${item.short}`) });
     }
   }
   return out;
 }
 
 export const THEMES: Theme[] = interleave(GROUPS);
+export const THEME_IDS = new Set(THEMES.map((t) => t.id));
