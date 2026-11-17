@@ -44,6 +44,7 @@
     <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2"/><path d="M15.5 8.5V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7.5a2 2 0 002 2h2.5"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 15.5l-5-5-8.8 8.8"/></symbol>
     <symbol id="i-fit" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
   </defs>
 </svg>
@@ -112,6 +113,7 @@
     <button class="ib tool" data-tool="eraser" type="button" aria-label="Eraser"><svg><use href="#i-eraser"/></svg></button>
     <button class="ib tool" data-tool="fill" type="button" aria-label="Fill"><svg><use href="#i-fill"/></svg></button>
     <button class="ib tool" data-tool="text" type="button" aria-label="Text"><svg><use href="#i-text"/></svg></button>
+    <button class="ib" id="t-image" type="button" aria-label="Import image to trace"><svg><use href="#i-image"/></svg></button>
     <button class="ib tool" data-tool="picker" type="button" aria-label="Eyedropper"><svg><use href="#i-picker"/></svg></button>
     <span class="sep"></span>
     <button class="ib" id="t-sym" type="button" aria-label="Mirror symmetry"><svg><use href="#i-sym"/></svg></button>
@@ -120,6 +122,7 @@
     <button class="swatch-btn" id="t-color" type="button" aria-label="Colour"><i></i></button>
   </nav>
 
+  <input type="file" id="file-image" accept="image/*" hidden>
   <div class="textbar pill" id="textbar" hidden>
     <button class="btn ghost" id="tx-edit" type="button">Edit</button>
     <span class="tx-label">Size</span>

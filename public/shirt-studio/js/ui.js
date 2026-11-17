@@ -284,6 +284,16 @@ export class EditorUI {
       })
     );
     $('#t-sym').onclick = () => ed.toggleSym();
+    $('#t-image').onclick = () => this.pickImage();
+    $('#file-image').onchange = async (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      if (await ed.beginImage(f)) {
+        $('#tx-edit').hidden = true;
+        $('#textbar').hidden = false;
+        this.txSlider.render();
+      }
+    };
     $('#t-layers').onclick = (e) => this.toggle('layers', () => this.openLayers(e.currentTarget));
     $('#t-color').onclick = (e) => this.toggle('color', () => this.openColor(e.currentTarget));
     $('#t-undo').onclick = () => this.undo();
@@ -329,14 +339,15 @@ export class EditorUI {
     // text bar
     this.txSlider = slider($('#tx-size'), {
       get: () => {
+        if (ed.placing === 'image') return Math.sqrt(clamp(((ed.imageDraft?.scale ?? 1) - 0.1) / 1.9, 0, 1));
         const t = ed.textDraft;
         if (!t || !this.doc) return 0.3;
         return Math.sqrt(clamp((t.sz / this.doc.W - 0.02) / 0.48, 0, 1));
       },
-      set: (v) => ed.setTextSize(this.doc.W * (0.02 + 0.48 * v * v)),
+      set: (v) => (ed.placing === 'image' ? ed.setImageScale(0.1 + 1.9 * v * v) : ed.setTextSize(this.doc.W * (0.02 + 0.48 * v * v))),
     });
     $('#tx-cancel').onclick = () => ed.endPlacing();
-    $('#tx-done').onclick = () => ed.commitText();
+    $('#tx-done').onclick = () => (ed.placing === 'image' ? ed.commitImage() : ed.commitText());
     $('#tx-edit').onclick = () => this.openText(ed.textDraft);
 
     // mockup
@@ -441,12 +452,13 @@ export class EditorUI {
 
   // ---------------- inks ----------------
   openInks(anchor) {
-    const { colors, soft } = this.doc.inks();
+    const { colors, soft, photo } = this.doc.inks();
     const el = document.createElement('div');
     el.className = 'inks-pop';
     el.innerHTML = `<h3>Ink colours<small>${colors.length}</small></h3>
       <div class="cp-swatches">${colors.map((c) => `<button class="sw" type="button" style="background:${c}" data-c="${c}" title="${c}"></button>`).join('')}</div>
       <p>${colors.length ? 'Screen printers usually price per colour. Tap one to draw with it again.' : 'Colours you use show up here, so you can keep the count low for screen printing.'}</p>
+      ${photo ? '<p>A photo layer is set to print. Photos need full-colour printing (DTG), not screen printing.</p>' : ''}
       ${soft ? '<p>Some marks are semi-transparent (pencil, low opacity or a faded layer). Screen printing turns those into halftone dots; DTG printing reproduces them as-is.</p>' : ''}`;
     el.querySelectorAll('[data-c]').forEach((b) => (b.onclick = () => (this.ed.setColor(b.dataset.c), pops.close())));
     pops.open('inks', el, anchor, 'down');
@@ -476,7 +488,7 @@ export class EditorUI {
       row.appendChild(thumb);
       row.insertAdjacentHTML(
         'beforeend',
-        `<div class="layer-name">${esc(L.name)}<small>${L.visible ? (L.opacity < 1 ? Math.round(L.opacity * 100) + '% opacity' : L.ops.length ? L.ops.length + ' marks' : 'Empty') : 'Hidden'}</small></div>
+        `<div class="layer-name">${esc(L.name)}<small>${!L.visible ? 'Hidden' : [L.ref ? 'Not printed' : '', L.opacity < 1 ? Math.round(L.opacity * 100) + '%' : '', !L.ref && L.opacity >= 1 ? (L.ops.length ? L.ops.length + (L.ops.length === 1 ? ' mark' : ' marks') : 'Empty') : ''].filter(Boolean).join(' · ')}</small></div>
          <button class="ib" type="button" data-a="eye" aria-label="Show or hide">${icon(L.visible ? 'eye' : 'eyeoff')}</button>`
       );
       row.addEventListener('click', async (e) => {
@@ -507,11 +519,23 @@ export class EditorUI {
     const s = sliderEl();
     op.appendChild(s);
     el.appendChild(op);
+    const pr = document.createElement('button');
+    pr.type = 'button';
+    pr.className = 'menu-item layer-print';
+    pr.innerHTML = `<span>Include in print<br><span class="hint">${L.ref ? 'Off: a guide to trace over' : 'On: part of the print file'}</span></span><span class="switch${L.ref ? '' : ' on'}"></span>`;
+    pr.onclick = () => {
+      L.ref = !L.ref;
+      d.touch(null, {});
+      this.refreshInks();
+      this.renderLayers();
+    };
+    el.appendChild(pr);
     el.insertAdjacentHTML(
       'beforeend',
       `<div class="layer-tools">
         <button class="ib" type="button" data-a="add" aria-label="New layer" ${d.layers.length >= MAX_LAYERS ? 'disabled' : ''}>${icon('plus')}</button>
         <button class="ib" type="button" data-a="dup" aria-label="Duplicate layer" ${d.layers.length >= MAX_LAYERS ? 'disabled' : ''}>${icon('copy')}</button>
+        <button class="ib" type="button" data-a="img" aria-label="Import image" ${d.layers.length >= MAX_LAYERS ? 'disabled' : ''}>${icon('image')}</button>
         <span class="grow"></span>
         <button class="ib" type="button" data-a="up" aria-label="Move up" ${d.active >= d.layers.length - 1 ? 'disabled' : ''}>${icon('up')}</button>
         <button class="ib" type="button" data-a="down" aria-label="Move down" ${d.active <= 0 ? 'disabled' : ''}>${icon('down')}</button>
@@ -521,6 +545,7 @@ export class EditorUI {
     const act = (a) => {
       if (a === 'add') d.addLayer();
       else if (a === 'dup') d.addLayer(d.active + 1, d.layer);
+      else if (a === 'img') this.pickImage();
       else if (a === 'up') d.moveLayer(d.active, d.active + 1);
       else if (a === 'down') d.moveLayer(d.active, d.active - 1);
       else if (a === 'del') {
@@ -632,6 +657,7 @@ export class EditorUI {
         <dt>Quick pinch in</dt><dd>Fit the canvas to the screen</dd>
         <dt>One finger</dt><dd>Pans the canvas once a Pencil has been used. Hold still to pick a colour.</dd>
         <dt>Tap active tool</dt><dd>Opens its settings, like Streamline for smoother lines</dd>
+        <dt>Image</dt><dd>Import a photo to trace. It goes in under your drawing at 50%, isn't printed, and its opacity is in Layers.</dd>
         <dt>Mirror</dt><dd>Strokes repeat across the centre line, for badges and emblems</dd>
         <dt>Inks</dt><dd>Counts the colours in your design, which is what screen printers charge for</dd>
       </dl>
@@ -684,11 +710,20 @@ export class EditorUI {
         this.ed.renderDraft();
       } else {
         await this.ed.beginPlacing(str, font);
+        $('#tx-edit').hidden = false;
         $('#textbar').hidden = false;
         this.txSlider.render();
       }
     };
     ta.focus();
+  }
+  pickImage() {
+    if (!this.doc) return;
+    pops.close();
+    if (this.doc.layers.length >= MAX_LAYERS) return toast('Layer limit reached — delete a layer first');
+    const inp = $('#file-image');
+    inp.value = '';
+    inp.click();
   }
   hideTextbar() {
     $('#textbar').hidden = true;
@@ -709,7 +744,7 @@ export class EditorUI {
 
   async exportPrint() {
     const d = this.doc;
-    if (!d.layers.some((L) => L.visible && L.ops.length)) return toast('Nothing to export yet');
+    if (!d.layers.some((L) => L.visible && !L.ref && L.ops.length)) return toast('Nothing to print yet — reference layers are left out');
     const m = modal(`<h2>Building print file</h2><p>Rendering every stroke at ${d.W} × ${d.H} px.</p><div class="progress"><i></i></div>`, { onBack: false });
     const bar = m.el.querySelector('.progress i');
     let res;
@@ -737,7 +772,7 @@ export class EditorUI {
   openMockup() {
     pops.close();
     const d = this.doc;
-    this.mkDesign = d.composite(1500);
+    this.mkDesign = d.composite(1500, true);
     $('#mockup').hidden = false;
     $('#mk-size').textContent = `${inches(d.W)} × ${inches(d.H)} in print`;
     $('#mk-bgsync').checked = d.settings.bg === 'shirt';
@@ -778,7 +813,7 @@ export class EditorUI {
     this.mkT = setTimeout(async () => {
       const d = this.doc;
       if (!d || $('#mockup').hidden) return;
-      const hi = d.composite(2400);
+      const hi = d.composite(2400, true);
       const c = makeCanvas(2000, 2160);
       drawMockup(c.getContext('2d'), { w: 2000, h: 2160 }, hi, d, d.settings.shirt);
       freeCanvas(hi);

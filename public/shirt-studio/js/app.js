@@ -134,7 +134,8 @@ class App {
   async closeEditor() {
     const doc = this.doc;
     if (!doc) return;
-    if (this.ui.ed.placing) this.ui.ed.commitText();
+    if (this.ui.ed.placing === 'text') this.ui.ed.commitText();
+    else if (this.ui.ed.placing === 'image') this.ui.ed.commitImage();
     await this.saveNow();
     this.ui.close();
     this.doc = null;

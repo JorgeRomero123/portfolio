@@ -1,5 +1,5 @@
 // Offline shell. Bump VERSION whenever any file changes.
-const VERSION = 'ss-v2';
+const VERSION = 'ss-v3';
 const FILES = [
   'index.html', 'styles.css', 'manifest.webmanifest',
   'js/app.js', 'js/ui.js', 'js/editor.js', 'js/doc.js', 'js/render.js', 'js/brushes.js',

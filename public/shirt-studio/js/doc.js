@@ -21,6 +21,7 @@ export class Layer {
     this.name = o.name || 'Layer';
     this.visible = o.visible !== false;
     this.opacity = o.opacity ?? 1;
+    this.ref = !!o.ref; // reference layer: visible while drawing, left out of the print
     this.ops = o.ops || [];
     this.cv = makeCanvas(doc.workW, doc.workH);
     this.ctx = this.cv.getContext('2d');
@@ -125,11 +126,27 @@ export class Doc {
     if (from) {
       L.ops = from.ops.slice();
       L.opacity = from.opacity;
+      L.ref = from.ref;
       L.ctx.drawImage(from.cv, 0, 0);
     }
     this.layers.splice(index, 0, L);
     this.active = index;
     this.push({ k: 'add', layer: L, index });
+    this.touch(L, { layers: true });
+    return L;
+  }
+
+  // Imported picture: goes in as a reference layer at the bottom, half opacity,
+  // and the layer you were drawing on stays selected.
+  addImageLayer(op) {
+    if (this.layers.length >= MAX_LAYERS) return null;
+    const L = new Layer(this, { name: 'Reference', opacity: 0.5, ref: true });
+    L.ops.push(op);
+    this.renderToLayer(L, op);
+    const prev = this.layer;
+    this.layers.splice(0, 0, L);
+    this.active = this.layers.indexOf(prev);
+    this.push({ k: 'add', layer: L, index: 0 });
     this.touch(L, { layers: true });
     return L;
   }
@@ -235,25 +252,29 @@ export class Doc {
   // Distinct ink colours across visible layers — what a screen printer charges per.
   inks() {
     const seen = new Map();
-    let soft = false;
+    let soft = false, photo = false;
     for (const L of this.layers) {
-      if (!L.visible) continue;
+      if (!L.visible || L.ref) continue;
       for (const op of L.ops) {
         if (op.t === 's' && op.b === 'eraser') continue;
+        if (op.t === 'i') {
+          photo = true;
+          continue;
+        }
         seen.set(op.c, (seen.get(op.c) || 0) + 1);
         if ((op.t === 's' && (op.op < 1 || op.b === 'pencil')) || L.opacity < 1) soft = true;
       }
     }
-    return { colors: [...seen.keys()], soft };
+    return { colors: [...seen.keys()], soft, photo };
   }
 
-  composite(maxW) {
+  composite(maxW, printOnly) {
     const s = maxW ? Math.min(1, maxW / this.workW) : 1;
     const c = makeCanvas(this.workW * s, this.workH * s);
     const x = c.getContext('2d');
     x.imageSmoothingQuality = 'high';
     for (const L of this.layers) {
-      if (!L.visible) continue;
+      if (!L.visible || (printOnly && L.ref)) continue;
       x.globalAlpha = L.opacity;
       x.drawImage(L.cv, 0, 0, c.width, c.height);
     }
@@ -276,9 +297,13 @@ export class Doc {
           if (!op.maskBlob) op.maskBlob = await canvasToBlob(op.mask);
           const { mask, ...rest } = op;
           ops.push(rest);
+        } else if (op.t === 'i') {
+          if (!op.blob) op.blob = await canvasToBlob(op.img, op.type, 0.92);
+          const { img, ...rest } = op;
+          ops.push(rest);
         } else ops.push(op);
       }
-      layers.push({ id: L.id, name: L.name, visible: L.visible, opacity: L.opacity, blob: L.blob, ops });
+      layers.push({ id: L.id, name: L.name, visible: L.visible, opacity: L.opacity, ref: L.ref, blob: L.blob, ops });
     }
     const t = this.composite(360);
     const thumb = await canvasToBlob(t);
@@ -297,6 +322,11 @@ export class Doc {
           const bm = await createImageBitmap(op.maskBlob);
           op.mask = makeCanvas(bm.width, bm.height);
           op.mask.getContext('2d').drawImage(bm, 0, 0);
+          bm.close?.();
+        } else if (op.t === 'i' && !op.img) {
+          const bm = await createImageBitmap(op.blob);
+          op.img = makeCanvas(bm.width, bm.height);
+          op.img.getContext('2d').drawImage(bm, 0, 0);
           bm.close?.();
         }
       }
@@ -320,7 +350,13 @@ export class Doc {
   }
 
   dispose() {
-    for (const L of this.layers) freeCanvas(L.cv);
+    for (const L of this.layers) {
+      freeCanvas(L.cv);
+      for (const op of L.ops) {
+        if (op.t === 'i') freeCanvas(op.img);
+        if (op.t === 'f') freeCanvas(op.mask);
+      }
+    }
     for (const e of [...this.undoStack, ...this.redoStack]) dropEntry(e, null);
     freeCanvas(this.buf);
   }
@@ -342,7 +378,7 @@ export class Doc {
     const lay = makeCanvas(W, bandH), lctx = lay.getContext('2d');
     const buf = makeCanvas(W, bandH), bctx = buf.getContext('2d');
     const png = new PNGWriter(W, H, 300);
-    const visible = this.layers.filter((l) => l.visible);
+    const visible = this.layers.filter((l) => l.visible && !l.ref);
     try {
       for (let b = 0; b < bands; b++) {
         const oy = b * bandH;

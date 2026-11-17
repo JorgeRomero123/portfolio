@@ -94,6 +94,13 @@ export function renderOp(tctx, bctx, op, s, ox, oy, W) {
       tctx.drawImage(op.mask, op.bb[0], op.bb[1], op.bb[2] - op.bb[0], op.bb[3] - op.bb[1]);
     }
     tctx.restore();
+  } else if (op.t === 'i') {
+    tctx.save();
+    tctx.setTransform(s, 0, 0, s, -ox * s, -oy * s);
+    tctx.imageSmoothingEnabled = true;
+    tctx.imageSmoothingQuality = 'high';
+    tctx.drawImage(op.img, op.bb[0], op.bb[1], op.bb[2] - op.bb[0], op.bb[3] - op.bb[1]);
+    tctx.restore();
   } else if (op.t === 'x') {
     tctx.save();
     tctx.setTransform(s, 0, 0, s, -ox * s, -oy * s);

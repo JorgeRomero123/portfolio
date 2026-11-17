@@ -156,7 +156,7 @@ export class Editor {
   setColor(hex) {
     this.color = hex;
     prefs.set('color', hex);
-    if (this.placing && this.textDraft) {
+    if (this.placing === 'text' && this.textDraft) {
       this.textDraft.c = hex;
       this.renderDraft();
     }
@@ -486,8 +486,9 @@ export class Editor {
     } else if (a.kind === 'pick') this.movePick(e.clientX, e.clientY);
     else if (a.kind === 'textdrag') {
       const [dx, dy] = this.toDoc(e.clientX, e.clientY);
-      this.textDraft.x += dx - a.lx;
-      this.textDraft.y += dy - a.ly;
+      const dr = this.placing === 'image' ? this.imageDraft : this.textDraft;
+      dr.x += dx - a.lx;
+      dr.y += dy - a.ly;
       a.lx = dx;
       a.ly = dy;
       this.renderDraft();
@@ -672,7 +673,7 @@ export class Editor {
     const tmp = makeCanvas(w, h);
     const tctx = tmp.getContext('2d', { willReadFrequently: true });
     for (const l of d.layers) {
-      if (!l.visible) continue;
+      if (!l.visible || l.ref) continue; // reference photos don't block fills
       tctx.globalAlpha = l.opacity;
       tctx.drawImage(l.cv, 0, 0);
     }
@@ -827,13 +828,14 @@ export class Editor {
     y = clamp(y, d.H * 0.1, d.H * 0.9);
     const sz = this.textDraft?.sz || prefs.get('textSize', Math.round(d.W * 0.1));
     this.textDraft = { t: 'x', str, font, sz: Math.min(sz, d.W * 0.5), c: this.color, x, y };
-    this.placing = true;
+    this.placing = 'text';
     document.body.classList.add('placing');
     this.strokeCv.style.visibility = 'visible';
     this.strokeCv.style.opacity = 1;
     this.renderDraft();
   }
   renderDraft() {
+    if (this.placing === 'image') return this.renderImageDraft();
     const d = this.doc, t = this.textDraft;
     if (!t) return;
     this.clearStroke();
@@ -869,7 +871,84 @@ export class Editor {
     pushRecent(op.c);
     this.endPlacing();
   }
+  // ---------------- image import ----------------
+  async beginImage(file) {
+    let bm;
+    try {
+      bm = await createImageBitmap(file);
+    } catch {
+      this.ui.toast("Couldn't read that image");
+      return false;
+    }
+    const d = this.doc;
+    const MAX = 3000; // plenty for tracing; keeps iPad memory in check
+    const k = Math.min(1, MAX / Math.max(bm.width, bm.height));
+    const img = makeCanvas(bm.width * k, bm.height * k);
+    const ictx = img.getContext('2d');
+    ictx.imageSmoothingQuality = 'high';
+    ictx.drawImage(bm, 0, 0, img.width, img.height);
+    bm.close?.();
+    this.imageDraft = {
+      img,
+      type: file.type === 'image/png' ? 'image/png' : 'image/jpeg',
+      fit: Math.min(d.W / img.width, d.H / img.height),
+      scale: 1,
+      x: d.W / 2,
+      y: d.H / 2,
+    };
+    this.placing = 'image';
+    document.body.classList.add('placing');
+    this.strokeCv.style.visibility = 'visible';
+    this.strokeCv.style.opacity = 1;
+    this.renderDraft();
+    return true;
+  }
+  imageBBox(dr = this.imageDraft) {
+    const w = dr.img.width * dr.fit * dr.scale, h = dr.img.height * dr.fit * dr.scale;
+    return [dr.x - w / 2, dr.y - h / 2, dr.x + w / 2, dr.y + h / 2];
+  }
+  renderImageDraft() {
+    const d = this.doc, dr = this.imageDraft;
+    if (!dr) return;
+    this.clearStroke();
+    const sc = this.sctx;
+    sc.setTransform(d.ws, 0, 0, d.ws, 0, 0);
+    const bb = this.imageBBox();
+    sc.globalAlpha = 0.6;
+    sc.imageSmoothingQuality = 'high';
+    sc.drawImage(dr.img, bb[0], bb[1], bb[2] - bb[0], bb[3] - bb[1]);
+    sc.globalAlpha = 1;
+    const u = 1 / (d.ws * this.view.z);
+    sc.setLineDash([8 * u, 6 * u]);
+    sc.lineWidth = 1.5 * u;
+    sc.strokeStyle = 'rgba(64,140,255,0.9)';
+    sc.strokeRect(bb[0], bb[1], bb[2] - bb[0], bb[3] - bb[1]);
+    sc.setLineDash([]);
+  }
+  setImageScale(s) {
+    if (!this.imageDraft) return;
+    this.imageDraft.scale = s;
+    this.renderDraft();
+  }
+  commitImage() {
+    const d = this.doc, dr = this.imageDraft;
+    if (!dr) return this.endPlacing();
+    const op = { t: 'i', img: dr.img, type: dr.type, bb: this.imageBBox() };
+    this.imageDraft = null; // ownership of the canvas moves to the op
+    const L = d.addImageLayer(op);
+    this.endPlacing();
+    if (!L) {
+      freeCanvas(op.img);
+      return this.ui.toast('Layer limit reached — delete a layer first');
+    }
+    this.ui.toast('Added as a reference at 50% — set opacity in Layers');
+  }
+
   endPlacing() {
+    if (this.imageDraft) {
+      freeCanvas(this.imageDraft.img);
+      this.imageDraft = null;
+    }
     this.placing = false;
     this.textDraft = this.textDraft ? { sz: this.textDraft.sz } : null;
     document.body.classList.remove('placing');
