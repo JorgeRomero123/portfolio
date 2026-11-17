@@ -1,10 +1,16 @@
 import { auth } from '@/lib/auth';
 import { NextResponse } from 'next/server';
+import {
+  SHIRT_STUDIO_COOKIE,
+  SHIRT_STUDIO_HOME,
+  shirtStudioLoginPage,
+  shirtStudioToken,
+} from '@/lib/shirt-studio-auth';
 
 const PRINT_DASHBOARD_USER = 'admin';
 const PRINT_DASHBOARD_PASS = '1234';
 
-export default auth((req) => {
+export default auth(async (req) => {
   const { pathname } = req.nextUrl;
 
   // Las rutas distinguen mayúsculas; que /cumple-abi (o cualquier variante) llegue a /cumple-Abi.
@@ -26,6 +32,20 @@ export default auth((req) => {
         status: 401,
         headers: { 'WWW-Authenticate': 'Basic realm="Print Dashboard"' },
       });
+    }
+  }
+
+  // Password gate on /shirt-studio (static app in public/shirt-studio)
+  if (pathname === '/shirt-studio' || pathname.startsWith('/shirt-studio/')) {
+    const authed = req.cookies.get(SHIRT_STUDIO_COOKIE)?.value === (await shirtStudioToken());
+    if (!authed) {
+      return new NextResponse(shirtStudioLoginPage(req.nextUrl.searchParams.has('e')), {
+        status: 401,
+        headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' },
+      });
+    }
+    if (pathname === '/shirt-studio') {
+      return NextResponse.redirect(new URL(SHIRT_STUDIO_HOME, req.url));
     }
   }
 

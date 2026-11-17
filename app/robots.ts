@@ -12,6 +12,7 @@ export default function robots(): MetadataRoute.Robots {
         '/myalbumlink-embed-test',
         '/tools/quehaceres',
         '/cumple-Abi',
+        '/shirt-studio',
       ],
     },
   };
