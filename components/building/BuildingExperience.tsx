@@ -1,16 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import { C } from '@/components/illustration/ink';
 import Tree, { TallTree } from '@/components/illustration/Tree';
 import { JorgeAtLaptop, JorgePlayingCards, JorgeWithCamera } from '@/components/illustration/Jorge';
 import {
-  Birds, Camera360, Coffee, CoysPennant, DeskLamp, Drawing, Drone, Mailbox, PottedPlant, Projector, Robot,
+  Birds, Camera360, Coffee, CoysPennant, DeskLamp, Drawing, Mailbox, PottedPlant, Projector, Robot,
 } from '@/components/illustration/objects';
 import { ButtonPanel, Ding, ElevatorCar, FloorDial } from '@/components/illustration/elevator';
 import { Rooftop } from '@/components/illustration/building';
 import ArtOverlayBillboard from './ArtOverlayBillboard';
 import GameBoard from './GameBoard';
+import LeansToward from './LeansToward';
+import ChaseDrone from './ChaseDrone';
 import { PROJECTS, STATS, TRUTHS } from '@/components/home/data';
 import { ALL_TOOLS, TOOL_CATEGORIES } from '@/lib/tools';
 
@@ -42,6 +44,17 @@ const FLOORS = [
 /** The dial reads bottom to top. */
 const DIAL = [...FLOORS].reverse().map((f) => f.key);
 const PANEL_H = 56 + FLOORS.length * 46; // ButtonPanel's viewBox height
+
+/** Whether this visitor has already ridden down once (so the button can stop asking). */
+const RODE_KEY = 'bld-rode';
+const noSubscribe = () => () => {};
+const readRode = () => {
+  try { return localStorage.getItem(RODE_KEY) === '1'; } catch { return false; }
+};
+const rememberRide = (set: (v: boolean) => void) => {
+  set(true);
+  try { localStorage.setItem(RODE_KEY, '1'); } catch {}
+};
 
 const INK = '#1B1B1B';
 const SKY = '#DCDAF5';
@@ -87,6 +100,11 @@ export default function BuildingExperience({ fonts, photos, panoramas, gameColor
   const [ding, setDing] = useState(false);
   const activeRef = useRef(0);
   const dingedAt = useRef(0);
+  // The "take the elevator" button wiggles until the visitor first leaves the roof, then
+  // never again, on this visit or the next. The server render never wiggles.
+  const rodeBefore = useSyncExternalStore(noSubscribe, readRode, () => true);
+  const [rodeNow, setRodeNow] = useState(false);
+  const nudge = !rodeBefore && !rodeNow;
 
   useEffect(() => {
     let raf = 0;
@@ -103,6 +121,7 @@ export default function BuildingExperience({ fonts, photos, panoramas, gameColor
       });
       activeRef.current = a;
       setActive(a);
+      if (a > 0) rememberRide(setRodeNow);
     };
 
     const onScroll = () => {
@@ -157,7 +176,19 @@ export default function BuildingExperience({ fonts, photos, panoramas, gameColor
         .bld-robot:hover .bld-bubble { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 ${INK}; }
         .bld-bubble { transition: transform .25s, box-shadow .25s; }
         .bld-strip { display: none; }
-        @media (prefers-reduced-motion: reduce) { .bld-bob, .bld-pop { animation: none; } }
+        /* still for 82% of each cycle, then a short shake that says "press me" */
+        .bld-invite { animation: bld-invite 4.5s ease-in-out 2.5s infinite; }
+        @keyframes bld-invite {
+          0%, 82%, 100% { transform: rotate(0) scale(1); }
+          85% { transform: rotate(-4deg) scale(1.05); }
+          88% { transform: rotate(3.5deg) scale(1.05); }
+          91% { transform: rotate(-2.5deg) scale(1.03); }
+          94% { transform: rotate(1.5deg) scale(1.01); }
+          97% { transform: rotate(0) scale(1); }
+        }
+        .bld-float { animation: bld-float 3.4s ease-in-out infinite; }
+        @keyframes bld-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @media (prefers-reduced-motion: reduce) { .bld-bob, .bld-pop, .bld-invite, .bld-float { animation: none; } }
         @media (max-width: 760px) {
           .bld { --shaft: 52px; }
           .bld-panel { display: none; }
@@ -191,7 +222,7 @@ export default function BuildingExperience({ fonts, photos, panoramas, gameColor
 
         {/* ===== FLOORS ===== */}
         <div style={{ minWidth: 0 }}>
-          <Roof refCb={floorRef('roof')} fonts={fonts} gameColors={gameColors} onWork={() => goTo('work')} onTools={() => goTo('tools')} />
+          <Roof refCb={floorRef('roof')} fonts={fonts} gameColors={gameColors} nudge={nudge} onWork={() => { rememberRide(setRodeNow); goTo('work'); }} onTools={() => goTo('tools')} />
           <WorkFloor refCb={floorRef('work')} fonts={fonts} />
           <GameRoom refCb={floorRef('game')} fonts={fonts} colors={gameColors} />
           <ToolsFloor refCb={floorRef('tools')} fonts={fonts} />
@@ -274,11 +305,11 @@ function FloorPlate({ fonts, id }: { fonts: Fonts; id: FloorId }) {
 
 /* ---------------------------------------------------------------- roof */
 
-function Roof({ refCb, fonts, gameColors, onWork, onTools }: FloorProps & { gameColors: string[]; onWork: () => void; onTools: () => void }) {
+function Roof({ refCb, fonts, gameColors, nudge, onWork, onTools }: FloorProps & { gameColors: string[]; nudge: boolean; onWork: () => void; onTools: () => void }) {
   return (
     <section id="roof" ref={refCb} style={{ position: 'relative', background: SKY, minHeight: 'max(100vh, 640px)', display: 'flex', flexDirection: 'column' }}>
       <Birds style={{ position: 'absolute', zIndex: 3, top: 14, left: '30%', width: 'clamp(80px,10vw,130px)', height: 'auto' }} />
-      <Drone className="bld-bob" style={{ position: 'absolute', zIndex: 3, top: 'clamp(40px,7vh,70px)', right: '3%', width: 'clamp(90px,12vw,160px)', height: 'auto' }} />
+      <ChaseDrone font={fonts.mono} style={{ zIndex: 40, width: 'clamp(76px,11vw,150px)' }} />
 
       {/* everything standing on the roof; the billboard's legs run down behind it */}
       <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -318,7 +349,7 @@ function Roof({ refCb, fonts, gameColors, onWork, onTools }: FloorProps & { game
                 360° tour engine.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 24 }}>
-                <a href="#work" onClick={(e) => { e.preventDefault(); onWork(); }} className="bld-lift" style={{ ...card(4), background: INK, color: C.paper, textDecoration: 'none', fontFamily: fonts.display, fontWeight: 700, padding: '12px 20px' }}>
+                <a href="#work" onClick={(e) => { e.preventDefault(); onWork(); }} className={nudge ? 'bld-lift bld-invite' : 'bld-lift'} style={{ ...card(4), background: INK, color: C.paper, textDecoration: 'none', fontFamily: fonts.display, fontWeight: 700, padding: '12px 20px' }}>
                   Take the elevator down ↓
                 </a>
                 <a href="#tools" onClick={(e) => { e.preventDefault(); onTools(); }} className="bld-lift" style={{ ...card(4), background: C.mustard, color: INK, textDecoration: 'none', fontFamily: fonts.display, fontWeight: 700, padding: '12px 20px' }}>
@@ -365,7 +396,12 @@ function AgentRobot({ fonts }: { fonts: Fonts }) {
         {/* the bubble's tail */}
         <span aria-hidden style={{ position: 'absolute', left: '50%', bottom: -10, width: 14, height: 14, marginLeft: -7, background: C.cream, borderRight: `3px solid ${INK}`, borderBottom: `3px solid ${INK}`, transform: 'rotate(45deg)' }} />
       </span>
-      <Robot style={{ ...fill, maxWidth: 150 }} />
+      {/* bob and lean on separate wrappers so the two transforms don't overwrite each other */}
+      <div className="bld-float" style={{ width: '100%', maxWidth: 150 }}>
+        <LeansToward>
+          <Robot style={fill} />
+        </LeansToward>
+      </div>
     </a>
   );
 }
